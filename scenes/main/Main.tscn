@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhc24iana05ko"]
+
+[ext_resource type="Script" uid="uid://cn0pahhi58djk" path="res://scripts/camera_control.gd" id="1_u1xfj"]
+
+[node name="Main" type="Node2D"]
+
+[node name="Board" type="Node2D" parent="."]
+
+[node name="Camera2D" type="Camera2D" parent="Board"]
+script = ExtResource("1_u1xfj")
