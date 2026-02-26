@@ -1,3 +1,13 @@
-[gd_scene format=3 uid="uid://c2eaduakgdpp1"]
+[gd_scene load_steps=2 format=3 uid="uid://c2eaduakgdpp1"]
 
-[node name="Node2D" type="Node2D"]
+[ext_resource type="Script" uid="uid://kt2p4lvhatmv" path="res://scripts/tile_system/Tile.gd" id="1_vb0sl"]
+
+[node name="Tile" type="Node2D"]
+script = ExtResource("1_vb0sl")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="Label" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+horizontal_alignment = 1
