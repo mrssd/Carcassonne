@@ -7,6 +7,11 @@ var current_tile: Tile
 
 func _ready() -> void:
 	_spawn_tile(StraightRoad)
+	#temporal place of tile deck initialization 
+	var tile_deck : TileDeck = load("res://resources/tile_deck.tres")
+	tile_deck.load_deck(tile_deck.tiles)
+	tile_deck.print_draw_pile()
+	
 
 func _spawn_tile(data: CarcassonneTileData) -> void:
 	if current_tile:

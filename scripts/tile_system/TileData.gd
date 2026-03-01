@@ -1,3 +1,10 @@
+# the foundational tile class
+# its properties include:
+#	1) name
+#	2) texture
+#	3) edges
+#	4) internal connections
+
 extends Resource
 class_name CarcassonneTileData
 
@@ -10,7 +17,9 @@ enum Orientation {
 }
 
 @export var name: String = "Unnamed Tile"
-@export var count: int = 1
+# obsolete, count variable is no longer an attribute of a single tile
+# moved to the TileDeckEntry class 
+# @export var count: int = 1
 @export var tile_texture: Texture2D
 
 ## Array for tile edges. Array indexing:
@@ -37,7 +46,7 @@ enum Orientation {
 	# 4: [1, 1],
 	# 5: [2, 2],
 	# 6: [3, 3]
-var internal_connections: Dictionary = {}
+@export var internal_connections: Dictionary = {}
 
 ## "public" functions
 func rotate_clockwise():
@@ -56,6 +65,11 @@ func rotate_counter_clockwise():
 	edge[3] = tmp
 	_rotate_edges_counter_clockwise()
 
+func print_debug() -> void:
+	print("Tile name: ", name)
+	for i in range(edge.size()):
+		print(i, " - ", _orientation_to_string(i), ": ", _property_type_to_string(edge[i]))
+
 ## "private" functions
 func _rotate_edges_clockwise():
 	for key in internal_connections:
@@ -68,3 +82,21 @@ func _rotate_edges_counter_clockwise():
 		var edges: Array = internal_connections[key]
 		for i in range(edges.size()):
 			edges[i] = (edges[i] - 1 + 4) % 4
+
+func _property_type_to_string(value : PropertyType) -> String:
+	match value:
+		PropertyType.NONE: return "none"
+		PropertyType.FIELD: return "field"
+		PropertyType.ROAD: return "road"
+		PropertyType.CITY: return "city"
+		PropertyType.MONASTERY: return "monastery"
+		PropertyType.RIVER: return "river"
+		_: return "unknown property type"
+
+func _orientation_to_string(value : Orientation) -> String:
+	match value:
+		Orientation.TOP: return "TOP"
+		Orientation.RIGHT: return "RIGHT"
+		Orientation.BOTTOM: return "BOTTOM"
+		Orientation.LEFT: return "LEFT"
+		_: return "incorrect orientation"

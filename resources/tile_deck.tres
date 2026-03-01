@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="TileDeck" load_steps=8 format=3 uid="uid://dlqwuvyh115re"]
+
+[ext_resource type="Script" uid="uid://p1xknwkm7hsy" path="res://scripts/tile_system/TileDeck.gd" id="1_dcoqu"]
+[ext_resource type="Script" uid="uid://jeeirt02f3pi" path="res://scripts/tile_system/TileDeckEntry.gd" id="2_0cp21"]
+[ext_resource type="Script" uid="uid://m5aoiq606m64" path="res://scripts/tile_system/TileData.gd" id="3_0cp21"]
+
+[sub_resource type="Resource" id="Resource_y11d7"]
+script = ExtResource("3_0cp21")
+name = "Straight Road"
+edge = Array[int]([2, 1, 2, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_dcoqu"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_y11d7")
+number_of_tiles = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_yy3br"]
+script = ExtResource("3_0cp21")
+name = "Corner Castle"
+edge = Array[int]([3, 3, 1, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_fhlq6"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_yy3br")
+number_of_tiles = 2
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[resource]
+script = ExtResource("1_dcoqu")
+tiles = Array[ExtResource("2_0cp21")]([SubResource("Resource_dcoqu"), SubResource("Resource_fhlq6")])
+metadata/_custom_type_script = "uid://p1xknwkm7hsy"
