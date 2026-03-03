@@ -4,7 +4,7 @@ class_name TileDeck
 
 # resource arrays for tile deck
 # CarcassineTileData object is followed by the 
-@export var tiles : Array[TileDeckEntry] = []
+@export var tiles: Array[TileDeckEntry] = []
 
 var _draw_pile: Array[CarcassonneTileData] = []
 var _discard_pile: Array[CarcassonneTileData] = []
@@ -13,9 +13,9 @@ var _discard_pile: Array[CarcassonneTileData] = []
 func load_deck(tile_resources: Array[TileDeckEntry]) -> void:
 	_draw_pile.clear()
 	_discard_pile.clear()
-	for tile_data in tile_resources:
-		for i in tile_data.number_of_tiles:
-			_draw_pile.append(tile_data.carcassone_tile_data.duplicate(true))
+	for single_tile_entry in tile_resources:
+		for i in single_tile_entry.number_of_tiles:
+			_draw_pile.append(single_tile_entry.carcassone_tile_data.duplicate(true))
 	_draw_pile.shuffle()
 
 func pop_tile() -> CarcassonneTileData:

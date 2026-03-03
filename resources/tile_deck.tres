@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="TileDeck" load_steps=8 format=3 uid="uid://dlqwuvyh115re"]
+[gd_resource type="Resource" script_class="TileDeck" load_steps=11 format=3 uid="uid://dlqwuvyh115re"]
 
 [ext_resource type="Script" uid="uid://p1xknwkm7hsy" path="res://scripts/tile_system/TileDeck.gd" id="1_dcoqu"]
 [ext_resource type="Script" uid="uid://jeeirt02f3pi" path="res://scripts/tile_system/TileDeckEntry.gd" id="2_0cp21"]
 [ext_resource type="Script" uid="uid://m5aoiq606m64" path="res://scripts/tile_system/TileData.gd" id="3_0cp21"]
+[ext_resource type="Texture2D" uid="uid://bt6r6qk4nl8sd" path="res://assets/tiles/straight_road.png" id="4_y11d7"]
 
 [sub_resource type="Resource" id="Resource_y11d7"]
 script = ExtResource("3_0cp21")
@@ -28,7 +29,20 @@ carcassone_tile_data = SubResource("Resource_yy3br")
 number_of_tiles = 2
 metadata/_custom_type_script = "uid://jeeirt02f3pi"
 
+[sub_resource type="Resource" id="Resource_q346i"]
+script = ExtResource("3_0cp21")
+name = "Corner River"
+tile_texture = ExtResource("4_y11d7")
+edge = Array[int]([5, 5, 1, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_gjgr0"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_q346i")
+number_of_tiles = -380
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
 [resource]
 script = ExtResource("1_dcoqu")
-tiles = Array[ExtResource("2_0cp21")]([SubResource("Resource_dcoqu"), SubResource("Resource_fhlq6")])
+tiles = Array[ExtResource("2_0cp21")]([SubResource("Resource_dcoqu"), SubResource("Resource_fhlq6"), SubResource("Resource_gjgr0")])
 metadata/_custom_type_script = "uid://p1xknwkm7hsy"
