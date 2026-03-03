@@ -1,8 +1,6 @@
-extends Node2D
-class_name Tile
+class_name Tile extends Node2D
 
 @export var tile_data: CarcassonneTileData
-
 @onready var sprite: Sprite2D = $Sprite2D # reference to child sprite
 @onready var label: Label = $Label
 

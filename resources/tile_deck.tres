@@ -1,48 +1,359 @@
-[gd_resource type="Resource" script_class="TileDeck" load_steps=11 format=3 uid="uid://dlqwuvyh115re"]
+[gd_resource type="Resource" script_class="TileDeck" load_steps=78 format=3 uid="uid://dlqwuvyh115re"]
 
 [ext_resource type="Script" uid="uid://p1xknwkm7hsy" path="res://scripts/tile_system/TileDeck.gd" id="1_dcoqu"]
 [ext_resource type="Script" uid="uid://jeeirt02f3pi" path="res://scripts/tile_system/TileDeckEntry.gd" id="2_0cp21"]
 [ext_resource type="Script" uid="uid://m5aoiq606m64" path="res://scripts/tile_system/TileData.gd" id="3_0cp21"]
-[ext_resource type="Texture2D" uid="uid://bt6r6qk4nl8sd" path="res://assets/tiles/straight_road.png" id="4_y11d7"]
-
-[sub_resource type="Resource" id="Resource_y11d7"]
-script = ExtResource("3_0cp21")
-name = "Straight Road"
-edge = Array[int]([2, 1, 2, 1])
-metadata/_custom_type_script = "uid://m5aoiq606m64"
-
-[sub_resource type="Resource" id="Resource_dcoqu"]
-script = ExtResource("2_0cp21")
-carcassone_tile_data = SubResource("Resource_y11d7")
-number_of_tiles = 3
-metadata/_custom_type_script = "uid://jeeirt02f3pi"
-
-[sub_resource type="Resource" id="Resource_yy3br"]
-script = ExtResource("3_0cp21")
-name = "Corner Castle"
-edge = Array[int]([3, 3, 1, 1])
-metadata/_custom_type_script = "uid://m5aoiq606m64"
-
-[sub_resource type="Resource" id="Resource_fhlq6"]
-script = ExtResource("2_0cp21")
-carcassone_tile_data = SubResource("Resource_yy3br")
-number_of_tiles = 2
-metadata/_custom_type_script = "uid://jeeirt02f3pi"
+[ext_resource type="Texture2D" uid="uid://0tkid0qd85of" path="res://assets/tiles/city4.png" id="4_yy3br"]
+[ext_resource type="Texture2D" uid="uid://cfg8ne4y62ffm" path="res://assets/tiles/road4.png" id="5_fhlq6"]
+[ext_resource type="Texture2D" uid="uid://c8fe3uy3r8m2r" path="res://assets/tiles/city3.png" id="6_fhlq6"]
+[ext_resource type="Texture2D" uid="uid://cxtnarfxmwbe5" path="res://assets/tiles/city3s.png" id="7_q346i"]
+[ext_resource type="Texture2D" uid="uid://eijwsm6ucgwx" path="res://assets/tiles/city3r.png" id="8_gjgr0"]
+[ext_resource type="Texture2D" uid="uid://b83fggsiqfq3j" path="res://assets/tiles/city3sr.png" id="9_7s5dn"]
+[ext_resource type="Texture2D" uid="uid://b5i3h1pnh5kr4" path="res://assets/tiles/road3.png" id="10_8bbyg"]
+[ext_resource type="Texture2D" uid="uid://dn6kf0hf1yu82" path="res://assets/tiles/city2we.png" id="11_sa4n1"]
+[ext_resource type="Texture2D" uid="uid://cnl2c7ctr6qvl" path="res://assets/tiles/city2wes.png" id="12_58eru"]
+[ext_resource type="Texture2D" uid="uid://b2kkiy20oqdj2" path="res://assets/tiles/road2ns.png" id="13_58eru"]
+[ext_resource type="Texture2D" uid="uid://b8w3q63yjryhx" path="res://assets/tiles/city2nw.png" id="14_8a5qd"]
+[ext_resource type="Texture2D" uid="uid://b52lpb5wyr14n" path="res://assets/tiles/city2nws.png" id="15_4fci4"]
+[ext_resource type="Texture2D" uid="uid://cfmxwsoeh66i6" path="res://assets/tiles/city2nwr.png" id="16_cxcgf"]
+[ext_resource type="Texture2D" uid="uid://csa4dmxyvv4ks" path="res://assets/tiles/city2nwsr.png" id="17_b5meo"]
+[ext_resource type="Texture2D" uid="uid://egq665ejqa78" path="res://assets/tiles/road2sw.png" id="18_jdeib"]
+[ext_resource type="Texture2D" uid="uid://delbhqng3i8ex" path="res://assets/tiles/city11ne.png" id="19_mg2dl"]
+[ext_resource type="Texture2D" uid="uid://dur4b3ocfgry0" path="res://assets/tiles/city11we.png" id="20_0bx5p"]
+[ext_resource type="Texture2D" uid="uid://dgiqvl2pjjqgx" path="res://assets/tiles/cloisterr.png" id="21_n2mrk"]
+[ext_resource type="Texture2D" uid="uid://cgbs5vhm5byj3" path="res://assets/tiles/cloister.png" id="22_oe3xh"]
+[ext_resource type="Texture2D" uid="uid://dba1l7r6kypm6" path="res://assets/tiles/city1.png" id="23_ul3yg"]
+[ext_resource type="Texture2D" uid="uid://b8w2qsyfiibo0" path="res://assets/tiles/city1rse.png" id="24_vttbf"]
+[ext_resource type="Texture2D" uid="uid://gyjdloohp7xq" path="res://assets/tiles/city1rsw.png" id="25_tbkoh"]
+[ext_resource type="Texture2D" uid="uid://bbhcd75pw265s" path="res://assets/tiles/city1rswe.png" id="26_sk6qx"]
+[ext_resource type="Texture2D" uid="uid://ciq4pavmmemi5" path="res://assets/tiles/city1rwe.png" id="27_l1oc6"]
 
 [sub_resource type="Resource" id="Resource_q346i"]
 script = ExtResource("3_0cp21")
-name = "Corner River"
-tile_texture = ExtResource("4_y11d7")
-edge = Array[int]([5, 5, 1, 1])
+name = "city4"
+tile_texture = ExtResource("4_yy3br")
+edge = Array[int]([3, 3, 3, 3])
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
 [sub_resource type="Resource" id="Resource_gjgr0"]
 script = ExtResource("2_0cp21")
 carcassone_tile_data = SubResource("Resource_q346i")
-number_of_tiles = -380
+number_of_copies = 1
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_7s5dn"]
+script = ExtResource("3_0cp21")
+name = "road4"
+tile_texture = ExtResource("5_fhlq6")
+edge = Array[int]([2, 2, 2, 2])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_8bbyg"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_7s5dn")
+number_of_copies = 1
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_qfcj5"]
+script = ExtResource("3_0cp21")
+name = "city3"
+tile_texture = ExtResource("6_fhlq6")
+edge = Array[int]([3, 3, 1, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_sa4n1"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_qfcj5")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_58eru"]
+script = ExtResource("3_0cp21")
+name = "city3s"
+tile_texture = ExtResource("7_q346i")
+edge = Array[int]([3, 3, 1, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_8a5qd"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_58eru")
+number_of_copies = 1
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_4fci4"]
+script = ExtResource("3_0cp21")
+name = "city3r"
+tile_texture = ExtResource("8_gjgr0")
+edge = Array[int]([3, 3, 2, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_cxcgf"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_4fci4")
+number_of_copies = 1
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_b5meo"]
+script = ExtResource("3_0cp21")
+name = "city3sr"
+tile_texture = ExtResource("9_7s5dn")
+edge = Array[int]([3, 3, 2, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_jdeib"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_b5meo")
+number_of_copies = 2
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_mg2dl"]
+script = ExtResource("3_0cp21")
+name = "road3"
+tile_texture = ExtResource("10_8bbyg")
+edge = Array[int]([1, 2, 2, 2])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_0bx5p"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_mg2dl")
+number_of_copies = 4
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_n2mrk"]
+script = ExtResource("3_0cp21")
+name = "city2we"
+tile_texture = ExtResource("11_sa4n1")
+edge = Array[int]([1, 3, 1, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_oe3xh"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_n2mrk")
+number_of_copies = 1
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_ul3yg"]
+script = ExtResource("3_0cp21")
+name = "city2wes"
+tile_texture = ExtResource("12_58eru")
+edge = Array[int]([1, 3, 1, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_vttbf"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_ul3yg")
+number_of_copies = 2
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_tbkoh"]
+script = ExtResource("3_0cp21")
+name = "road2ns"
+tile_texture = ExtResource("13_58eru")
+edge = Array[int]([2, 1, 2, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_sk6qx"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_tbkoh")
+number_of_copies = 8
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_l1oc6"]
+script = ExtResource("3_0cp21")
+name = "city2nw"
+tile_texture = ExtResource("14_8a5qd")
+edge = Array[int]([3, 1, 1, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_lifbq"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_l1oc6")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_8dd0v"]
+script = ExtResource("3_0cp21")
+name = "city2nws"
+tile_texture = ExtResource("15_4fci4")
+edge = Array[int]([3, 1, 1, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_4jiep"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_8dd0v")
+number_of_copies = 2
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_vlxnx"]
+script = ExtResource("3_0cp21")
+name = "city2nwr"
+tile_texture = ExtResource("16_cxcgf")
+edge = Array[int]([3, 2, 2, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_yu84l"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_vlxnx")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_0x7uw"]
+script = ExtResource("3_0cp21")
+name = "city2nwsr"
+tile_texture = ExtResource("17_b5meo")
+edge = Array[int]([3, 2, 2, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_nd605"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_0x7uw")
+number_of_copies = 2
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_v0opy"]
+script = ExtResource("3_0cp21")
+name = "road2sw"
+tile_texture = ExtResource("18_jdeib")
+edge = Array[int]([1, 1, 2, 2])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_dde2i"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_v0opy")
+number_of_copies = 9
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_rsefs"]
+script = ExtResource("3_0cp21")
+name = "city11ne"
+tile_texture = ExtResource("19_mg2dl")
+edge = Array[int]([3, 3, 1, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_d7kjg"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_rsefs")
+number_of_copies = 2
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_rspcc"]
+script = ExtResource("3_0cp21")
+name = "city11we"
+tile_texture = ExtResource("20_0bx5p")
+edge = Array[int]([1, 3, 1, 3])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_xw147"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_rspcc")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_n1q7u"]
+script = ExtResource("3_0cp21")
+name = "cloisterr"
+tile_texture = ExtResource("21_n2mrk")
+edge = Array[int]([1, 1, 2, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_ekupb"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_n1q7u")
+number_of_copies = 2
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_5fhgr"]
+script = ExtResource("3_0cp21")
+name = "cloister"
+tile_texture = ExtResource("22_oe3xh")
+edge = Array[int]([1, 1, 1, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_6mfph"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_5fhgr")
+number_of_copies = 4
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_4nbny"]
+script = ExtResource("3_0cp21")
+name = "city1"
+tile_texture = ExtResource("23_ul3yg")
+edge = Array[int]([3, 1, 1, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_dslkl"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_4nbny")
+number_of_copies = 5
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_xv5a1"]
+script = ExtResource("3_0cp21")
+name = "city1rse"
+tile_texture = ExtResource("24_vttbf")
+edge = Array[int]([3, 2, 2, 1])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_8hcq7"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_xv5a1")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_hkkh2"]
+script = ExtResource("3_0cp21")
+name = "city1rsw"
+tile_texture = ExtResource("25_tbkoh")
+edge = Array[int]([3, 1, 2, 2])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_wc58t"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_hkkh2")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_y2pr1"]
+script = ExtResource("3_0cp21")
+name = "city1rswe"
+tile_texture = ExtResource("26_sk6qx")
+edge = Array[int]([3, 2, 2, 2])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_41w5m"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_y2pr1")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_tipla"]
+script = ExtResource("3_0cp21")
+name = "city1rwe"
+tile_texture = ExtResource("27_l1oc6")
+edge = Array[int]([3, 2, 1, 2])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_yrr53"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_tipla")
+number_of_copies = 3
+metadata/_custom_type_script = "uid://jeeirt02f3pi"
+
+[sub_resource type="Resource" id="Resource_xvjba"]
+script = ExtResource("3_0cp21")
+name = "start"
+tile_texture = ExtResource("27_l1oc6")
+edge = Array[int]([3, 2, 1, 2])
+metadata/_custom_type_script = "uid://m5aoiq606m64"
+
+[sub_resource type="Resource" id="Resource_cnpts"]
+script = ExtResource("2_0cp21")
+carcassone_tile_data = SubResource("Resource_xvjba")
+number_of_copies = 1
 metadata/_custom_type_script = "uid://jeeirt02f3pi"
 
 [resource]
 script = ExtResource("1_dcoqu")
-tiles = Array[ExtResource("2_0cp21")]([SubResource("Resource_dcoqu"), SubResource("Resource_fhlq6"), SubResource("Resource_gjgr0")])
+tiles = Array[ExtResource("2_0cp21")]([SubResource("Resource_gjgr0"), SubResource("Resource_8bbyg"), SubResource("Resource_sa4n1"), SubResource("Resource_8a5qd"), SubResource("Resource_cxcgf"), SubResource("Resource_jdeib"), SubResource("Resource_0bx5p"), SubResource("Resource_oe3xh"), SubResource("Resource_vttbf"), SubResource("Resource_sk6qx"), SubResource("Resource_lifbq"), SubResource("Resource_4jiep"), SubResource("Resource_yu84l"), SubResource("Resource_nd605"), SubResource("Resource_dde2i"), SubResource("Resource_d7kjg"), SubResource("Resource_xw147"), SubResource("Resource_ekupb"), SubResource("Resource_6mfph"), SubResource("Resource_dslkl"), SubResource("Resource_8hcq7"), SubResource("Resource_wc58t"), SubResource("Resource_41w5m"), SubResource("Resource_yrr53"), SubResource("Resource_cnpts")])
 metadata/_custom_type_script = "uid://p1xknwkm7hsy"
