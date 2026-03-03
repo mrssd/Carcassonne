@@ -77,5 +77,15 @@ func next_turn() -> void:
 	current_player_index = (current_player_index + 1) % players.size()
 
 func _input(event) -> void:
+	if not game_active:
+		return
+	if board.current_tile == null:
+		return
+	
 	if event.is_action_pressed("ui_accept"):
 		on_tile_placed()
+	elif event is InputEventKey and event.pressed:
+		if event.keycode == KEY_Q or event.keycode == KEY_LEFT:
+			board.current_tile.rotate_counter_clockwise()
+		elif event.keycode == KEY_E or event.keycode == KEY_RIGHT:
+			board.current_tile.rotate_clockwise()

@@ -43,7 +43,7 @@ func can_place(cell : Vector2i, tile : Tile) -> bool:
 		if placed_tiles.has(neighbor_cell):
 			has_neighbor = true
 			var neighbor : Tile = placed_tiles[neighbor_cell]
-			var neighbor_edges : Variant = neighbor.get_edges()
+			var neighbor_edges : Array = neighbor.get_edges()
 			if edges[i] != neighbor_edges[opposite_index[i]]:
 				return false
 	
