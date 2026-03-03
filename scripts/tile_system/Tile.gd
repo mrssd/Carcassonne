@@ -51,3 +51,7 @@ func update_visual() -> void:
 		sprite.texture = tile_data.tile_texture # ← set the image
 	if label:
 		label.text = tile_data.name # ← show name for debug
+
+## Get edges of a tile
+func get_edges() -> Array:
+	return tile_data.edge.duplicate()

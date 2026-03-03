@@ -33,7 +33,7 @@ func can_place(cell : Vector2i, tile : Tile) -> bool:
 		return false
 	
 	var has_neighbor : bool = false
-	var edges := tile.get_edges_rotated() #NEED THIS FUNCTION TO COME FROM TILE SCRIPT
+	var edges : Array = tile.get_edges() #NEED THIS FUNCTION TO COME FROM TILE SCRIPT
 	# FOLLOWING VARS ASSUME A 4 ELEMENT ARRAY BEING PASSED FOR EDGES
 	var neighbor_directions : Array = [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
 	var opposite_index := [2,3,0,1]
@@ -43,7 +43,7 @@ func can_place(cell : Vector2i, tile : Tile) -> bool:
 		if placed_tiles.has(neighbor_cell):
 			has_neighbor = true
 			var neighbor : Tile = placed_tiles[neighbor_cell]
-			var neighbor_edges := neighbor.get_edges_rotated()
+			var neighbor_edges := neighbor.get_edges()
 			if edges[i] != neighbor_edges[opposite_index[i]]:
 				return false
 	
