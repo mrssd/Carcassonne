@@ -1,55 +1,79 @@
 extends Node
-class_name TurnSystem #script name
+class_name GameTurnSystem
 
-enum TurnPhase { #enum is a group of const ints
-	DRAW_TILE, # Turn phases for a Carcassonne
-	PLACE_TILE,
-	PLACE_MEEPLE
+enum TurnPhase {
+	DRAW_TILE,
+	PLACE_TILE
 }
 
 var players = ["Player 1", "Player 2"]
 var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
 
-func _ready(): 
+@export var board: Board
+@export var tile_deck_resource: TileDeck   # your deck resource
+var tile_deck: TileDeck
+var current_drawn_tile: Tile = null
+
+func _ready() -> void:
+	if tile_deck_resource:
+		tile_deck = tile_deck_resource
+	else:
+		push_error("TurnSystem: tile_deck_resource not set!")
 	start_turn()
 
-func get_current_player(): # returns the current player based on the index
+func get_current_player() -> String:
 	return players[current_player_index]
 
-func start_turn(): # beginning of turn
-	print("Turn stared:", get_current_player())
+func start_turn() -> void:
+	print("Turn started:", get_current_player())
 	phase = TurnPhase.DRAW_TILE
 	draw_tile()
 
-func draw_tile():
+func draw_tile() -> void:
+	if tile_deck == null:
+		push_error("TurnSystem: tile_deck is null.")
+		return
+	
+	var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
+	if tile_data == null:
+		print("No more tiles to draw.")
+		return
+	
+	# instance tile
+	var tile_instance: Tile = board.tile_scene.instantiate()
+	tile_instance.tile_data = tile_data
+	board.add_child(tile_instance)
+	board.current_tile = tile_instance
+	
+	phase = TurnPhase.PLACE_TILE
 	print("Tile drawn for", get_current_player())
-	phase = TurnPhase.PLACE_TILE # on to the next phase 
 	print("Place tile")
 
-func on_tile_placed(): # called when a tile is placed checks if it's the right phase
+func on_tile_placed() -> void:
 	if phase != TurnPhase.PLACE_TILE:
 		return
-	print("Tile placed by", get_current_player())
-	phase = TurnPhase.PLACE_MEEPLE # on to the next phase 
-	print("Place meeple or skip")
-
-func on_meeple_placed_or_skipped(): # checks if meeple step is done
-	if phase != TurnPhase.PLACE_MEEPLE:
+	if board.current_tile == null:
 		return
-	end_turn()
+	
+	var world_pos: Vector2 = board.current_tile.position
+	var cell: Vector2i = board.coord_to_index(world_pos)
+	
+	if board.can_place(cell, board.current_tile):
+		board.place_tile(cell, board.current_tile)
+		board.current_tile = null
+		end_turn()
+	else:
+		print("Cannot place tile here – invalid placement.")
 
-func end_turn():
+func end_turn() -> void:
 	print("Turn ended:", get_current_player())
 	next_turn()
 	start_turn()
 
-func next_turn(): # rotate player logic
+func next_turn() -> void:
 	current_player_index = (current_player_index + 1) % players.size()
-	# 0 -> 1 -> 0 -> 1 ...
 
-func _input(event):
+func _input(event) -> void:
 	if event.is_action_pressed("ui_accept"):
 		on_tile_placed()
-	if event.is_action_pressed("ui_select"):
-		on_meeple_placed_or_skipped()
