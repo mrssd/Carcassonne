@@ -1,5 +1,5 @@
 extends Node
-class_name GameTurnSystem
+class_name TurnSystem
 
 enum TurnPhase {
 	DRAW_TILE,
@@ -9,8 +9,9 @@ enum TurnPhase {
 var players = ["Player 1", "Player 2"]
 var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
+var game_active := false
 
-@export var board: Board
+@onready var board: Board = $"../Board"
 @export var tile_deck_resource: TileDeck   # your deck resource
 var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
@@ -20,7 +21,6 @@ func _ready() -> void:
 		tile_deck = tile_deck_resource
 	else:
 		push_error("TurnSystem: tile_deck_resource not set!")
-	start_turn()
 
 func get_current_player() -> String:
 	return players[current_player_index]
@@ -51,6 +51,8 @@ func draw_tile() -> void:
 	print("Place tile")
 
 func on_tile_placed() -> void:
+	if not game_active:
+		return
 	if phase != TurnPhase.PLACE_TILE:
 		return
 	if board.current_tile == null:
