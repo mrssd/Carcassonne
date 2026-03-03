@@ -13,8 +13,8 @@ func coord_to_index(world_coord : Vector2) -> Vector2i:
 func index_to_coord(cell_index : Vector2i) -> Vector2:
 	return Vector2(cell_index.x * CELL_SIZE, cell_index.y * CELL_SIZE)
 
-func snap_to_grid(world_coord : Vector2) -> Vector2i:
-	var cell : Vector2 = coord_to_index(world_coord)
+func snap_to_grid(world_coord : Vector2) -> Vector2:
+	var cell : Vector2i = coord_to_index(world_coord)
 	return index_to_coord(cell)
 
 func _process(_dt):
@@ -43,7 +43,7 @@ func can_place(cell : Vector2i, tile : Tile) -> bool:
 		if placed_tiles.has(neighbor_cell):
 			has_neighbor = true
 			var neighbor : Tile = placed_tiles[neighbor_cell]
-			var neighbor_edges := neighbor.get_edges()
+			var neighbor_edges : Variant = neighbor.get_edges()
 			if edges[i] != neighbor_edges[opposite_index[i]]:
 				return false
 	
