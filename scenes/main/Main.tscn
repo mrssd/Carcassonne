@@ -2,12 +2,16 @@
 
 [ext_resource type="Script" uid="uid://b0kali0tyw2vh" path="res://scripts/core/board.gd" id="1_nha0i"]
 [ext_resource type="Script" uid="uid://cn0pahhi58djk" path="res://scripts/camera_control.gd" id="1_u1xfj"]
-[ext_resource type="PackedScene" path="res://scenes/tile/tile.tscn" id="2_tile"]
+[ext_resource type="PackedScene" uid="uid://c2eaduakgdpp1" path="res://scenes/tile/tile.tscn" id="2_tile"]
 [ext_resource type="Script" uid="uid://btuilk5cm3t1k" path="res://scripts/core/TurnSystem.gd" id="3_k2fmo"]
-[ext_resource type="Script" path="res://scripts/core/GameManager.gd" id="4_l3cfh"]
-[ext_resource type="Resource" path="res://resources/tile_deck.tres" id="5_deck"]
+[ext_resource type="Script" uid="uid://cxgm7k2pf4qh1" path="res://scripts/core/GameManager.gd" id="4_l3cfh"]
+[ext_resource type="Resource" uid="uid://dlqwuvyh115re" path="res://resources/tile_deck.tres" id="5_deck"]
 
 [node name="Main" type="Node2D"]
+
+[node name="TurnSystem" type="Node" parent="."]
+script = ExtResource("3_k2fmo")
+metadata/_custom_type_script = "uid://btuilk5cm3t1k"
 
 [node name="Board" type="Node2D" parent="."]
 script = ExtResource("1_nha0i")
@@ -15,10 +19,6 @@ tile_scene = ExtResource("2_tile")
 
 [node name="Camera2D" type="Camera2D" parent="Board"]
 script = ExtResource("1_u1xfj")
-
-[node name="GameTurnSystem" type="Node" parent="."]
-script = ExtResource("3_k2fmo")
-tile_deck_resource = ExtResource("5_deck")
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("4_l3cfh")

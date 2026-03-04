@@ -9,7 +9,7 @@ enum TurnPhase {
 var players = ["Player 1", "Player 2"]
 var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
-var game_active := false
+var game_active : bool = false
 
 @onready var board: Board = $"../Board"
 @export var tile_deck_resource: TileDeck   # your deck resource

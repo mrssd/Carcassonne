@@ -1,7 +1,7 @@
 class_name GameManager extends Node
 
 @onready var board = $"../Board"
-@onready var turn_system = $"../GameTurnSystem"
+@onready var turn_system = $"../TurnSystem"
 
 @export var tile_deck_resource: TileDeck
 
@@ -49,7 +49,6 @@ func _place_starting_tile() -> void:
 	board.place_tile(Vector2i.ZERO, tile_instance)
 	print("Starting tile placed.")
 
-	end_turn()
 
 
 ## Turn management - delegates to TurnSystem
