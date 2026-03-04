@@ -1,6 +1,8 @@
 extends Node
 class_name TurnSystem
 
+signal turn_changed(player_name: String, player_index: int)
+
 enum TurnPhase {
 	DRAW_TILE,
 	PLACE_TILE
@@ -9,10 +11,11 @@ enum TurnPhase {
 var players = ["Player 1", "Player 2"]
 var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
-var game_active : bool = false
+var game_active: bool = false
 
 @onready var board: Board = $"../Board"
-var tile_deck: TileDeck  
+@onready var game_manager: GameManager = $"../GameManager"
+var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
 
 func get_current_player() -> String:
@@ -20,6 +23,7 @@ func get_current_player() -> String:
 
 func start_turn() -> void:
 	print("Turn started:", get_current_player())
+	turn_changed.emit(get_current_player(), current_player_index)
 	phase = TurnPhase.DRAW_TILE
 	draw_tile()
 
@@ -32,6 +36,7 @@ func draw_tile() -> void:
 	if tile_data == null:
 		print("No more tiles to draw. Game over!")
 		game_active = false
+		game_manager.end_game("No more tiles! Game Over!")
 		return
 	
 	# instance tile
@@ -76,11 +81,13 @@ func _input(event) -> void:
 		return
 	if board.current_tile == null:
 		return
-	
-	if event.is_action_pressed("ui_accept"):
-		on_tile_placed()
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			on_tile_placed()
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			board.current_tile.rotate_clockwise()
 	elif event is InputEventKey and event.pressed:
-		if event.keycode == KEY_Q or event.keycode == KEY_LEFT:
+		if event.keycode == KEY_Q:
 			board.current_tile.rotate_counter_clockwise()
-		elif event.keycode == KEY_E or event.keycode == KEY_RIGHT:
+		elif event.keycode == KEY_E:
 			board.current_tile.rotate_clockwise()

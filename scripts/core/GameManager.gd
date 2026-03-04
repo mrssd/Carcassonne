@@ -1,11 +1,14 @@
 class_name GameManager extends Node
 
+signal game_ended(message: String)
+
 @onready var board = $"../Board"
 @onready var turn_system = $"../TurnSystem"
 
 @export var tile_deck_resource: TileDeck
 
 var tile_deck: TileDeck
+var game_ended_flag: bool = false
 
 func _ready() -> void:
 	_initialize_deck()
@@ -50,4 +53,8 @@ func _place_starting_tile() -> void:
 	board.place_tile(Vector2i.ZERO, tile_instance)
 	print("Starting tile placed.")
 
-
+## Game End
+func end_game(message: String) -> void:
+	game_ended_flag = true
+	game_ended.emit(message)
+	print("Game ended: %s" % message)
