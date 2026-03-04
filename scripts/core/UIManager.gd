@@ -3,6 +3,8 @@ class_name UIManager
 
 @onready var turn_system: TurnSystem = $"../../TurnSystem"
 @onready var game_manager = $"../../GameManager"
+@onready var score_manager = $"../../ScoreManager"
+@onready var score_label : Label = $"ScoreLabel"
 @onready var turn_label: Label = $TurnLabel
 @onready var deck_label: Label = $DeckLabel
 @onready var game_over_label: Label = $GameOverLabel
@@ -27,6 +29,9 @@ func _ready() -> void:
 			_update_deck_display()
 		game_manager.game_ended.connect(_on_game_ended)
 
+	if score_label:
+		score_manager.score_updated.connect(_on_score_changed)
+
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	turn_label.text = "Turn: %s" % player_name
 	_update_turn_color(player_index)
@@ -48,3 +53,7 @@ func _on_game_ended(message: String) -> void:
 	game_over_label.text = message
 	game_over_label.visible = true
 	print("Game Over UI Updated: %s" % message)
+
+func _on_score_changed() -> void :
+	if score_manager:
+		score_label.text = score_manager.get_all_scores_text()

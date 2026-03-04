@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://bhc24iana05ko"]
+[gd_scene load_steps=9 format=3 uid="uid://bhc24iana05ko"]
 
 [ext_resource type="Script" uid="uid://b0kali0tyw2vh" path="res://scripts/core/board.gd" id="1_nha0i"]
 [ext_resource type="Script" uid="uid://cn0pahhi58djk" path="res://scripts/camera_control.gd" id="1_u1xfj"]
+[ext_resource type="Script" uid="uid://bd53wgaaabmen" path="res://scripts/feature_system/ScoreManager.gd" id="1_yyfjg"]
 [ext_resource type="PackedScene" uid="uid://c2eaduakgdpp1" path="res://scenes/tile/tile.tscn" id="2_tile"]
 [ext_resource type="Script" uid="uid://btuilk5cm3t1k" path="res://scripts/core/TurnSystem.gd" id="3_k2fmo"]
 [ext_resource type="Script" uid="uid://cxgm7k2pf4qh1" path="res://scripts/core/GameManager.gd" id="4_l3cfh"]
@@ -9,6 +10,9 @@
 [ext_resource type="Script" uid="uid://32bpxtinsc84" path="res://scripts/core/UIManager.gd" id="6_ui_manager"]
 
 [node name="Main" type="Node2D"]
+
+[node name="ScoreManager" type="Node" parent="."]
+script = ExtResource("1_yyfjg")
 
 [node name="TurnSystem" type="Node" parent="."]
 script = ExtResource("3_k2fmo")
@@ -49,3 +53,10 @@ layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
 theme_override_font_sizes/font_size = 36
+
+[node name="ScoreLabel" type="Label" parent="UI/UIPanel"]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 101.0
+offset_right = 101.0
+offset_bottom = 147.0

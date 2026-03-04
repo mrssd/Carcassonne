@@ -15,6 +15,7 @@ var game_active: bool = false
 
 @onready var board: Board = $"../Board"
 @onready var game_manager: GameManager = $"../GameManager"
+@onready var score_manager: ScoreManager = $"../ScoreManager"
 var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
 
