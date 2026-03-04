@@ -4,52 +4,29 @@ class_name TileDeck extends Resource
 
 # resource array to be filled in the editor with tile data and number of copies for each tile type
 @export var tiles: Array[TileDeckEntry] = []
-# internal arrays to manage the draw and discard piles - initialized in load_deck_from_array
-var _draw_pile: Array[CarcassonneTileData]
-var _discard_pile: Array[CarcassonneTileData]
+# internal arrays to manage the draw and discard piles
+var _draw_pile: Array[CarcassonneTileData] = []
+var _discard_pile: Array[CarcassonneTileData] = []
 
 ## Call this once at game start to initialize the tile deck
 
 # to create a deck, simply follow the following initialization pattern:
 # var tile_deck: TileDeck = TileDeck.load_deck_from_resource("res://resources/tile_deck.tres")
 static func load_deck_from_resource(path: String) -> TileDeck:
-	var deck: TileDeck = load(path)
-	if deck == null:
-		push_error("TileDeck: Failed to load deck from path: " + path)
-		return null
+	var deck: TileDeck = load(path) 
 	return deck.load_deck_from_array(deck.tiles)
 
 func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
-	# Always create fresh arrays to avoid shared reference issues with Resources
-	_draw_pile = []
-	_discard_pile = []
-	
-	if tile_resources.is_empty():
-		push_error("TileDeck: tile_resources array is empty!")
-		return self
-	
+	_draw_pile.clear()
+	_discard_pile.clear()
 	for i in range(tile_resources.size() - 1):
-		var single_tile_entry: TileDeckEntry = tile_resources[i]
-		if single_tile_entry == null:
-			push_warning("TileDeck: tile_resources[%d] is null, skipping" % i)
-			continue
-		if single_tile_entry.carcassone_tile_data == null:
-			push_warning("TileDeck: tile_resources[%d].carcassone_tile_data is null, skipping" % i)
-			continue
+		var single_tile_entry : TileDeckEntry = tile_resources[i]
 		for j in range(single_tile_entry.number_of_copies):
 			_draw_pile.append(single_tile_entry.carcassone_tile_data.duplicate(true))
-	
 	_draw_pile.shuffle()
-	
 	# add the starting tile on top of the pile
 	# starting tile should always come last in the TileDeck resource file
-	var starting_entry: TileDeckEntry = tile_resources[-1]
-	if starting_entry != null and starting_entry.carcassone_tile_data != null:
-		_draw_pile.append(starting_entry.carcassone_tile_data.duplicate(true))
-	else:
-		push_error("TileDeck: Starting tile (last entry) is null or has no tile data!")
-	
-	print("TileDeck initialized with %d tiles" % _draw_pile.size())
+	_draw_pile.append(tile_resources[-1].carcassone_tile_data)
 	return self
 
 ## Most useful class methods
