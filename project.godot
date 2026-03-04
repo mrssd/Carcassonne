@@ -11,9 +11,16 @@ config_version=5
 [application]
 
 config/name="Carcassonne"
-run/main_scene="uid://bhc24iana05ko"
+run/main_scene="uid://cn67kc23kbn2c"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [input]
 
