@@ -12,15 +12,8 @@ var phase := TurnPhase.DRAW_TILE
 var game_active : bool = false
 
 @onready var board: Board = $"../Board"
-@export var tile_deck_resource: TileDeck   # your deck resource
-var tile_deck: TileDeck
+var tile_deck: TileDeck  
 var current_drawn_tile: Tile = null
-
-func _ready() -> void:
-	if tile_deck_resource:
-		tile_deck = tile_deck_resource
-	else:
-		push_error("TurnSystem: tile_deck_resource not set!")
 
 func get_current_player() -> String:
 	return players[current_player_index]
@@ -37,7 +30,8 @@ func draw_tile() -> void:
 	
 	var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
 	if tile_data == null:
-		print("No more tiles to draw.")
+		print("No more tiles to draw. Game over!")
+		game_active = false
 		return
 	
 	# instance tile

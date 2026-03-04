@@ -50,8 +50,3 @@ func _place_starting_tile() -> void:
 	print("Starting tile placed.")
 
 
-
-## Turn management - delegates to TurnSystem
-func end_turn() -> void:
-	if turn_system:
-		turn_system.end_turn()
