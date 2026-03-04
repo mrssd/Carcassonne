@@ -22,6 +22,7 @@ func start_game():
 		_initialize_deck()
 
 	_place_starting_tile()
+	
 
 	if turn_system:
 		turn_system.tile_deck = tile_deck

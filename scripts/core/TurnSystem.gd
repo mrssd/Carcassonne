@@ -41,6 +41,7 @@ func draw_tile() -> void:
 	board.current_tile = tile_instance
 	
 	phase = TurnPhase.PLACE_TILE
+	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
 
