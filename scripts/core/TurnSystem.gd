@@ -15,9 +15,10 @@ var game_active: bool = false
 
 @onready var board: Board = $"../Board"
 @onready var game_manager: GameManager = $"../GameManager"
-@onready var score_manager: ScoreManager = $"../ScoreManager"
+
 var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
+const ScoringSystemScript = preload("res://scripts/feature_system/ScoringSystem.gd")
 
 func get_current_player() -> String:
 	return players[current_player_index]
@@ -42,7 +43,8 @@ func draw_tile() -> void:
 	
 	# instance tile
 	var tile_instance: Tile = board.tile_scene.instantiate()
-	tile_instance.tile_data = tile_data
+	# duplicate tile data resource so runtime rotations/mutations don't affect other instances
+	tile_instance.tile_data = tile_data.duplicate(true)
 	board.add_child(tile_instance)
 	board.current_tile = tile_instance
 	
@@ -64,6 +66,9 @@ func on_tile_placed() -> void:
 	
 	if board.can_place(cell, board.current_tile):
 		board.place_tile(cell, board.current_tile)
+		# run scoring evaluation (ScoringSystem will forward awarded points to ScoreManager)
+		var ss = ScoringSystemScript.new()
+		ss.score_and_apply(board, cell, current_player_index)
 		board.current_tile = null
 		end_turn()
 	else:
