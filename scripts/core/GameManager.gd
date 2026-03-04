@@ -13,8 +13,9 @@ func _ready() -> void:
 	
 ## Initialize deck
 func _initialize_deck() -> void:
-	if tile_deck_resource:
-		tile_deck = TileDeck.load_deck_from_resource("res://resources/tile_deck.tres")
+	tile_deck = TileDeck.load_deck_from_resource("res://resources/tile_deck.tres")
+	if tile_deck == null:
+		push_error("GameManager: Failed to initialize tile deck!")
 
 ## Game
 func start_game():
