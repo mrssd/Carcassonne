@@ -22,7 +22,7 @@ static func load_deck_from_resource(path: String) -> TileDeck:
 func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
 	_draw_pile.clear()
 	_discard_pile.clear()
-	for i in range(5 - 1): # tile_resources.size()
+	for i in range(tile_resources.size() - 1):
 		var single_tile_entry: TileDeckEntry = tile_resources[i]
 		for j in range(single_tile_entry.number_of_copies):
 			_draw_pile.append(single_tile_entry.carcassone_tile_data.duplicate(true))

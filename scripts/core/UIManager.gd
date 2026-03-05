@@ -3,9 +3,9 @@ class_name UIManager
 
 @onready var turn_system: TurnSystem = $"../../TurnSystem"
 @onready var game_manager = $"../../GameManager"
-@onready var turn_label: Label = $TurnLabel
-@onready var deck_label: Label = $DeckLabel
-@onready var game_over_label: Label = $GameOverLabel
+@onready var turn_label: Label = $VBoxContainer/CurrentAction/VBoxContainer/TurnLabel
+@onready var deck_label: Label = $VBoxContainer/Information/VBoxContainer/DeckLabel
+@onready var game_over_label: Label = $VBoxContainer/Information/VBoxContainer/GameOverLabel
 
 # Color for each player
 var player_colors = [
