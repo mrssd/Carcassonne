@@ -27,6 +27,8 @@ func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
 		for j in range(single_tile_entry.number_of_copies):
 			_draw_pile.append(single_tile_entry.carcassone_tile_data.duplicate(true))
 	_draw_pile.shuffle()
+	_draw_pile.shuffle()
+	_draw_pile.shuffle()
 	# add the starting tile on top of the pile
 	# starting tile should always come last in the TileDeck resource file
 	_draw_pile.append(tile_resources[-1].carcassone_tile_data)
