@@ -9,6 +9,13 @@
 [ext_resource type="Resource" uid="uid://dlqwuvyh115re" path="res://resources/tile_deck.tres" id="5_deck"]
 [ext_resource type="Script" uid="uid://32bpxtinsc84" path="res://scripts/core/UIManager.gd" id="6_ui_manager"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sjxhf"]
+bg_color = Color(0.19937146, 0, 0.025205376, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
 [node name="Main" type="Node2D"]
 
 [node name="ScoreManager" type="Node" parent="."]
@@ -33,30 +40,102 @@ tile_deck_resource = ExtResource("5_deck")
 
 [node name="UIPanel" type="Control" parent="UI"]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 4
 script = ExtResource("6_ui_manager")
 
-[node name="TurnLabel" type="Label" parent="UI/UIPanel"]
-layout_mode = 0
-theme_override_font_sizes/font_size = 30
-text = "Turn: Player 1"
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -380.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_constants/separation = 4
 
-[node name="DeckLabel" type="Label" parent="UI/UIPanel"]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 50.0
+[node name="Information" type="Panel" parent="UI/UIPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer/Information"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 45.0
+offset_top = -43.5
+offset_right = 244.0
+offset_bottom = 43.5
+grow_vertical = 2
+
+[node name="PanelTitle" type="Label" parent="UI/UIPanel/VBoxContainer/Information/VBoxContainer"]
+layout_mode = 2
+text = "Info:"
+
+[node name="DeckLabel" type="Label" parent="UI/UIPanel/VBoxContainer/Information/VBoxContainer"]
+layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Tiles: 72"
 
-[node name="GameOverLabel" type="Label" parent="UI/UIPanel"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-theme_override_font_sizes/font_size = 36
+[node name="GameOverLabel" type="Label" parent="UI/UIPanel/VBoxContainer/Information/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
 
-[node name="ScoreLabel" type="Label" parent="UI/UIPanel"]
-layout_mode = 0
-offset_left = 5.0
-offset_top = 101.0
-offset_right = 101.0
-offset_bottom = 147.0
+[node name="Scoreboard" type="Panel" parent="UI/UIPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer/Scoreboard"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 46.0
+offset_top = -64.0
+offset_right = 245.0
+offset_bottom = 64.0
+grow_vertical = 2
+
+[node name="PanelTitle" type="Label" parent="UI/UIPanel/VBoxContainer/Scoreboard/VBoxContainer"]
+layout_mode = 2
+text = "ScoreBoard: "
+
+[node name="ScoreLabel" type="Label" parent="UI/UIPanel/VBoxContainer/Scoreboard/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+
+[node name="CurrentAction" type="Panel" parent="UI/UIPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer/CurrentAction"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 46.0
+offset_top = -64.0
+offset_right = 245.0
+offset_bottom = 64.0
+grow_vertical = 2
+
+[node name="PanelTitle" type="Label" parent="UI/UIPanel/VBoxContainer/CurrentAction/VBoxContainer"]
+layout_mode = 2
+text = "Action:"
+
+[node name="TurnLabel" type="Label" parent="UI/UIPanel/VBoxContainer/CurrentAction/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Turn: Player 1"

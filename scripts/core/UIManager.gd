@@ -4,10 +4,10 @@ class_name UIManager
 @onready var turn_system: TurnSystem = $"../../TurnSystem"
 @onready var game_manager = $"../../GameManager"
 @onready var score_manager = $"../../ScoreManager"
-@onready var score_label : Label = $"ScoreLabel"
-@onready var turn_label: Label = $TurnLabel
-@onready var deck_label: Label = $DeckLabel
-@onready var game_over_label: Label = $GameOverLabel
+@onready var score_label: Label = $"ScoreLabel"
+@onready var turn_label: Label = $VBoxContainer/CurrentAction/VBoxContainer/TurnLabel
+@onready var deck_label: Label = $VBoxContainer/Information/VBoxContainer/DeckLabel
+@onready var game_over_label: Label = $VBoxContainer/Information/VBoxContainer/GameOverLabel
 
 # Color for each player
 var player_colors = [
@@ -54,6 +54,6 @@ func _on_game_ended(message: String) -> void:
 	game_over_label.visible = true
 	print("Game Over UI Updated: %s" % message)
 
-func _on_score_changed() -> void :
+func _on_score_changed() -> void:
 	if score_manager:
 		score_label.text = score_manager.get_all_scores_text()
