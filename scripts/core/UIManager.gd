@@ -32,7 +32,7 @@ func _ready() -> void:
 	if score_label and score_manager:
 		score_manager.score_updated.connect(_on_score_changed)
 		# Set initial score display
-		_on_score_changed(0, 0)
+		_on_score_changed()
 
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	turn_label.text = "Turn: %s" % player_name
@@ -56,6 +56,6 @@ func _on_game_ended(message: String) -> void:
 	game_over_label.visible = true
 	print("Game Over UI Updated: %s" % message)
 
-func _on_score_changed(player_index: int, new_score: int) -> void:
+func _on_score_changed() -> void:
 	if score_manager:
 		score_label.text = score_manager.get_all_scores_text()

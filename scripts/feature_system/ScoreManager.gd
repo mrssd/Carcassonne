@@ -15,24 +15,13 @@ func _ready() -> void:
         scores.fill(0)
 
 #Adds score to player
-func add_score(player_index : int, points_added : int, feature: String = "") -> void:
+func add_score(player_index : int, points_added : int) -> void:
     # ensure valid index
     if player_index < 0:
         return
-    if player_index >= scores.size():
-        # expand scores to accommodate
-        scores.resize(player_index + 1)
-        for i in range(scores.size()):
-            if scores[i] == null:
-                scores[i] = 0
+
     scores[player_index] += points_added
     score_updated.emit(player_index, scores[player_index])
-    # Print a concise one-liner when points are added (shows awarded points and new total)
-    # If a feature label is provided, include it in the message for clarity.
-    if feature != "":
-        print("Player %d scored %d (total %d) by completing %s" % [player_index + 1, points_added, scores[player_index], feature])
-    else:
-        print("Player %d scored %d (total %d)" % [player_index + 1, points_added, scores[player_index]])
 
 #Gets score of player
 func get_score(player_index : int) -> int :

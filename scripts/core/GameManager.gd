@@ -17,16 +17,16 @@ func _ready() -> void:
 ## Initialize deck
 func _initialize_deck() -> void:
 	if tile_deck_resource:
+		tile_deck = TileDeck.load_deck_from_resource(tile_deck_resource.resource_path)
+	else:
 		tile_deck = TileDeck.load_deck_from_resource("res://resources/tile_deck.tres")
 
 ## Game
 func start_game():
 	if tile_deck == null:
 		_initialize_deck()
-
+	print("tile_deck before assignment:", tile_deck)
 	_place_starting_tile()
-	
-
 	if turn_system:
 		turn_system.tile_deck = tile_deck
 		turn_system.game_active = true

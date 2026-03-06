@@ -13,12 +13,12 @@ var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
 var game_active: bool = false
 
-@onready var board: Board = $"../Board"
-@onready var game_manager: GameManager = $"../GameManager"
+@onready var board = $"../Board"
+@onready var game_manager = $"../GameManager"
+@onready var score_system = $"../ScoreSystem"
 
 var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
-const ScoringSystemScript = preload("res://scripts/feature_system/ScoringSystem.gd")
 
 func get_current_player() -> String:
 	return players[current_player_index]
@@ -66,9 +66,7 @@ func on_tile_placed() -> void:
 	
 	if board.can_place(cell, board.current_tile):
 		board.place_tile(cell, board.current_tile)
-		# run scoring evaluation (ScoringSystem will forward awarded points to ScoreManager)
-		var ss = ScoringSystemScript.new()
-		ss.score_and_apply(board, cell, current_player_index)
+		score_system.score_and_apply(board, cell, current_player_index)
 		board.current_tile = null
 		end_turn()
 	else:

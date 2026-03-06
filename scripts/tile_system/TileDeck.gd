@@ -3,38 +3,31 @@ class_name TileDeck extends Resource
 ## Signals
 signal deck_changed
 
-## Class variables
-
-# resource array to be filled in the editor with tile data and number of copies for each tile type
 @export var tiles: Array[TileDeckEntry] = []
-# internal arrays to manage the draw and discard piles
 var _draw_pile: Array[CarcassonneTileData] = []
 var _discard_pile: Array[CarcassonneTileData] = []
 
-## Call this once at game start to initialize the tile deck
-
-# to create a deck, simply follow the following initialization pattern:
-# var tile_deck: TileDeck = TileDeck.load_deck_from_resource("res://resources/tile_deck.tres")
 static func load_deck_from_resource(path: String) -> TileDeck:
 	var deck: TileDeck = load(path)
 	return deck.load_deck_from_array(deck.tiles)
 
+
 func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
 	_draw_pile.clear()
 	_discard_pile.clear()
+	#Looping through every single tile
 	for i in range(tile_resources.size() - 1):
 		var single_tile_entry: TileDeckEntry = tile_resources[i]
+		#Creates copies of a tile based on number_of_copies
 		for j in range(single_tile_entry.number_of_copies):
 			_draw_pile.append(single_tile_entry.carcassone_tile_data.duplicate(true))
+			_draw_pile.back().apply_segment_data()
 	_draw_pile.shuffle()
-	_draw_pile.shuffle()
-	_draw_pile.shuffle()
-	# add the starting tile on top of the pile
-	# starting tile should always come last in the TileDeck resource file
-	_draw_pile.append(tile_resources[-1].carcassone_tile_data)
-	return self
 
-## Most useful class methods
+	#Starting tile
+	_draw_pile.append(tile_resources[-1].carcassone_tile_data)
+	_draw_pile.back().apply_segment_data()
+	return self
 
 # pops a tile from the draw pile and adds it to the discard pile, returns the drawn tile
 func draw_next_tile() -> CarcassonneTileData:

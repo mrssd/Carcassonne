@@ -17,6 +17,10 @@ enum Orientation {
 @export var name: String = "Unnamed Tile"
 @export var tile_texture: Texture2D = null
 
+#Variables for monestary and shield
+@export var is_monestary : bool;
+@export var has_shield: bool;
+
 ## Array for tile edges. Array indexing:
 # 0 - top
 # 1 - right
@@ -72,6 +76,70 @@ static func orientation_to_string(value: Orientation) -> String:
 		Orientation.BOTTOM: return "BOTTOM"
 		Orientation.LEFT: return "LEFT"
 		_: return "incorrect orientation"
+
+#Function to apply internal_connection data (calling from TileDeck.gd)
+func apply_segment_data():
+	match self.name:
+		"city4":
+			internal_connections = {"city_0": [0, 1, 2, 3]}
+			has_shield = true
+		"city3":
+			internal_connections = {"city_0": [0, 1, 3]}
+		"city3sr":
+			internal_connections = {"city_0": [0, 1, 3], "road_0": [2]}
+			has_shield = true
+		"city3s":
+			internal_connections = {"city_0": [0, 1, 3]}
+			has_shield = true
+		"city3r":
+			internal_connections = {"city_0": [0, 1, 3], "road_0": [2]}
+		"city2wes":
+			internal_connections = {"city_0": [1, 3]}
+			has_shield = true
+		"city2we":
+			internal_connections = {"city_0": [1, 3]}
+		"city2nwsr":
+			internal_connections = {"city_0": [0, 3], "road_0": [1, 2]}
+			has_shield = true
+		"city2nws":
+			internal_connections = {"city_0": [0, 3]}
+			has_shield = true
+		"city2nwr":
+			internal_connections = {"city_0": [0, 3], "road_0": [1, 2]}
+		"city2nw":
+			internal_connections = {"city_0": [0, 3]}
+		"city1rwe":
+			internal_connections = {"city_0": [0], "road_0": [1, 3]}
+		"city1rswe":
+			internal_connections = {"city_0": [0], "road_0": [1], "road_1": [2], "road_2": [3]}
+		"city1rsw":
+			internal_connections = {"city_0": [0], "road_0": [2, 3]}
+		"city1rse":
+			internal_connections = {"city_0": [0], "road_0": [1, 2]}
+		"city1":
+			internal_connections = {"city_0": [0]}
+		"city11ne":
+			internal_connections = {"city_0": [0], "city_1": [1]}
+		"city11we":
+			internal_connections = {"city_0": [1], "city_1":  [3]}
+		"cloister":
+			internal_connections = {}
+			is_monestary = true
+		"cloisterr":
+			internal_connections = {"road_0": [2]}
+			is_monestary = true
+		"start":
+			internal_connections = {"city_0": [0], "road_0": [1, 3]}
+		"road4":
+			internal_connections = {"road_0": [0], "road_1": [1], "road_2": [2], "road_3": [3]}
+		"road3":
+			internal_connections = {"road_1": [1], "road_2": [2], "road_3": [3]}
+		"road2sw":
+			internal_connections = {"road_0": [2, 3]}
+		"road2ns":
+			internal_connections = {"road_0": [0, 2]}
+		_:
+			push_warning("no segment data for tile '%s" % self.name)
 
 ## "private" functions
 func _rotate_edges_clockwise():
