@@ -30,6 +30,8 @@ func _ready() -> void:
 		game_manager.game_ended.connect(_on_game_ended)
 
 	if score_label and score_manager:
+		#debug temp
+		print("UIManager: connecting score_updated signal")
 		score_manager.score_updated.connect(_on_score_changed)
 		# Set initial score display
 		_on_score_changed()
@@ -56,6 +58,6 @@ func _on_game_ended(message: String) -> void:
 	game_over_label.visible = true
 	print("Game Over UI Updated: %s" % message)
 
-func _on_score_changed() -> void:
+func _on_score_changed(player_index := -1, new_score := -1) -> void:
 	if score_manager:
 		score_label.text = score_manager.get_all_scores_text()

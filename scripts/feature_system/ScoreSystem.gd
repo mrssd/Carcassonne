@@ -106,8 +106,8 @@ func score_and_apply(board, placed_cell, player_index):
                 points = explore_result["tiles"].size() * ROAD_POINTS_PER_TILE
             elif feature_type == "city":
                 points = explore_result["tiles"].size() * CITY_POINTS_PER_TILE + explore_result["shield_count"] * 2
+            print("ScoreSystem: awarding", points, "to player", player_index)
             score_manager.add_score(player_index, points)
-            print("Player %d scored %d for %s" % [player_index + 1, points, feature_type])
 
     _check_monasteries(board, placed_cell, player_index)
 

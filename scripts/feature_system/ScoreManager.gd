@@ -21,6 +21,8 @@ func add_score(player_index : int, points_added : int) -> void:
         return
 
     scores[player_index] += points_added
+    #debug temp
+    print("ScoreManager: add_score called for player", player_index, "new score:", scores[player_index])
     score_updated.emit(player_index, scores[player_index])
 
 #Gets score of player
@@ -36,4 +38,4 @@ func get_all_scores_text() -> String:
         if turn_system:
             result += "%s: %d\n" % [turn_system.players[i], scores[i]]
     return result
-    
+
