@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dvhln57s85oh8"]
+
+[ext_resource type="Script" uid="uid://cs57jta5acrua" path="res://scripts/meeple/Meeple.gd" id="1_hk3ne"]
+[ext_resource type="Texture2D" uid="uid://cqlpo8047kdot" path="res://assets/meeple/meepleTexture.png" id="2_vv21g"]
+
+[node name="Meeple" type="Node2D"]
+script = ExtResource("1_hk3ne")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("2_vv21g")
