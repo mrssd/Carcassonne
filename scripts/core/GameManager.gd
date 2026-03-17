@@ -29,15 +29,9 @@ func start_game():
 	if tile_deck == null:
 		_initialize_deck()
 	_place_starting_tile()
+	# Delegate player / turn initialization to TurnSystem
 	if turn_system:
-		turn_system.players = []
-		for i in range(player_count):
-			turn_system.players.append("Player %d" % (i + 1))
-		turn_system._init_meeples()
-		score_manager.init_scores(player_count)
-		turn_system.tile_deck = tile_deck
-		turn_system.game_active = true
-		turn_system.start_turn()
+		turn_system.start_game()
 
 ## First tile
 func _place_starting_tile() -> void:

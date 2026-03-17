@@ -32,8 +32,36 @@ var last_placed_tile: Tile = null
 var last_placed_cell: Vector2i = Vector2i.ZERO
 
 func _ready() -> void:
-	_init_meeples()
 	score_system.meeple_returned.connect(_on_meeple_returned)
+
+
+func start_game() -> void:
+	# Initialize players and meeples, wire score manager and deck, then start the first turn.
+	players.clear()
+	for i in range(GameManager.player_count):
+		players.append("Player %d" % (i + 1))
+
+	# initialize meeples per player
+	_init_meeples()
+
+	# init score manager (if present)
+	var sm = get_node_or_null("../ScoreManager")
+	if sm != null:
+		sm.init_scores(GameManager.player_count)
+	elif game_manager != null and game_manager.score_manager != null:
+		# fallback to GameManager's score_manager if present
+		game_manager.score_manager.init_scores(GameManager.player_count)
+	else:
+		push_warning("TurnSystem.start_game: ScoreManager not found, skipping score initialization.")
+
+	# wire the deck from GameManager if available
+	if game_manager != null and game_manager.tile_deck != null:
+		tile_deck = game_manager.tile_deck
+	else:
+		push_error("TurnSystem.start_game: tile_deck not available on GameManager")
+
+	game_active = true
+	start_turn()
 
 func _on_meeple_returned(player_index: int) -> void:
 	if player_index >= 0 and player_index < remaining_meeples.size():
@@ -42,7 +70,7 @@ func _on_meeple_returned(player_index: int) -> void:
 
 func _init_meeples() -> void:
 	remaining_meeples.clear()
-	for i in players.size():
+	for i in range(players.size()):
 		remaining_meeples.append(meeples_per_player)
 
 func get_current_player() -> String:
