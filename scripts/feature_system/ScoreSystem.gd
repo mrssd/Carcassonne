@@ -175,4 +175,3 @@ func _return_meeples(board, cells: Array) -> void:
 			tile.meeple.remove()
 			tile.meeple = null
 			meeple_returned.emit(owner)
-			print("Meeple returned to player %d" % (owner + 1))

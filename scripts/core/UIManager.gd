@@ -30,8 +30,6 @@ func _ready() -> void:
 		game_manager.game_ended.connect(_on_game_ended)
 
 	if score_label and score_manager:
-		#debug temp
-		print("UIManager: connecting score_updated signal")
 		score_manager.score_updated.connect(_on_score_changed)
 		# Set initial score display
 		_on_score_changed()
@@ -39,7 +37,6 @@ func _ready() -> void:
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	turn_label.text = "Turn: %s" % player_name
 	_update_turn_color(player_index)
-	print("UI Updated: %s" % player_name)
 
 func _update_turn_color(player_index: int) -> void:
 	if player_index < player_colors.size():
@@ -56,7 +53,6 @@ func _update_deck_display() -> void:
 func _on_game_ended(message: String) -> void:
 	game_over_label.text = message
 	game_over_label.visible = true
-	print("Game Over UI Updated: %s" % message)
 
 func _on_score_changed(player_index := -1, new_score := -1) -> void:
 	if score_manager:

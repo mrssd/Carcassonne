@@ -25,20 +25,18 @@ func _initialize_deck() -> void:
 func start_game():
 	if tile_deck == null:
 		_initialize_deck()
-	print("tile_deck before assignment:", tile_deck)
 	_place_starting_tile()
 	if turn_system:
 		turn_system.tile_deck = tile_deck
 		turn_system.game_active = true
 		turn_system.start_turn()
-		print("Game started with %d players" % turn_system.players.size())
 
 ## First tile
 func _place_starting_tile() -> void:
 	if board == null or tile_deck == null:
 		return
 	if board.tile_scene == null:
-		print("Board.tile_scene not set!")
+		push_error("Board.tile_scene not set!")
 		return
 
 	var starting_tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
@@ -50,7 +48,6 @@ func _place_starting_tile() -> void:
 	tile_instance.tile_data = starting_tile_data
 	board.add_child(tile_instance)
 	board.place_tile(Vector2i.ZERO, tile_instance)
-	print("Starting tile placed.")
 
 ## Game End
 func end_game(message: String) -> void:

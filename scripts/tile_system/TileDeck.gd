@@ -65,11 +65,4 @@ func get_discard_pile_size() -> int:
 
 ## Debugging function
 func print_draw_pile() -> void:
-	print("Size of the draw pile: ", get_draw_pile_size())
-	print("Size of the discard pile: ", get_discard_pile_size())
-	#print("Content of the _draw_pile:")
-	#var i:int = 0
-	#for tile in _draw_pile:
-		#print(" > #", i)
-		#i += 1
-		#tile.print_debug()
+	pass
