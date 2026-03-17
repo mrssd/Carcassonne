@@ -6,6 +6,10 @@ const CELL_SIZE: int = 96
 
 var placed_tiles := {}
 var current_tile: Tile # NEED TO MATCH IN TILE SCRIPT
+# Hover/transparency config
+@export var hover_placed_alpha: float = 1.0 # placed tile value
+@export var hover_current_alpha: float = 0.40 # tile in hand value
+var _hover_cell = null
 
 func coord_to_index(world_coord: Vector2) -> Vector2i:
 	return Vector2i(round(world_coord.x / CELL_SIZE), round(world_coord.y / CELL_SIZE))
@@ -22,9 +26,46 @@ func _process(_dt):
 		return
 	current_tile.position = snap_to_grid(get_global_mouse_position())
 
+	# Determine if we're hovering over an already placed tile cell
+	var cell: Vector2i = coord_to_index(current_tile.position)
+	if placed_tiles.has(cell):
+		_set_hover_transparency(cell)
+	else:
+		_clear_hover_transparency()
+
 func place_tile(cell: Vector2i, tile: Tile): # NEED TO MATCH IN TILE SCRIPT
 	tile.position = index_to_coord(cell)
+	# ensure tile placed has full opacity
+	tile.modulate = Color(1, 1, 1, 1)
 	placed_tiles[cell] = tile
+	# clear hover state when placing
+	_clear_hover_transparency()
+
+
+func _set_hover_transparency(cell: Vector2i) -> void:
+	# If already hovering same cell, noop
+	if _hover_cell == cell:
+		return
+	# Clear previous hover first
+	_clear_hover_transparency()
+	if not placed_tiles.has(cell):
+		return
+	var placed_tile: Tile = placed_tiles[cell]
+	if placed_tile != null:
+		placed_tile.modulate = Color(1, 1, 1, hover_placed_alpha)
+	if current_tile != null:	
+		current_tile.modulate = Color(1, 0.35, 0.35, hover_current_alpha) # RGB value for tile in hand
+	_hover_cell = cell
+
+
+func _clear_hover_transparency() -> void:
+	if _hover_cell != null and placed_tiles.has(_hover_cell):
+		var prev_tile: Tile = placed_tiles[_hover_cell]
+		if prev_tile != null:
+			prev_tile.modulate = Color(1, 1, 1, 1)
+	_hover_cell = null
+	if current_tile != null:
+		current_tile.modulate = Color(1, 1, 1, 1)
 
 func can_place(cell: Vector2i, tile: Tile) -> bool:
 	if placed_tiles.size() == 0:
