@@ -129,7 +129,7 @@ func _check_monasteries(board, placed_cell, player_index):
 		if not board.placed_tiles.has(cell):
 			continue
 		var tile = board.placed_tiles[cell]
-		if tile.tile_data.is_monestary:
+		if tile.tile_data.is_monastery:
 			var surrounding_count = 0
 			for offset in offsets:
 				var neighbor = cell + offset

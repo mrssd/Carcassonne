@@ -18,7 +18,7 @@ enum Orientation {
 @export var tile_texture: Texture2D = null
 
 #Variables for monestary and shield
-@export var is_monestary : bool;
+@export var is_monastery : bool;
 @export var has_shield: bool;
 
 ## Array for tile edges. Array indexing:
@@ -37,6 +37,12 @@ enum Orientation {
 # should be implemented together with scoring
 @export var internal_connections: Dictionary = {}
 
+## Dictionary holding positions for possible meeple placement
+# Vector2i holds the position relatively to the CENTER of the tile
+# x and y variables are in the range between -2 and 2
+# (0,0) is the coordinate of the center
+@export var meeple_positions: Dictionary[Vector2i, PropertyType] = {}
+
 ## "public" functions
 func rotate_clockwise():
 	var tmp = edge[0]
@@ -44,7 +50,8 @@ func rotate_clockwise():
 	edge[3] = edge[2]
 	edge[2] = edge[1]
 	edge[1] = tmp
-	_rotate_edges_clockwise()
+	_rotate_internal_connections_clockwise()
+	_rotate_meeple_positions_clockwise()
 
 func rotate_counter_clockwise():
 	var tmp = edge[0]
@@ -52,7 +59,8 @@ func rotate_counter_clockwise():
 	edge[1] = edge[2]
 	edge[2] = edge[3]
 	edge[3] = tmp
-	_rotate_edges_counter_clockwise()
+	_rotate_internal_connections_counter_clockwise()
+	_rotate_meeple_positions_counter_clockwise()
 
 func print_debug() -> void:
 	print("Tile name: ", name)
@@ -124,10 +132,10 @@ func apply_segment_data():
 			internal_connections = {"city_0": [1], "city_1":  [3]}
 		"cloister":
 			internal_connections = {}
-			is_monestary = true
+			is_monastery = true
 		"cloisterr":
 			internal_connections = {"road_0": [2]}
-			is_monestary = true
+			is_monastery = true
 		"start":
 			internal_connections = {"city_0": [0], "road_0": [1, 3]}
 		"road4":
@@ -142,14 +150,32 @@ func apply_segment_data():
 			push_warning("no segment data for tile '%s" % self.name)
 
 ## "private" functions
-func _rotate_edges_clockwise():
+func _rotate_internal_connections_clockwise():
 	for key in internal_connections:
 		var edges: Array = internal_connections[key]
 		for i in range(edges.size()):
 			edges[i] = (edges[i] + 1) % 4
 
-func _rotate_edges_counter_clockwise():
+func _rotate_internal_connections_counter_clockwise():
 	for key in internal_connections:
 		var edges: Array = internal_connections[key]
 		for i in range(edges.size()):
 			edges[i] = (edges[i] - 1 + 4) % 4
+
+func _rotate_meeple_positions_clockwise() -> void:
+	var temp_dictionary: Dictionary[Vector2i, PropertyType] = {}
+	for key in meeple_positions.keys() :
+		var value : PropertyType = meeple_positions[key]
+		var new_key = Vector2i(key.y, - key.x)
+		temp_dictionary[new_key] = value
+	meeple_positions = temp_dictionary
+	
+func _rotate_meeple_positions_counter_clockwise() -> void:
+	var temp_dictionary: Dictionary[Vector2i, PropertyType] = {}
+	for key in meeple_positions.keys() :
+		var value : PropertyType = meeple_positions[key]
+		var new_key = Vector2i(-key.y, key.x)
+		temp_dictionary[new_key] = value
+	meeple_positions = temp_dictionary
+		
+	
