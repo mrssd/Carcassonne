@@ -32,6 +32,12 @@ var last_placed_cell: Vector2i = Vector2i.ZERO
 
 func _ready() -> void:
 	_init_meeples()
+	score_system.meeple_returned.connect(_on_meeple_returned)
+
+func _on_meeple_returned(player_index: int) -> void:
+	if player_index >= 0 and player_index < remaining_meeples.size():
+		remaining_meeples[player_index] += 1
+		print("%s meeple returned (%d remaining)" % [players[player_index], remaining_meeples[player_index]])
 
 func _init_meeples() -> void:
 	remaining_meeples.clear()
@@ -119,6 +125,9 @@ func place_meeple(world_click: Vector2) -> void:
 	var target_tile: Tile = board.placed_tiles[clicked_cell]
 	if not target_tile.can_place_meeple():
 		print("That tile already has a meeple.")
+		return
+	if score_system.is_feature_claimed(board, clicked_cell):
+		print("This feature is already claimed by another meeple.")
 		return
 	if remaining_meeples[current_player_index] <= 0:
 		print("No meeples remaining for", get_current_player())

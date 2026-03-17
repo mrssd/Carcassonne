@@ -1,5 +1,7 @@
 class_name ScoreSystem extends Node
 
+signal meeple_returned(player_index: int)
+
 @onready var score_manager : ScoreManager = $"../ScoreManager"
 @onready var game_manager = $"../GameManager"
 
@@ -108,6 +110,7 @@ func score_and_apply(board, placed_cell, player_index):
 			elif feature_type == "city":
 				points = explore_result["tiles"].size() * CITY_POINTS_PER_TILE + explore_result["shield_count"] * 2
 			score_manager.add_score(player_index, points)
+			_return_meeples(board, explore_result["tiles"])
 
 	_check_monasteries(board, placed_cell, player_index)
 
@@ -140,3 +143,36 @@ func _check_monasteries(board, placed_cell, player_index):
 				if not _scored_features.has(mkey):
 					_scored_features[mkey] = true
 					score_manager.add_score(player_index, MONASTERY_COMPLETE_POINTS)
+					_return_meeples(board, [cell])
+
+
+func is_feature_claimed(board, cell: Vector2i) -> bool:
+	var tile = board.placed_tiles[cell]
+	if tile == null:
+		return false
+
+	for segment_key in tile.tile_data.internal_connections.keys():
+		var feature_type = _get_feature_type(segment_key, tile.tile_data)
+		if feature_type == "other":
+			continue
+		var explore_result = _explore_segment(board, cell, segment_key)
+		for feature_cell in explore_result["tiles"]:
+			var feature_tile = board.placed_tiles[feature_cell]
+			if feature_tile.meeple != null:
+				return true
+
+	if tile.tile_data.is_monestary and tile.meeple != null:
+		return true
+
+	return false
+
+
+func _return_meeples(board, cells: Array) -> void:
+	for cell in cells:
+		var tile = board.placed_tiles[cell]
+		if tile.meeple != null:
+			var owner = tile.meeple.owner_index
+			tile.meeple.remove()
+			tile.meeple = null
+			meeple_returned.emit(owner)
+			print("Meeple returned to player %d" % (owner + 1))
