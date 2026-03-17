@@ -2,6 +2,7 @@ extends Node
 class_name TurnSystem
 
 signal turn_changed(player_name: String, player_index: int)
+signal phase_changed(phase: int)
 
 enum TurnPhase {
 	DRAW_TILE,
@@ -77,6 +78,7 @@ func draw_tile() -> void:
 	show_possible_placements(valid_placements)
 	
 	phase = TurnPhase.PLACE_TILE
+	phase_changed.emit(phase)
 	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
@@ -113,7 +115,7 @@ func on_tile_placed() -> void:
 		show_possible_placements([])
 		score_system.score_and_apply(board, cell, current_player_index)
 		phase = TurnPhase.PLACE_MEEPLE
-		print("Tile placed. Left-click on this tile to place meeple, or press S to skip.")
+		phase_changed.emit(phase)
 	else:
 		print("Cannot place tile here – invalid placement.")
 
