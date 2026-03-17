@@ -3,7 +3,7 @@ extends Node2D
 class_name Meeple
 
 var owner_index: int = -1 # Player index
-var player_colors: Array = [Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW]
+var player_colors: Array = [Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.ORANGE] # Matched with UI player colors
 var placed: bool = false
 var feature_name: String = "" # Feature where meeple is placed
 
