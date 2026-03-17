@@ -48,3 +48,28 @@ func can_place(cell: Vector2i, tile: Tile) -> bool:
 				return false
 	
 	return has_neighbor
+
+#Function i get akk valid placement for current tile
+func get_all_valid_placement(tile: Tile) -> Array:
+	if tile == null:
+		push_error("Tile is null in get_all_valid_placement!")
+		return []
+	var valid = []
+	var neighbor_directions: Array = [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
+	var checked = {}
+
+	#loop through all placed tiles
+	for cell in placed_tiles.keys():
+		#4 direction
+		for direction in neighbor_directions:
+			var empty_cell = cell + direction
+			if placed_tiles.has(empty_cell) or checked.has(empty_cell):
+				continue
+			checked[empty_cell] = true
+			for rot in range(4):
+				var test_tile = tile.duplicate() 
+				test_tile.rotation_count = rot
+				if can_place(empty_cell, test_tile):
+					valid.append({ "cell": empty_cell, "rotation": rot })
+
+	return valid

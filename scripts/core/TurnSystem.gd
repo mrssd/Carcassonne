@@ -15,8 +15,11 @@ var phase := TurnPhase.DRAW_TILE
 var game_active: bool = false
 
 const MEEPLE_SCENE: PackedScene = preload("res://scenes/meeple/Meeple.tscn")
+const HIGHLIGHT_SCENE = preload("res://scenes/highlight/Highlight.tscn")
+
 var meeples_per_player: int = 7
 var remaining_meeples: Array = []
+var highlight_nodes := []
 
 @onready var board = $"../Board"
 @onready var game_manager = $"../GameManager"
@@ -42,6 +45,8 @@ func start_turn() -> void:
 	print("Turn started:", get_current_player())
 	turn_changed.emit(get_current_player(), current_player_index)
 	phase = TurnPhase.DRAW_TILE
+	var valid_placements = board.get_all_valid_placement(current_drawn_tile)
+	show_possible_placements(valid_placements)
 	draw_tile()
 
 func draw_tile() -> void:
@@ -62,11 +67,28 @@ func draw_tile() -> void:
 	tile_instance.tile_data = tile_data.duplicate(true)
 	board.add_child(tile_instance)
 	board.current_tile = tile_instance
+	current_drawn_tile = tile_instance
+
+	var valid_placements = board.get_all_valid_placement(current_drawn_tile)
+	show_possible_placements(valid_placements)
 	
 	phase = TurnPhase.PLACE_TILE
 	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
+
+
+func show_possible_placements(valid_placements):
+		#refresh the highlighted nodes
+		for node in highlight_nodes:
+			node.queue_free()
+		highlight_nodes.clear()
+		#new highlight
+		for placement in valid_placements:
+			var highlight = HIGHLIGHT_SCENE.instantiate()
+			highlight.position = board.index_to_coord(placement["cell"])
+			add_child(highlight)
+			highlight_nodes.append(highlight)
 
 func on_tile_placed() -> void:
 	if not game_active:
@@ -138,9 +160,13 @@ func _input(event) -> void:
 				on_tile_placed()
 			elif event.button_index == MOUSE_BUTTON_RIGHT:
 				board.current_tile.rotate_clockwise()
+			var valid_placements = board.get_all_valid_placement(current_drawn_tile)
+			show_possible_placements(valid_placements)
 		elif event is InputEventKey and event.pressed:
 			if event.keycode == KEY_Q:
 				board.current_tile.rotate_counter_clockwise()
+				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
+				show_possible_placements(valid_placements)
 			elif event.keycode == KEY_E:
 				board.current_tile.rotate_clockwise()
 	elif phase == TurnPhase.PLACE_MEEPLE:
