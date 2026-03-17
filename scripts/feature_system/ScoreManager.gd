@@ -9,10 +9,11 @@ signal score_updated(player_index : int, new_score : int)
 var scores : Array[int] = []
 
 func _ready() -> void:
-    #Initialize score based on player count from TurnSystem
-    if turn_system:
-        scores.resize(turn_system.players.size())
-        scores.fill(0)
+    pass
+
+func init_scores(player_count: int) -> void:
+    scores.resize(player_count)
+    scores.fill(0)
 
 #Adds score to player
 func add_score(player_index : int, points_added : int) -> void:

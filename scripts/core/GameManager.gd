@@ -2,8 +2,11 @@ class_name GameManager extends Node
 
 signal game_ended(message: String)
 
+static var player_count: int = 2
+
 @onready var board = $"../Board"
 @onready var turn_system = $"../TurnSystem"
+@onready var score_manager = $"../ScoreManager"
 
 @export var tile_deck_resource: TileDeck
 
@@ -27,6 +30,11 @@ func start_game():
 		_initialize_deck()
 	_place_starting_tile()
 	if turn_system:
+		turn_system.players = []
+		for i in range(player_count):
+			turn_system.players.append("Player %d" % (i + 1))
+		turn_system._init_meeples()
+		score_manager.init_scores(player_count)
 		turn_system.tile_deck = tile_deck
 		turn_system.game_active = true
 		turn_system.start_turn()

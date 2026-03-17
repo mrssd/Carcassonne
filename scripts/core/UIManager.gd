@@ -9,10 +9,13 @@ class_name UIManager
 @onready var deck_label: Label = $VBoxContainer/Information/VBoxContainer/DeckLabel
 @onready var game_over_label: Label = $VBoxContainer/Information/VBoxContainer/GameOverLabel
 
-# Color for each player
+# Color for each player (supports up to 5)
 var player_colors = [
-	Color.BLUE, # Player 1
-	Color.RED # Player 2
+	Color.BLUE,
+	Color.RED,
+	Color.GREEN,
+	Color.YELLOW,
+	Color.ORANGE,
 ]
 
 func _ready() -> void:
@@ -37,6 +40,7 @@ func _ready() -> void:
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	turn_label.text = "Turn: %s" % player_name
 	_update_turn_color(player_index)
+	_on_score_changed()
 
 func _update_turn_color(player_index: int) -> void:
 	if player_index < player_colors.size():
