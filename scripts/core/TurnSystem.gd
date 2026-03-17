@@ -26,7 +26,7 @@ var highlight_nodes := []
 @onready var score_system = $"../ScoreSystem"
 
 var tile_deck: TileDeck
-var current_drawn_tile: Tile = null
+var current_drawn_tile: Tile = null 
 var last_placed_tile: Tile = null
 var last_placed_cell: Vector2i = Vector2i.ZERO
 
@@ -45,8 +45,6 @@ func start_turn() -> void:
 	print("Turn started:", get_current_player())
 	turn_changed.emit(get_current_player(), current_player_index)
 	phase = TurnPhase.DRAW_TILE
-	var valid_placements = board.get_all_valid_placement(current_drawn_tile)
-	show_possible_placements(valid_placements)
 	draw_tile()
 
 func draw_tile() -> void:
@@ -106,6 +104,7 @@ func on_tile_placed() -> void:
 		last_placed_tile = board.placed_tiles[cell]
 		last_placed_cell = cell
 		board.current_tile = null
+		show_possible_placements([])
 		score_system.score_and_apply(board, cell, current_player_index)
 		phase = TurnPhase.PLACE_MEEPLE
 		print("Tile placed. Left-click on this tile to place meeple, or press S to skip.")
@@ -160,8 +159,8 @@ func _input(event) -> void:
 				on_tile_placed()
 			elif event.button_index == MOUSE_BUTTON_RIGHT:
 				board.current_tile.rotate_clockwise()
-			var valid_placements = board.get_all_valid_placement(current_drawn_tile)
-			show_possible_placements(valid_placements)
+				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
+				show_possible_placements(valid_placements)
 		elif event is InputEventKey and event.pressed:
 			if event.keycode == KEY_Q:
 				board.current_tile.rotate_counter_clockwise()
@@ -169,6 +168,8 @@ func _input(event) -> void:
 				show_possible_placements(valid_placements)
 			elif event.keycode == KEY_E:
 				board.current_tile.rotate_clockwise()
+				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
+				show_possible_placements(valid_placements)
 	elif phase == TurnPhase.PLACE_MEEPLE:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			place_meeple(board.get_global_mouse_position())

@@ -66,10 +66,7 @@ func get_all_valid_placement(tile: Tile) -> Array:
 			if placed_tiles.has(empty_cell) or checked.has(empty_cell):
 				continue
 			checked[empty_cell] = true
-			for rot in range(4):
-				var test_tile = tile.duplicate() 
-				test_tile.rotation_count = rot
-				if can_place(empty_cell, test_tile):
-					valid.append({ "cell": empty_cell, "rotation": rot })
+			if can_place(empty_cell, tile):
+				valid.append({ "cell": empty_cell })
 
 	return valid

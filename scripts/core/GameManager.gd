@@ -35,7 +35,6 @@ func start_game():
 
 ## First tile
 func _place_starting_tile() -> void:
-	## Checking bullshit
 	if board == null or tile_deck == null:
 		return
 	if board.tile_scene == null:
