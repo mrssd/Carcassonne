@@ -15,20 +15,88 @@ func _update_color() -> void:
 	if sprite and owner_index >= 0 and owner_index < player_colors.size():
 		sprite.modulate = player_colors[owner_index]
 
-func place_on_tile(tile: Node2D, feature_position: Vector2, feature: String):
-	placed = true
-	feature_name = feature
-	position = feature_position
-	tile.add_child(self)
-
-func remove():
-	placed = false
-	feature_name = ""
-	queue_free()
-
 func set_player(player_idx: int):
 	owner_index = player_idx
 	_update_color()
 
 func is_placed() -> bool:
 	return placed
+
+func place_on_tile(tile: Node2D, feature_position: Vector2, feature: String):
+	placed = true
+	feature_name = feature
+	tile.add_child(self)
+	position = feature_position
+	rotation = -tile.rotation
+	z_index = 100
+	z_as_relative = false
+	if has_node("Sprite2D"):
+		$Sprite2D.z_index = 100
+
+func remove():
+	placed = false
+	feature_name = ""
+	queue_free()
+
+func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
+	var best_dist := 1e9
+	var best_feature := "center"
+	var best_local := Vector2.ZERO
+	var best_slot_id := "center_0_0"
+
+	# Each grid unit corresponds to 24 pixels on the tile
+	var unit_scale := 24.0
+
+	if tile.tile_data.meeple_positions.size() > 0:
+		for base_key in tile.tile_data.meeple_positions.keys():
+			var base_rel := Vector2(base_key.x, base_key.y)
+			var local_offset := base_rel * unit_scale
+			var world_candidate := tile.to_global(local_offset)
+			var dist := world_click.distance_to(world_candidate)
+
+			if dist < best_dist:
+				best_dist = dist
+				best_local = local_offset
+				best_feature = str(tile.tile_data.meeple_positions[base_key])
+				best_slot_id = "%d_%d_%s" % [base_key.x, base_key.y, best_feature]
+	else:
+		best_local = Vector2.ZERO
+		best_feature = "center"
+		best_slot_id = "center_0_0"
+
+	return {
+		"offset": best_local,
+		"feature": best_feature,
+		"slot_id": best_slot_id
+	}
+
+
+static func try_place_on_board(board: Node, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
+	var clicked_cell: Vector2i = board.coord_to_index(world_click)
+	if not board.placed_tiles.has(clicked_cell):
+		print("Meeple must be placed on an already placed tile.")
+		return false
+	var target_tile: Tile = board.placed_tiles[clicked_cell]
+	var temp_meeple: Meeple = meeple_scene.instantiate() as Meeple
+	if temp_meeple == null:
+		print("Failed to instantiate meeple.")
+		return false
+	var info = temp_meeple.get_placement_feature(target_tile, world_click)
+	var slot_id = info["slot_id"]
+	var feature = info["feature"]
+	if not target_tile.can_place_meeple(slot_id):
+		print("That feature slot is already occupied on this tile.")
+		return false
+	if remaining_meeples[player_index] <= 0:
+		print("No meeples remaining for Player %d" % [player_index])
+		return false
+	temp_meeple.set_player(player_index)
+	temp_meeple.place_on_tile(target_tile, info["offset"], feature)
+	target_tile.add_meeple(slot_id, temp_meeple)
+	remaining_meeples[player_index] -= 1
+	print("Meeple placed for Player %d, remaining: %d" % [player_index, remaining_meeples[player_index]])
+	return true
+
+
+
+

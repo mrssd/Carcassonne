@@ -6,6 +6,7 @@
 script = ExtResource("1_vb0sl")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(1.06, 1.06)
 
 [node name="Label" type="Label" parent="."]
 offset_right = 40.0

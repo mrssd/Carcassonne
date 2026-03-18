@@ -86,32 +86,14 @@ func on_tile_placed() -> void:
 		board.current_tile = null
 		score_system.score_and_apply(board, cell, current_player_index)
 		phase = TurnPhase.PLACE_MEEPLE
-		print("Tile placed. Left-click on this tile to place meeple, or press S to skip.")
+		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	else:
 		print("Cannot place tile here – invalid placement.")
 
 func place_meeple(world_click: Vector2) -> void:
-	var clicked_cell: Vector2i = board.coord_to_index(world_click)
-	if not board.placed_tiles.has(clicked_cell):
-		print("Meeple must be placed on an already placed tile.")
-		return
-	var target_tile: Tile = board.placed_tiles[clicked_cell]
-	if not target_tile.can_place_meeple():
-		print("That tile already has a meeple.")
-		return
-	if remaining_meeples[current_player_index] <= 0:
-		print("No meeples remaining for", get_current_player())
+	var placed = Meeple.try_place_on_board(board, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
+	if placed:
 		end_meeple_phase()
-		return
-	var meeple_node: Meeple = MEEPLE_SCENE.instantiate() as Meeple
-	if meeple_node == null:
-		print("Failed to instantiate meeple.")
-		return
-	meeple_node.set_player(current_player_index)
-	target_tile.place_meeple(meeple_node)
-	remaining_meeples[current_player_index] -= 1
-	print("Meeple placed for", get_current_player(), "remaining:", remaining_meeples[current_player_index])
-	end_meeple_phase()
 
 func end_meeple_phase() -> void:
 	last_placed_tile = null
@@ -146,6 +128,6 @@ func _input(event) -> void:
 	elif phase == TurnPhase.PLACE_MEEPLE:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			place_meeple(board.get_global_mouse_position())
-		elif event is InputEventKey and event.pressed and event.keycode == KEY_S:
+		elif event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
 			print("Skipping meeple placement")
 			end_meeple_phase()

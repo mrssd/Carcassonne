@@ -51,7 +51,6 @@ func rotate_clockwise():
 	edge[2] = edge[1]
 	edge[1] = tmp
 	_rotate_internal_connections_clockwise()
-	_rotate_meeple_positions_clockwise()
 
 func rotate_counter_clockwise():
 	var tmp = edge[0]
@@ -60,7 +59,6 @@ func rotate_counter_clockwise():
 	edge[2] = edge[3]
 	edge[3] = tmp
 	_rotate_internal_connections_counter_clockwise()
-	_rotate_meeple_positions_counter_clockwise()
 
 func print_debug() -> void:
 	print("Tile name: ", name)
@@ -161,21 +159,5 @@ func _rotate_internal_connections_counter_clockwise():
 		var edges: Array = internal_connections[key]
 		for i in range(edges.size()):
 			edges[i] = (edges[i] - 1 + 4) % 4
-
-func _rotate_meeple_positions_clockwise() -> void:
-	var temp_dictionary: Dictionary[Vector2i, PropertyType] = {}
-	for key in meeple_positions.keys() :
-		var value : PropertyType = meeple_positions[key]
-		var new_key = Vector2i(key.y, - key.x)
-		temp_dictionary[new_key] = value
-	meeple_positions = temp_dictionary
-	
-func _rotate_meeple_positions_counter_clockwise() -> void:
-	var temp_dictionary: Dictionary[Vector2i, PropertyType] = {}
-	for key in meeple_positions.keys() :
-		var value : PropertyType = meeple_positions[key]
-		var new_key = Vector2i(-key.y, key.x)
-		temp_dictionary[new_key] = value
-	meeple_positions = temp_dictionary
 		
 	
