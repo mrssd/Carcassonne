@@ -21,7 +21,10 @@ func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
 		#Creates copies of a tile based on number_of_copies
 		for j in range(single_tile_entry.number_of_copies):
 			_draw_pile.append(single_tile_entry.carcassone_tile_data.duplicate(true))
+			# populates internal_connections dictionary
 			_draw_pile.back().apply_segment_data()
+			# fixes the inverted Y coordinate for tiles in the resource file
+			_draw_pile.back().invert_Y_meeple_positions()
 	_draw_pile.shuffle()
 
 	#Starting tile

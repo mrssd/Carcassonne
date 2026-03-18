@@ -51,6 +51,8 @@ func rotate_clockwise():
 	edge[2] = edge[1]
 	edge[1] = tmp
 	_rotate_internal_connections_clockwise()
+	_rotate_meeple_positions_clockwise()
+	_print_meeple_positions()
 
 func rotate_counter_clockwise():
 	var tmp = edge[0]
@@ -59,6 +61,8 @@ func rotate_counter_clockwise():
 	edge[2] = edge[3]
 	edge[3] = tmp
 	_rotate_internal_connections_counter_clockwise()
+	_rotate_meeple_positions_counter_clockwise()
+	_print_meeple_positions()
 
 func print_debug() -> void:
 	print("Tile name: ", name)
@@ -147,6 +151,15 @@ func apply_segment_data():
 		_:
 			push_warning("no segment data for tile '%s" % self.name)
 
+# function which inverts y coordinate in the meeple_positions dictionary
+# serves to fix the original bug of the wrong coordinate direction in the previous commit	
+func invert_Y_meeple_positions() -> void:
+	var temp : Dictionary[Vector2i, PropertyType] = {}
+	for key in meeple_positions.keys():
+		temp[Vector2i(key.x, -key.y)] = meeple_positions[key]
+	meeple_positions = temp
+
+
 ## "private" functions
 func _rotate_internal_connections_clockwise():
 	for key in internal_connections:
@@ -159,5 +172,24 @@ func _rotate_internal_connections_counter_clockwise():
 		var edges: Array = internal_connections[key]
 		for i in range(edges.size()):
 			edges[i] = (edges[i] - 1 + 4) % 4
-		
+			
+func _rotate_meeple_positions_clockwise() -> void:
+	var temp_dictionary: Dictionary[Vector2i, PropertyType] = {}
+	for key in meeple_positions.keys() :
+		var value : PropertyType = meeple_positions[key]
+		var new_key = Vector2i(-key.y, key.x)
+		temp_dictionary[new_key] = value
+	meeple_positions = temp_dictionary
 	
+func _rotate_meeple_positions_counter_clockwise() -> void:
+	var temp_dictionary: Dictionary[Vector2i, PropertyType] = {}
+	for key in meeple_positions.keys() :
+		var value : PropertyType = meeple_positions[key]
+		var new_key = Vector2i(key.y, -key.x)
+		temp_dictionary[new_key] = value
+	meeple_positions = temp_dictionary
+
+func _print_meeple_positions() -> void:
+	print()
+	for key in meeple_positions.keys():
+		print(key, " -> ", property_type_to_string(meeple_positions[key]))
