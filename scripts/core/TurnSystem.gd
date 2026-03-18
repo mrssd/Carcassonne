@@ -141,7 +141,6 @@ func on_tile_placed() -> void:
 		last_placed_cell = cell
 		board.current_tile = null
 		show_possible_placements([])
-		score_system.score_and_apply(board, cell, current_player_index)
 		phase = TurnPhase.PLACE_MEEPLE
 		Meeple.show_placement_hints(last_placed_tile)
 		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
@@ -156,6 +155,7 @@ func place_meeple(world_click: Vector2) -> void:
 
 func end_meeple_phase() -> void:
 	Meeple.hide_placement_hints(last_placed_tile)
+	score_system.score_and_apply(board, last_placed_cell)
 	last_placed_tile = null
 	phase = TurnPhase.DRAW_TILE
 	end_turn()

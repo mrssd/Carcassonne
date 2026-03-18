@@ -84,7 +84,7 @@ func _get_feature_type(segment_key, _tile_data):
 	else:
 		return "other"
 
-func score_and_apply(board, placed_cell, player_index):
+func score_and_apply(board, placed_cell):
 	var tile = board.placed_tiles[placed_cell]
 	if tile == null:
 		return
@@ -109,13 +109,14 @@ func score_and_apply(board, placed_cell, player_index):
 				points = explore_result["tiles"].size() * ROAD_POINTS_PER_TILE
 			elif feature_type == "city":
 				points = explore_result["tiles"].size() * CITY_POINTS_PER_TILE + explore_result["shield_count"] * 2
-			score_manager.add_score(player_index, points)
-			_return_meeples(board, explore_result["tiles"])
+			var owners = _get_meeple_owners(board, explore_result)
+			_award_to_majority(owners, points)
+			_return_meeples(board, explore_result)
 
-	_check_monasteries(board, placed_cell, player_index)
+	_check_monasteries(board, placed_cell)
 
 
-func _check_monasteries(board, placed_cell, player_index):
+func _check_monasteries(board, placed_cell):
 	#define offset for surrrounding cells
 	var offsets = [
 		Vector2i(-1,-1), Vector2i(0,-1), Vector2i(1,-1),
@@ -142,8 +143,13 @@ func _check_monasteries(board, placed_cell, player_index):
 				var mkey = "monastery|" + str(cell.x) + "," + str(cell.y)
 				if not _scored_features.has(mkey):
 					_scored_features[mkey] = true
-					score_manager.add_score(player_index, MONASTERY_COMPLETE_POINTS)
-					_return_meeples(board, [cell])
+					var monastery_result = {
+						"tiles": [cell],
+						"visited": [str(cell.x) + "," + str(cell.y) + "|monastery"]
+					}
+					var owners = _get_meeple_owners(board, monastery_result)
+					_award_to_majority(owners, MONASTERY_COMPLETE_POINTS)
+					_return_meeples(board, monastery_result)
 
 
 func is_feature_claimed(board, cell: Vector2i) -> bool:
@@ -158,20 +164,85 @@ func is_feature_claimed(board, cell: Vector2i) -> bool:
 		var explore_result = _explore_segment(board, cell, segment_key)
 		for feature_cell in explore_result["tiles"]:
 			var feature_tile = board.placed_tiles[feature_cell]
-			if feature_tile.meeple != null:
+			if not feature_tile.meeples.is_empty():
 				return true
 
-	if tile.tile_data.is_monestary and tile.meeple != null:
+	if tile.tile_data.is_monastery and not tile.meeples.is_empty():
 		return true
 
 	return false
 
+# Returns which segment key a meeple slot belongs to on a tile,
+# by mapping the slot's grid position to the nearest edge.
+func _segment_for_slot(tile_data: CarcassonneTileData, slot_id: String) -> String:
+	if tile_data.is_monastery:
+		return "monastery"
+	var parts = slot_id.split("_")
+	var x = int(parts[0])
+	var y = int(parts[1])
+	var edge: int
+	if abs(x) >= abs(y):
+		edge = 1 if x > 0 else 3
+	else:
+		edge = 0 if y < 0 else 2
+	for seg_key in tile_data.internal_connections:
+		if tile_data.internal_connections[seg_key].has(edge):
+			return seg_key
+	return ""
 
-func _return_meeples(board, cells: Array) -> void:
-	for cell in cells:
+# Collects meeple counts per player, only counting meeples whose position
+# maps to a segment that is part of the feature in explore_result.
+func _get_meeple_owners(board, explore_result: Dictionary) -> Dictionary:
+	var counts = {}
+	# Build map: "cx,cy" -> [segment_keys that belong to this feature]
+	var cell_to_segs = {}
+	for vkey in explore_result["visited"]:
+		var parts = vkey.split("|")
+		var cell_str = parts[0]
+		var seg_key = parts[1]
+		if not cell_to_segs.has(cell_str):
+			cell_to_segs[cell_str] = []
+		cell_to_segs[cell_str].append(seg_key)
+	for cell in explore_result["tiles"]:
+		var cell_str = str(cell.x) + "," + str(cell.y)
+		var feature_segs = cell_to_segs.get(cell_str, [])
 		var tile = board.placed_tiles[cell]
-		if tile.meeple != null:
-			var owner = tile.meeple.owner_index
-			tile.meeple.remove()
-			tile.meeple = null
+		for slot_id in tile.meeples.keys():
+			var seg = _segment_for_slot(tile.tile_data, slot_id)
+			if feature_segs.has(seg):
+				var owner = tile.meeples[slot_id].owner_index
+				counts[owner] = counts.get(owner, 0) + 1
+	return counts
+
+#if two players have same meeple, this functions finds the max count and awards full point to all players tied
+func _award_to_majority(counts: Dictionary, points: int) -> void:
+	if counts.is_empty():
+		return
+	var max_count = counts.values().max()
+	for player in counts:
+		if counts[player] == max_count:
+			score_manager.add_score(player, points)
+
+func _return_meeples(board, explore_result: Dictionary) -> void:
+	var cell_to_segs = {}
+	for vkey in explore_result["visited"]:
+		var parts = vkey.split("|")
+		var cell_str = parts[0]
+		var seg_key = parts[1]
+		if not cell_to_segs.has(cell_str):
+			cell_to_segs[cell_str] = []
+		cell_to_segs[cell_str].append(seg_key)
+	for cell in explore_result["tiles"]:
+		var cell_str = str(cell.x) + "," + str(cell.y)
+		var feature_segs = cell_to_segs.get(cell_str, [])
+		var tile = board.placed_tiles[cell]
+		var to_remove = []
+		for slot_id in tile.meeples.keys():
+			if feature_segs.has(_segment_for_slot(tile.tile_data, slot_id)):
+				to_remove.append(slot_id)
+		for slot_id in to_remove:
+			var m = tile.meeples[slot_id]
+			var owner = m.owner_index
+			m.remove()
+			tile.meeples.erase(slot_id)
 			meeple_returned.emit(owner)
