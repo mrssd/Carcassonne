@@ -152,25 +152,13 @@ func _check_monasteries(board, placed_cell):
 					_return_meeples(board, monastery_result)
 
 
-func is_feature_claimed(board, cell: Vector2i) -> bool:
-	var tile = board.placed_tiles[cell]
-	if tile == null:
+func is_segment_claimed(board, cell: Vector2i, segment_key: String) -> bool:
+	if segment_key == "center" or segment_key == "unknown":
 		return false
-
-	for segment_key in tile.tile_data.internal_connections.keys():
-		var feature_type = _get_feature_type(segment_key, tile.tile_data)
-		if feature_type == "other":
-			continue
-		var explore_result = _explore_segment(board, cell, segment_key)
-		for feature_cell in explore_result["tiles"]:
-			var feature_tile = board.placed_tiles[feature_cell]
-			if not feature_tile.meeples.is_empty():
-				return true
-
-	if tile.tile_data.is_monastery and not tile.meeples.is_empty():
-		return true
-
-	return false
+	if segment_key == "monastery":
+		return not board.placed_tiles[cell].meeples.is_empty()
+	var explore_result = _explore_segment(board, cell, segment_key)
+	return not _get_meeple_owners(board, explore_result).is_empty()
 
 # Returns which segment key a meeple slot belongs to on a tile,
 # by mapping the slot's grid position to the nearest edge.

@@ -148,6 +148,12 @@ func on_tile_placed() -> void:
 		print("Cannot place tile here – invalid placement.")
 
 func place_meeple(world_click: Vector2) -> void:
+	var temp: Meeple = MEEPLE_SCENE.instantiate() as Meeple
+	var info = temp.get_placement_feature(last_placed_tile, world_click)
+	temp.free()
+	if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
+		print("That feature is already claimed.")
+		return
 	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
 		Meeple.hide_placement_hints(last_placed_tile)
