@@ -91,6 +91,7 @@ func draw_tile() -> void:
 	if tile_data == null:
 		print("No more tiles to draw. Game over!")
 		game_active = false
+		score_system.score_end_game(board)
 		game_manager.end_game("No more tiles! Game Over!")
 		return
 	

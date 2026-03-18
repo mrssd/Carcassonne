@@ -151,6 +151,57 @@ func _check_monasteries(board, placed_cell):
 					_award_to_majority(owners, MONASTERY_COMPLETE_POINTS)
 					_return_meeples(board, monastery_result)
 
+#end game score function
+func score_end_game(board) -> void:
+	var end_scored: Dictionary = {} #local dictionary to track features scored to prevent double counting
+	var offsets = [
+		Vector2i(-1,-1), Vector2i(0,-1), Vector2i(1,-1),
+		Vector2i(-1,0),                  Vector2i(1,0),
+		Vector2i(-1,1),  Vector2i(0,1),  Vector2i(1,1)
+	]
+
+	for cell in board.placed_tiles.keys(): #loops though every tile on board
+		var tile = board.placed_tiles[cell]
+		for segment_key in tile.tile_data.internal_connections.keys(): #loops through every feature on that tile
+			var feature_type = _get_feature_type(segment_key, tile.tile_data)
+			if feature_type == "other":
+				continue
+
+			var explore_result = _explore_segment(board, cell, segment_key) #explore connected feature from this tile/segment
+			var visited_keys = explore_result["visited"]
+			visited_keys.sort()
+			var feature_key = "|".join(visited_keys) #make the current feature a key
+			if _scored_features.has(feature_key) or end_scored.has(feature_key): #skips the process if it was already scored midgame
+				continue
+			end_scored[feature_key] = true
+
+			var owners = _get_meeple_owners(board, explore_result) #find which owner owns the feature
+			if owners.is_empty(): #nobody owns feature then skip
+				continue
+
+			var points = 0
+			if feature_type == "road": #if its a road same 1pt as midgame
+				points = explore_result["tiles"].size() * ROAD_POINTS_PER_TILE
+			elif feature_type == "city": #if its a city the score should be halfed
+				points = explore_result["tiles"].size() + explore_result["shield_count"]
+			_award_to_majority(owners, points) #award point
+			_return_meeples(board, explore_result) #return meeple (for no reason tbh)
+
+		if tile.tile_data.is_monastery: #monestary doesnt use internal connections so separate if statement to deal with it
+			var mkey = "monastery|" + str(cell.x) + "," + str(cell.y) 
+			if not _scored_features.has(mkey): #if that monestary is not scored
+				var surrounding_count = 0 #var to count surrounding tiles
+				for offset in offsets: 
+					if board.placed_tiles.has(cell + offset): 
+						surrounding_count += 1
+				var monastery_result = {
+					"tiles": [cell],
+					"visited": [str(cell.x) + "," + str(cell.y) + "|monastery"]
+				}
+				var owners = _get_meeple_owners(board, monastery_result)
+				if not owners.is_empty(): #if theres a owner
+					_award_to_majority(owners, 1 + surrounding_count) #award the score
+					_return_meeples(board, monastery_result)
 
 func is_segment_claimed(board, cell: Vector2i, segment_key: String) -> bool:
 	if segment_key == "center" or segment_key == "unknown":
