@@ -7,7 +7,7 @@ class_name Tile extends Node2D
 ## Grid position on the board (in tile coordinates)
 var board_position: Vector2i = Vector2i.ZERO
 
-var meeple: Node = null
+var meeples: Dictionary = {}
 
 ## Number of clockwise rotations applied (0-3)
 var rotation_count: int = 0
@@ -44,14 +44,12 @@ func can_connect(other: Tile, my_side: int) -> bool:
 	var opposite: int = (my_side + 2) % 4
 	return get_edge(my_side) == other.get_edge(opposite)
 
-func can_place_meeple() -> bool:
-	return meeple == null
+func can_place_meeple(slot_id: String) -> bool:
+	return not meeples.has(slot_id)
 
-func place_meeple(meeple_node: Node2D) -> void:
-	meeple = meeple_node
-	add_child(meeple)
-	meeple.position = Vector2(0, -16)
-
+func add_meeple(slot_id: String, meeple_node: Node2D) -> void:
+	if can_place_meeple(slot_id):
+		meeples[slot_id] = meeple_node
 
 ## Called whenever tile data changes — update sprites/colors here.
 func update_visual() -> void:
