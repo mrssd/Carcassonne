@@ -42,9 +42,8 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 	var best_dist := 1e9
 	var best_feature := "center"
 	var best_local := Vector2.ZERO
-	var best_slot_id := "center_0_0"
+	var best_slot_id := "0_0_center"
 
-	# Each grid unit corresponds to 24 pixels on the tile
 	var unit_scale := 24.0
 
 	if tile.tile_data.meeple_positions.size() > 0:
@@ -57,18 +56,44 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 			if dist < best_dist:
 				best_dist = dist
 				best_local = local_offset
-				best_feature = str(tile.tile_data.meeple_positions[base_key])
+				best_feature = _resolve_segment(tile.tile_data, base_key, tile.rotation_count)
 				best_slot_id = "%d_%d_%s" % [base_key.x, base_key.y, best_feature]
 	else:
 		best_local = Vector2.ZERO
 		best_feature = "center"
-		best_slot_id = "center_0_0"
+		best_slot_id = "0_0_center"
 
 	return {
 		"offset": best_local,
 		"feature": best_feature,
 		"slot_id": best_slot_id
 	}
+
+func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_count: int = 0) -> String:
+	if tile_data.is_monastery:
+		return "monastery"
+	# Rotate pos to match the post-rotation internal_connections edge indices.
+	# Each clockwise rotation applies (x, y) -> (-y, x).
+	var r = ((rotation_count % 4) + 4) % 4
+	var rp = pos
+	for _i in range(r):
+		rp = Vector2i(-rp.y, rp.x)
+	var ax = abs(rp.x)
+	var ay = abs(rp.y)
+	var candidate_edges: Array
+	if ax == 0 and ay == 0:
+		candidate_edges = [0, 1, 2, 3]
+	elif ax > ay:
+		candidate_edges = [1 if rp.x > 0 else 3]
+	elif ay > ax:
+		candidate_edges = [0 if rp.y < 0 else 2]
+	else:
+		candidate_edges = [1 if rp.x > 0 else 3, 0 if rp.y < 0 else 2]
+	for edge in candidate_edges:
+		for seg_key in tile_data.internal_connections:
+			if tile_data.internal_connections[seg_key].has(edge):
+				return seg_key
+	return "unknown"
 
 static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
 	var clicked_cell: Vector2i = board.coord_to_index(world_click)

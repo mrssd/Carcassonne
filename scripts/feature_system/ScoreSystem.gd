@@ -174,21 +174,10 @@ func is_feature_claimed(board, cell: Vector2i) -> bool:
 
 # Returns which segment key a meeple slot belongs to on a tile,
 # by mapping the slot's grid position to the nearest edge.
-func _segment_for_slot(tile_data: CarcassonneTileData, slot_id: String) -> String:
-	if tile_data.is_monastery:
-		return "monastery"
-	var parts = slot_id.split("_")
-	var x = int(parts[0])
-	var y = int(parts[1])
-	var edge: int
-	if abs(x) >= abs(y):
-		edge = 1 if x > 0 else 3
-	else:
-		edge = 0 if y < 0 else 2
-	for seg_key in tile_data.internal_connections:
-		if tile_data.internal_connections[seg_key].has(edge):
-			return seg_key
-	return ""
+func _segment_for_slot(slot_id: String) -> String:
+	# slot_id format: "x_y_segment_key" e.g. "0_-1_road_0"
+	# split into at most 3 parts on the first two underscores
+	return slot_id.split("_", true, 2)[2]
 
 # Collects meeple counts per player, only counting meeples whose position
 # maps to a segment that is part of the feature in explore_result.
@@ -208,7 +197,7 @@ func _get_meeple_owners(board, explore_result: Dictionary) -> Dictionary:
 		var feature_segs = cell_to_segs.get(cell_str, [])
 		var tile = board.placed_tiles[cell]
 		for slot_id in tile.meeples.keys():
-			var seg = _segment_for_slot(tile.tile_data, slot_id)
+			var seg = _segment_for_slot(slot_id)
 			if feature_segs.has(seg):
 				var owner = tile.meeples[slot_id].owner_index
 				counts[owner] = counts.get(owner, 0) + 1
@@ -238,7 +227,7 @@ func _return_meeples(board, explore_result: Dictionary) -> void:
 		var tile = board.placed_tiles[cell]
 		var to_remove = []
 		for slot_id in tile.meeples.keys():
-			if feature_segs.has(_segment_for_slot(tile.tile_data, slot_id)):
+			if feature_segs.has(_segment_for_slot(slot_id)):
 				to_remove.append(slot_id)
 		for slot_id in to_remove:
 			var m = tile.meeples[slot_id]
