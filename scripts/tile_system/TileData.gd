@@ -51,8 +51,6 @@ func rotate_clockwise():
 	edge[2] = edge[1]
 	edge[1] = tmp
 	_rotate_internal_connections_clockwise()
-	_rotate_meeple_positions_clockwise()
-	_print_meeple_positions()
 
 func rotate_counter_clockwise():
 	var tmp = edge[0]
@@ -61,8 +59,6 @@ func rotate_counter_clockwise():
 	edge[2] = edge[3]
 	edge[3] = tmp
 	_rotate_internal_connections_counter_clockwise()
-	_rotate_meeple_positions_counter_clockwise()
-	_print_meeple_positions()
 
 func print_debug() -> void:
 	print("Tile name: ", name)

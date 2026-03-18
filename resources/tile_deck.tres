@@ -98,7 +98,7 @@ name = "city3r"
 tile_texture = ExtResource("8_gjgr0")
 edge = Array[int]([3, 3, 2, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, -1): 2,
+Vector2i(0, -2): 2,
 Vector2i(0, 0): 3
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
@@ -115,7 +115,7 @@ name = "city3sr"
 tile_texture = ExtResource("9_7s5dn")
 edge = Array[int]([3, 3, 2, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, -1): 2,
+Vector2i(0, -2): 2,
 Vector2i(0, 0): 3
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
@@ -132,9 +132,9 @@ name = "road3"
 tile_texture = ExtResource("10_8bbyg")
 edge = Array[int]([1, 2, 2, 2])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(-1, 0): 2,
+Vector2i(-2, 0): 2,
 Vector2i(0, -1): 2,
-Vector2i(1, 0): 2
+Vector2i(2, 0): 2
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
