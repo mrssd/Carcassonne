@@ -86,16 +86,19 @@ func on_tile_placed() -> void:
 		board.current_tile = null
 		score_system.score_and_apply(board, cell, current_player_index)
 		phase = TurnPhase.PLACE_MEEPLE
+		Meeple.show_placement_hints(last_placed_tile)
 		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	else:
 		print("Cannot place tile here – invalid placement.")
 
 func place_meeple(world_click: Vector2) -> void:
-	var placed = Meeple.try_place_on_board(board, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
+	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
+		Meeple.hide_placement_hints(last_placed_tile)
 		end_meeple_phase()
 
 func end_meeple_phase() -> void:
+	Meeple.hide_placement_hints(last_placed_tile)
 	last_placed_tile = null
 	phase = TurnPhase.DRAW_TILE
 	end_turn()
@@ -130,4 +133,5 @@ func _input(event) -> void:
 			place_meeple(board.get_global_mouse_position())
 		elif event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
 			print("Skipping meeple placement")
+			Meeple.hide_placement_hints(last_placed_tile)
 			end_meeple_phase()

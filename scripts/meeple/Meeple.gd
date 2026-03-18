@@ -70,32 +70,93 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 		"slot_id": best_slot_id
 	}
 
-
-static func try_place_on_board(board: Node, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
+static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
 	var clicked_cell: Vector2i = board.coord_to_index(world_click)
 	if not board.placed_tiles.has(clicked_cell):
-		print("Meeple must be placed on an already placed tile.")
+		print("Meeple must be placed on the tile just placed this turn.")
 		return false
+
 	var target_tile: Tile = board.placed_tiles[clicked_cell]
+
+	# Enforce: only place on the tile just placed
+	if allowed_tile == null or target_tile != allowed_tile:
+		print("You can only place a meeple on the tile you just placed.")
+		return false
+
 	var temp_meeple: Meeple = meeple_scene.instantiate() as Meeple
 	if temp_meeple == null:
 		print("Failed to instantiate meeple.")
 		return false
+
 	var info = temp_meeple.get_placement_feature(target_tile, world_click)
 	var slot_id = info["slot_id"]
 	var feature = info["feature"]
-	if not target_tile.can_place_meeple(slot_id):
-		print("That feature slot is already occupied on this tile.")
-		return false
+
+	# No per-tile occupancy check (your rule guarantees at most one placement this phase)
 	if remaining_meeples[player_index] <= 0:
 		print("No meeples remaining for Player %d" % [player_index])
 		return false
+
 	temp_meeple.set_player(player_index)
 	temp_meeple.place_on_tile(target_tile, info["offset"], feature)
 	target_tile.add_meeple(slot_id, temp_meeple)
+
 	remaining_meeples[player_index] -= 1
 	print("Meeple placed for Player %d, remaining: %d" % [player_index, remaining_meeples[player_index]])
 	return true
+
+
+# -------------------------------------------------------------------
+# Visual hints for meeple placements (white circles on allowed tile)
+# -------------------------------------------------------------------
+
+class MeepleHints:
+	extends Node2D
+
+	var positions: Array[Vector2] = []
+	var radius: float = 6.0
+
+	func _ready() -> void:
+		z_as_relative = false
+		z_index = 1000
+		queue_redraw()
+
+	func _draw() -> void:
+		for p in positions:
+			# white filled circle + thin dark outline
+			draw_circle(p, radius, Color.WHITE)
+			draw_arc(p, radius, 0.0, TAU, 24, Color(0, 0, 0, 0.75), 1.0, true)
+
+static func show_placement_hints(tile: Tile, unit_scale: float = 24.0) -> void:
+	if tile == null:
+		return
+
+	# Remove existing hints (if any)
+	if tile.has_node("MeepleHints"):
+		tile.get_node("MeepleHints").queue_free()
+
+	var hints := MeepleHints.new()
+	hints.name = "MeepleHints"
+
+	# Build positions using the SAME logic as get_placement_feature()
+	var positions: Array[Vector2] = []
+	if tile.tile_data and tile.tile_data.meeple_positions.size() > 0:
+		for base_key in tile.tile_data.meeple_positions.keys():
+			var base_rel := Vector2(base_key.x, base_key.y)
+			var local_offset := base_rel * unit_scale
+			positions.append(local_offset)
+	else:
+		positions.append(Vector2.ZERO)
+
+	hints.positions = positions
+	tile.add_child(hints)
+	hints.queue_redraw()
+
+static func hide_placement_hints(tile: Tile) -> void:
+	if tile and tile.has_node("MeepleHints"):
+		tile.get_node("MeepleHints").queue_free()
+
+
 
 
 
