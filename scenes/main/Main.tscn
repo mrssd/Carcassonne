@@ -10,7 +10,7 @@
 [ext_resource type="Script" uid="uid://cxgm7k2pf4qh1" path="res://scripts/core/GameManager.gd" id="8_ko0rf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sjxhf"]
-bg_color = Color(0.19937146, 0, 0.025205376, 1)
+bg_color = Color(0, 0, 0, 0.33333334)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
@@ -149,7 +149,7 @@ text = "Action:"
 
 [node name="TurnLabel" type="Label" parent="UI/UIPanel/VBoxContainer/CurrentAction/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 30
+theme_override_font_sizes/font_size = 20
 text = "Turn: Player 1"
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="UI/UIPanel"]

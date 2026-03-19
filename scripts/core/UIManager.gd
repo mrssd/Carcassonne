@@ -27,6 +27,7 @@ func _ready() -> void:
 func _setup_connections() -> void:
 	if turn_system:
 		turn_system.turn_changed.connect(_on_turn_changed)
+		turn_system.meeple_changed.connect(_on_meeple_changed)
 		# Set initial turn display
 		turn_label.text = "Turn: %s" % turn_system.get_current_player()
 		_update_turn_color(turn_system.current_player_index)
@@ -48,6 +49,9 @@ func _on_turn_changed(player_name: String, player_index: int) -> void:
 	_update_turn_color(player_index)
 	_on_score_changed()
 
+func _on_meeple_changed(player_index: int) -> void:
+	_update_scoreboard_display()
+
 func _update_turn_color(player_index: int) -> void:
 	if player_index < player_colors.size():
 		turn_label.add_theme_color_override("font_color", player_colors[player_index])
@@ -65,8 +69,23 @@ func _on_game_ended(message: String) -> void:
 	game_over_label.visible = true
 
 func _on_score_changed(player_index := -1, new_score := -1) -> void:
-	if score_manager:
-		score_label.text = score_manager.get_all_scores_text()
+	_update_scoreboard_display()
+
+func _update_scoreboard_display() -> void:
+	var scoreboard_text = ""
+	
+	if score_manager and turn_system:
+		# Build text with scores and remaining meeples
+		for i in range(turn_system.players.size()):
+			var player_name = turn_system.players[i]
+			var score = score_manager.get_score(i)
+			var meeples = turn_system.remaining_meeples[i] if i < turn_system.remaining_meeples.size() else 0
+			
+			scoreboard_text += "%s: %d pts | M: %d" % [player_name, score, meeples]
+			if i < turn_system.players.size() - 1:
+				scoreboard_text += "\n"
+	
+	score_label.text = scoreboard_text
 
 func show_hint(message: String) -> void:
 	hint_label.text = message

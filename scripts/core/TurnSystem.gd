@@ -3,6 +3,7 @@ class_name TurnSystem
 
 signal turn_changed(player_name: String, player_index: int)
 signal phase_changed(phase: int)
+signal meeple_changed(player_index: int)
 
 enum TurnPhase {
 	DRAW_TILE,
@@ -67,6 +68,7 @@ func start_game() -> void:
 func _on_meeple_returned(player_index: int) -> void:
 	if player_index >= 0 and player_index < remaining_meeples.size():
 		remaining_meeples[player_index] += 1
+		meeple_changed.emit(player_index)
 		print("%s meeple returned (%d remaining)" % [players[player_index], remaining_meeples[player_index]])
 
 func _init_meeples() -> void:
@@ -163,6 +165,7 @@ func place_meeple(world_click: Vector2) -> void:
 		return
 	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
+		meeple_changed.emit(current_player_index)
 		UI_manager.show_hint("Meeple placed! Turn ending...")
 		Meeple.hide_placement_hints(last_placed_tile)
 		end_meeple_phase()
