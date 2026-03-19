@@ -4,10 +4,10 @@ class_name UIManager
 @onready var turn_system: TurnSystem = $"../../TurnSystem"
 @onready var game_manager = $"../../GameManager"
 @onready var score_manager = $"../../ScoreManager"
-@onready var score_label: Label = $VBoxContainer/Scoreboard/VBoxContainer/ScoreLabel
-@onready var turn_label: Label = $VBoxContainer/CurrentAction/VBoxContainer/TurnLabel
-@onready var deck_label: Label = $VBoxContainer/Information/VBoxContainer/DeckLabel
-@onready var game_over_label: Label = $VBoxContainer/Information/VBoxContainer/GameOverLabel
+@onready var score_label: Label = $VBoxContainer/Scoreboard/MarginContainer/VBoxContainer/ScoreLabel
+@onready var turn_label: Label = $VBoxContainer/CurrentAction/MarginContainer/VBoxContainer/TurnLabel
+@onready var deck_label: Label = $VBoxContainer/Information/MarginContainer/VBoxContainer/DeckLabel
+@onready var game_over_label: Label = $VBoxContainer/Information/MarginContainer/VBoxContainer/GameOverLabel
 @onready var hint_label: Label = $VBoxContainer2/Hint/VBoxContainer/HintLabel
 @onready var hint_panel: Panel = $VBoxContainer2/Hint
 
