@@ -27,6 +27,11 @@ var hint_label: Label
 
 func _ready() -> void:
 	_create_hint_panel()
+	
+	# Use call_deferred to ensure GameManager has initialized its deck
+	call_deferred("_setup_connections")
+
+func _setup_connections() -> void:
 	if turn_system:
 		turn_system.turn_changed.connect(_on_turn_changed)
 		turn_system.phase_changed.connect(_on_phase_changed)
