@@ -33,6 +33,9 @@ script = ExtResource("3_0cp21")
 name = "city4"
 tile_texture = ExtResource("4_yy3br")
 edge = Array[int]([3, 3, 3, 3])
+meeple_positions = Dictionary[Vector2i, int]({
+Vector2i(0, 0): 3
+})
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
 [sub_resource type="Resource" id="Resource_gjgr0"]
