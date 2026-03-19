@@ -68,14 +68,12 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer/Information"]
 layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 45.0
-offset_top = -43.5
-offset_right = 244.0
-offset_bottom = 43.5
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 10
 
 [node name="PanelTitle" type="Label" parent="UI/UIPanel/VBoxContainer/Information/VBoxContainer"]
 layout_mode = 2
@@ -138,6 +136,43 @@ text = "Action:"
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "Turn: Player 1"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="UI/UIPanel"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -120.0
+offset_right = 840.0
+offset_bottom = -10.0
+grow_vertical = 0
+theme_override_constants/separation = 4
+
+[node name="Hint" type="Panel" parent="UI/UIPanel/VBoxContainer2"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer2/Hint"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -99.5
+offset_top = -21.0
+offset_right = 99.5
+offset_bottom = 21.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HintLabel" type="Label" parent="UI/UIPanel/VBoxContainer2/Hint/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "HINT"
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("8_ko0rf")
