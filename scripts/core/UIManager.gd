@@ -18,10 +18,6 @@ var player_colors = [
 	Color.ORANGE,
 ]
 
-const PHASE_HINTS = {
-	1: "Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.",
-	2: "Click a dot to place a meeple on a feature.\nPress S to skip.",
-}
 
 var hint_label: Label
 
@@ -34,7 +30,6 @@ func _ready() -> void:
 func _setup_connections() -> void:
 	if turn_system:
 		turn_system.turn_changed.connect(_on_turn_changed)
-		turn_system.phase_changed.connect(_on_phase_changed)
 		# Set initial turn display
 		turn_label.text = "Turn: %s" % turn_system.get_current_player()
 		_update_turn_color(turn_system.current_player_index)
@@ -102,10 +97,12 @@ func _create_hint_panel() -> void:
 	panel.hide()
 	hint_label.set_meta("panel", panel)
 
-func _on_phase_changed(phase: int) -> void:
+
+func show_hint(message: String) -> void:
+	hint_label.text = message
 	var panel = hint_label.get_meta("panel")
-	if PHASE_HINTS.has(phase):
-		hint_label.text = PHASE_HINTS[phase]
-		panel.show()
-	else:
-		panel.hide()
+	panel.show()
+
+func hide_hint() -> void:
+	var panel = hint_label.get_meta("panel")
+	panel.hide()

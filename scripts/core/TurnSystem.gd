@@ -25,9 +25,10 @@ var highlight_nodes := []
 @onready var board = $"../Board"
 @onready var game_manager = $"../GameManager"
 @onready var score_system = $"../ScoreSystem"
+@onready var UI_manager = $"../UI/UIPanel"
 
 var tile_deck: TileDeck
-var current_drawn_tile: Tile = null 
+var current_drawn_tile: Tile = null
 var last_placed_tile: Tile = null
 var last_placed_cell: Vector2i = Vector2i.ZERO
 
@@ -89,6 +90,7 @@ func draw_tile() -> void:
 	
 	var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
 	if tile_data == null:
+		UI_manager.show_hint("Game Over! No more tiles in the deck.")
 		print("No more tiles to draw. Game over!")
 		game_active = false
 		score_system.score_end_game(board)
@@ -108,6 +110,7 @@ func draw_tile() -> void:
 	
 	phase = TurnPhase.PLACE_TILE
 	phase_changed.emit(phase)
+	UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
@@ -144,8 +147,10 @@ func on_tile_placed() -> void:
 		show_possible_placements([])
 		phase = TurnPhase.PLACE_MEEPLE
 		Meeple.show_placement_hints(last_placed_tile)
+		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
 		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	else:
+		UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
 		print("Cannot place tile here – invalid placement.")
 
 func place_meeple(world_click: Vector2) -> void:
@@ -153,10 +158,12 @@ func place_meeple(world_click: Vector2) -> void:
 	var info = temp.get_placement_feature(last_placed_tile, world_click)
 	temp.free()
 	if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
+		UI_manager.show_hint("That feature is already claimed")
 		print("That feature is already claimed.")
 		return
 	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
+		UI_manager.show_hint("Meeple placed! Turn ending...")
 		Meeple.hide_placement_hints(last_placed_tile)
 		end_meeple_phase()
 
@@ -202,6 +209,7 @@ func _input(event) -> void:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			place_meeple(board.get_global_mouse_position())
 		elif event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
+			UI_manager.show_hint("Skipping meeple placement. Turn ending...")
 			print("Skipping meeple placement")
 			Meeple.hide_placement_hints(last_placed_tile)
 			end_meeple_phase()
