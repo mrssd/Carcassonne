@@ -6,14 +6,33 @@ signal status_changed(message: String)
 signal action_failed(message: String)
 
 const DEFAULT_PORT: int = 7000
-const MAX_PLAYERS: int = 5
 const GAME_SCENE_PATH := "res://scenes/main/Main.tscn"
 
-var is_lan_match: bool = false
-var expected_player_count: int = 2
-var player_peer_ids: Array[int] = []
-var player_usernames: Dictionary = {}
-var local_username: String = "Player"
+const NetworkSessionScript = preload("res://scripts/network/NetworkSession.gd")
+const NetworkTurnCoordinatorScript = preload("res://scripts/network/NetworkTurnCoordinator.gd")
+
+var session := NetworkSessionScript.new()
+var turn_coordinator := NetworkTurnCoordinatorScript.new(self)
+
+var is_lan_match: bool:
+	get:
+		return session.is_lan_match
+
+var expected_player_count: int:
+	get:
+		return session.expected_player_count
+
+var player_peer_ids: Array[int]:
+	get:
+		return session.player_peer_ids
+
+var player_usernames: Dictionary:
+	get:
+		return session.player_usernames
+
+var local_username: String:
+	get:
+		return session.local_username
 
 func _ready() -> void:
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
@@ -26,10 +45,7 @@ func reset_session() -> void:
 	if peer != null:
 		peer.close()
 	multiplayer.multiplayer_peer = null
-	is_lan_match = false
-	expected_player_count = 2
-	player_peer_ids.clear()
-	player_usernames.clear()
+	session.reset()
 	_emit_status("Offline")
 	session_updated.emit()
 	lobby_updated.emit()
@@ -37,17 +53,13 @@ func reset_session() -> void:
 func host_game(player_count: int, username: String, port: int = DEFAULT_PORT) -> Error:
 	reset_session()
 	var peer := ENetMultiplayerPeer.new()
-	var err := peer.create_server(port, MAX_PLAYERS)
+	var err := peer.create_server(port, NetworkSessionScript.MAX_PLAYERS)
 	if err != OK:
 		_emit_status("Host failed on port %d" % port)
 		return err
 
 	multiplayer.multiplayer_peer = peer
-	is_lan_match = true
-	expected_player_count = clamp(player_count, 2, MAX_PLAYERS)
-	local_username = _sanitize_username(username)
-	player_peer_ids = [multiplayer.get_unique_id()]
-	player_usernames[multiplayer.get_unique_id()] = local_username
+	session.configure_host(multiplayer.get_unique_id(), player_count, username)
 	_emit_status("Hosting on port %d" % port)
 	session_updated.emit()
 	lobby_updated.emit()
@@ -62,23 +74,43 @@ func join_game(address: String, username: String, port: int = DEFAULT_PORT) -> E
 		return err
 
 	multiplayer.multiplayer_peer = peer
-	is_lan_match = true
-	local_username = _sanitize_username(username)
+	session.configure_client(username)
 	_emit_status("Connecting to %s:%d" % [address, port])
 	session_updated.emit()
 	return OK
 
 func is_host() -> bool:
-	return is_lan_match and multiplayer.get_unique_id() == 1
+	return session.is_host(multiplayer.get_unique_id())
 
 func get_local_player_index() -> int:
-	return player_peer_ids.find(multiplayer.get_unique_id())
+	return session.get_local_player_index(multiplayer.get_unique_id())
 
 func get_player_names() -> Array[String]:
-	var names: Array[String] = []
-	for peer_id in player_peer_ids:
-		names.append(player_usernames.get(peer_id, "Player %d" % (names.size() + 1)))
-	return names
+	return session.get_player_names()
+
+func get_match_player_names(default_player_count: int) -> Array[String]:
+	return turn_coordinator.get_match_player_names(default_player_count)
+
+func should_defer_draw_to_host() -> bool:
+	return turn_coordinator.should_defer_draw_to_host()
+
+func should_block_local_input(current_player_index: int) -> bool:
+	return turn_coordinator.should_block_local_input(current_player_index)
+
+func submit_tile_placement(cell: Vector2i, rotation_count: int) -> bool:
+	return turn_coordinator.submit_tile_placement(cell, rotation_count)
+
+func submit_meeple_placement(slot_id: String, feature: String) -> bool:
+	return turn_coordinator.submit_meeple_placement(slot_id, feature)
+
+func submit_skip_meeple() -> bool:
+	return turn_coordinator.submit_skip_meeple()
+
+func on_tile_drawn(tile_name: String) -> void:
+	turn_coordinator.sync_drawn_tile(tile_name)
+
+func on_game_over(message: String) -> bool:
+	return turn_coordinator.sync_game_over(message)
 
 func start_lan_match() -> void:
 	if not is_host():
@@ -134,28 +166,21 @@ func _register_player(username: String) -> void:
 	if not is_host():
 		return
 	var peer_id := multiplayer.get_remote_sender_id()
-	if not player_peer_ids.has(peer_id):
-		player_peer_ids.append(peer_id)
-		player_peer_ids.sort()
-	player_usernames[peer_id] = _sanitize_username(username)
+	session.register_peer(peer_id, username)
 	_sync_lobby_state.rpc(player_peer_ids, expected_player_count, player_usernames)
 	session_updated.emit()
 	lobby_updated.emit()
 
 @rpc("authority", "call_local", "reliable")
 func _sync_lobby_state(peer_ids: Array[int], player_count: int, usernames: Dictionary) -> void:
-	player_peer_ids = peer_ids.duplicate()
-	expected_player_count = player_count
-	player_usernames = usernames.duplicate(true)
-	is_lan_match = true
+	session.sync_lobby(peer_ids, player_count, usernames)
 	session_updated.emit()
 	lobby_updated.emit()
 	_emit_status("Connected players: %d / %d" % [player_peer_ids.size(), expected_player_count])
 
 @rpc("authority", "call_local", "reliable")
 func _begin_match(player_count: int, usernames: Dictionary) -> void:
-	expected_player_count = player_count
-	player_usernames = usernames.duplicate(true)
+	session.sync_lobby(player_peer_ids, player_count, usernames)
 	GameManager.player_count = player_count
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
 
@@ -173,27 +198,19 @@ func _request_skip_meeple() -> void:
 
 @rpc("authority", "call_local", "reliable")
 func _apply_place_tile(cell: Vector2i, rotation_count: int) -> void:
-	var turn_system := get_turn_system()
-	if turn_system != null:
-		turn_system.apply_network_tile_placement(cell, rotation_count)
+	turn_coordinator.apply_tile_placement(cell, rotation_count)
 
 @rpc("authority", "call_local", "reliable")
 func _apply_place_meeple(slot_id: String, feature: String) -> void:
-	var turn_system := get_turn_system()
-	if turn_system != null:
-		turn_system.apply_network_meeple_placement(slot_id, feature)
+	turn_coordinator.apply_meeple_placement(slot_id, feature)
 
 @rpc("authority", "call_local", "reliable")
 func _apply_skip_meeple() -> void:
-	var turn_system := get_turn_system()
-	if turn_system != null:
-		turn_system.apply_network_skip_meeple()
+	turn_coordinator.apply_skip_meeple()
 
 @rpc("authority", "call_local", "reliable")
 func _show_drawn_tile(tile_name: String) -> void:
-	var turn_system := get_turn_system()
-	if turn_system != null:
-		turn_system.receive_network_draw(tile_name)
+	turn_coordinator.receive_draw(tile_name)
 
 @rpc("authority", "call_local", "reliable")
 func _apply_game_over(message: String) -> void:
@@ -207,28 +224,19 @@ func _notify_action_failed(message: String) -> void:
 	_emit_status(message)
 
 func _handle_place_tile(peer_id: int, cell: Vector2i, rotation_count: int) -> void:
-	var turn_system := get_turn_system()
-	if turn_system == null:
-		return
-	if turn_system.can_accept_tile_request(peer_id, cell, rotation_count):
+	if turn_coordinator.validate_tile_request(peer_id, cell, rotation_count):
 		rpc("_apply_place_tile", cell, rotation_count)
 	else:
 		_notify_failed_peer(peer_id, "Tile placement rejected.")
 
 func _handle_place_meeple(peer_id: int, slot_id: String, feature: String) -> void:
-	var turn_system := get_turn_system()
-	if turn_system == null:
-		return
-	if turn_system.can_accept_meeple_request(peer_id, slot_id, feature):
+	if turn_coordinator.validate_meeple_request(peer_id, slot_id, feature):
 		rpc("_apply_place_meeple", slot_id, feature)
 	else:
 		_notify_failed_peer(peer_id, "Meeple placement rejected.")
 
 func _handle_skip_meeple(peer_id: int) -> void:
-	var turn_system := get_turn_system()
-	if turn_system == null:
-		return
-	if turn_system.can_accept_skip_request(peer_id):
+	if turn_coordinator.validate_skip_request(peer_id):
 		rpc("_apply_skip_meeple")
 	else:
 		_notify_failed_peer(peer_id, "Skip rejected.")
@@ -240,7 +248,7 @@ func _notify_failed_peer(peer_id: int, message: String) -> void:
 		rpc_id(peer_id, "_notify_action_failed", message)
 
 func _on_connected_to_server() -> void:
-	is_lan_match = true
+	session.is_lan_match = true
 	_emit_status("Connected to host")
 	rpc_id(1, "_register_player", local_username)
 
@@ -256,8 +264,7 @@ func _on_peer_disconnected(id: int) -> void:
 	if not is_host():
 		return
 	if player_peer_ids.has(id):
-		player_peer_ids.erase(id)
-		player_usernames.erase(id)
+		session.remove_peer(id)
 		_sync_lobby_state.rpc(player_peer_ids, expected_player_count, player_usernames)
 		session_updated.emit()
 		lobby_updated.emit()
@@ -265,9 +272,3 @@ func _on_peer_disconnected(id: int) -> void:
 
 func _emit_status(message: String) -> void:
 	status_changed.emit(message)
-
-func _sanitize_username(username: String) -> String:
-	var cleaned := username.strip_edges()
-	if cleaned.is_empty():
-		return "Player"
-	return cleaned.substr(0, 20)

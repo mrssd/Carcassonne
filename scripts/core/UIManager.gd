@@ -20,16 +20,6 @@ var player_colors = [
 	Color.ORANGE,
 ]
 
-<<<<<<< Updated upstream
-=======
-const PHASE_HINTS = {
-	1: "Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.",
-	2: "Click a dot to place a meeple on a feature.\nPress Space or S to skip.",
-}
-
-var hint_label: Label
-
->>>>>>> Stashed changes
 func _ready() -> void:
 	# Use call_deferred to ensure GameManager has initialized its deck
 	call_deferred("_setup_connections")
@@ -78,7 +68,6 @@ func _on_game_ended(message: String) -> void:
 func _on_score_changed(player_index := -1, new_score := -1) -> void:
 	_update_scoreboard_display()
 
-<<<<<<< Updated upstream
 func _update_scoreboard_display() -> void:
 	var scoreboard_text = ""
 	
@@ -94,22 +83,6 @@ func _update_scoreboard_display() -> void:
 				scoreboard_text += "\n"
 	
 	score_label.text = scoreboard_text
-=======
-func _bind_deck_signal() -> void:
-	if game_manager == null or game_manager.tile_deck == null:
-		return
-	if not game_manager.tile_deck.deck_changed.is_connected(_on_deck_changed):
-		game_manager.tile_deck.deck_changed.connect(_on_deck_changed)
-	_update_deck_display()
-
-func _create_hint_panel() -> void:
-	var panel = PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	panel.offset_top = -90
-	panel.offset_bottom = -10
-	panel.offset_left = 200
-	panel.offset_right = -200
->>>>>>> Stashed changes
 
 func show_hint(message: String) -> void:
 	hint_label.text = message
