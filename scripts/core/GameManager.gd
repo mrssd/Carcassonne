@@ -33,6 +33,7 @@ func _initialize_deck() -> void:
 # Starts a local game or applies the host snapshot on clients.
 func start_game():
 	if NetworkManager.is_lan_match and not NetworkManager.is_host():
+		turn_system.players = NetworkManager.get_player_names()
 		if not NetworkManager.pending_snapshot.is_empty():
 			apply_snapshot(NetworkManager.pending_snapshot)
 		return
@@ -131,6 +132,7 @@ func build_snapshot() -> Dictionary:
 
 # Rebuilds the local board, meeples, UI, and turn state from a host snapshot.
 func apply_snapshot(snapshot: Dictionary) -> void:
+	turn_system.players = NetworkManager.get_player_names()
 	_clear_board()
 	score_manager.scores = snapshot.get("scores", []).duplicate()
 	turn_system.remaining_meeples = snapshot.get("remaining_meeples", []).duplicate()

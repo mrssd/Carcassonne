@@ -40,8 +40,11 @@ func _ready() -> void:
 func start_game() -> void:
 	# Initialize players and meeples, wire score manager and deck, then start the first turn.
 	players.clear()
-	for i in range(GameManager.player_count):
-		players.append("Player %d" % (i + 1))
+	if NetworkManager.is_lan_match:
+		players = NetworkManager.get_player_names()
+	else:
+		for i in range(GameManager.player_count):
+			players.append("Player %d" % (i + 1))
 
 	# initialize meeples per player
 	_init_meeples()
@@ -89,13 +92,6 @@ func draw_tile() -> void:
 	if tile_deck == null:
 		push_error("TurnSystem: tile_deck is null.")
 		return
-<<<<<<< Updated upstream
-	
-	var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
-	if tile_data == null:
-		UI_manager.show_hint("Game Over! No more tiles in the deck.")
-		print("No more tiles to draw. Game over!")
-=======
 
 	if board == null or board.tile_scene == null:
 		push_error("TurnSystem: board or board.tile_scene is not available.")
@@ -103,8 +99,9 @@ func draw_tile() -> void:
 
 	var draw_result := _draw_placeable_tile()
 	if draw_result.is_empty():
+		if UI_manager:
+			UI_manager.show_hint("Game Over! No placeable tiles remain.")
 		print("No placeable tiles remain. Game over!")
->>>>>>> Stashed changes
 		game_active = false
 		score_system.score_end_game(board)
 		game_manager.end_game("No placeable tiles remain! Game Over!")
@@ -177,7 +174,6 @@ func on_tile_placed() -> void:
 		return
 	_apply_current_tile_placement(cell)
 
-<<<<<<< Updated upstream
 	if board.can_place(cell, board.current_tile):
 		board.place_tile(cell, board.current_tile)
 		last_placed_tile = board.placed_tiles[cell]
@@ -192,9 +188,6 @@ func on_tile_placed() -> void:
 		UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
 		print("Cannot place tile here – invalid placement.")
 
-=======
-# Resolves a meeple click into a slot/feature and applies or forwards it.
->>>>>>> Stashed changes
 func place_meeple(world_click: Vector2) -> void:
 	var temp: Meeple = MEEPLE_SCENE.instantiate() as Meeple
 	var info = temp.get_placement_feature(last_placed_tile, world_click)
@@ -257,12 +250,8 @@ func _input(event) -> void:
 	elif phase == TurnPhase.PLACE_MEEPLE:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			place_meeple(board.get_global_mouse_position())
-<<<<<<< Updated upstream
 		elif event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
 			UI_manager.show_hint("Skipping meeple placement. Turn ending...")
-=======
-		elif event is InputEventKey and event.pressed and (event.keycode == KEY_SPACE or event.keycode == KEY_S):
->>>>>>> Stashed changes
 			print("Skipping meeple placement")
 			if NetworkManager.is_lan_match:
 				NetworkManager.request_skip_meeple()

@@ -6,6 +6,7 @@ var status_label: Label
 var players_label: Label
 var ip_input: LineEdit
 var port_input: LineEdit
+var username_input: LineEdit
 var host_start_button: Button
 
 func _ready() -> void:
@@ -80,6 +81,11 @@ func _build_network_panel(vbox: VBoxContainer) -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	panel_box.add_child(title)
 
+	username_input = LineEdit.new()
+	username_input.placeholder_text = "Username"
+	username_input.text = OS.get_environment("USER")
+	panel_box.add_child(username_input)
+
 	var row_ip := HBoxContainer.new()
 	ip_input = LineEdit.new()
 	ip_input.placeholder_text = "Host IP"
@@ -126,14 +132,14 @@ func _build_network_panel(vbox: VBoxContainer) -> void:
 
 # Starts hosting a LAN lobby on the configured port.
 func _on_host_pressed() -> void:
-	var err := NetworkManager.host_game(player_count, _get_port())
+	var err := NetworkManager.host_game(player_count, _get_username(), _get_port())
 	if err != OK:
 		status_label.text = "Could not host on port %d" % _get_port()
 	_refresh_lobby()
 
 # Joins a LAN lobby using the configured host IP and port.
 func _on_join_pressed() -> void:
-	var err := NetworkManager.join_game(ip_input.text.strip_edges(), _get_port())
+	var err := NetworkManager.join_game(ip_input.text.strip_edges(), _get_username(), _get_port())
 	if err != OK:
 		status_label.text = "Could not join %s:%d" % [ip_input.text.strip_edges(), _get_port()]
 	_refresh_lobby()
@@ -167,3 +173,11 @@ func _get_port() -> int:
 	if port <= 0:
 		return NetworkManager.DEFAULT_PORT
 	return port
+
+func _get_username() -> String:
+	if username_input == null:
+		return "Player"
+	var username := username_input.text.strip_edges()
+	if username.is_empty():
+		return "Player"
+	return username

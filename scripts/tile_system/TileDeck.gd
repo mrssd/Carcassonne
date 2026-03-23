@@ -49,11 +49,7 @@ func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
 	#Starting tile
 	_draw_pile.append(tile_resources[-1].carcassone_tile_data.duplicate(true))
 	_draw_pile.back().apply_segment_data()
-<<<<<<< Updated upstream
 	deck_changed.emit()
-=======
-	_draw_pile.back().invert_Y_meeple_positions()
->>>>>>> Stashed changes
 	return self
 
 # pops a tile from the draw pile and adds it to the discard pile, returns the drawn tile
