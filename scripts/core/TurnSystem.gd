@@ -86,6 +86,9 @@ func start_turn() -> void:
 	print("Turn started:", get_current_player())
 	turn_changed.emit(get_current_player(), current_player_index)
 	phase = TurnPhase.DRAW_TILE
+	if NetworkManager.is_lan_match and not NetworkManager.is_host():
+		phase_changed.emit(phase)
+		return
 	draw_tile()
 
 func draw_tile() -> void:
@@ -104,7 +107,10 @@ func draw_tile() -> void:
 		print("No placeable tiles remain. Game over!")
 		game_active = false
 		score_system.score_end_game(board)
-		game_manager.end_game("No placeable tiles remain! Game Over!")
+		if NetworkManager.is_lan_match and NetworkManager.is_host():
+			NetworkManager.sync_game_over("No placeable tiles remain! Game Over!")
+		else:
+			game_manager.end_game("No placeable tiles remain! Game Over!")
 		return
 
 	board.current_tile = draw_result["tile"]
@@ -115,6 +121,8 @@ func draw_tile() -> void:
 	phase = TurnPhase.PLACE_TILE
 	phase_changed.emit(phase)
 	UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
+	if NetworkManager.is_lan_match and NetworkManager.is_host():
+		NetworkManager.sync_drawn_tile(current_drawn_tile.tile_data.name)
 	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
@@ -173,20 +181,6 @@ func on_tile_placed() -> void:
 		NetworkManager.request_place_tile(cell, board.current_tile.rotation_count)
 		return
 	_apply_current_tile_placement(cell)
-
-	if board.can_place(cell, board.current_tile):
-		board.place_tile(cell, board.current_tile)
-		last_placed_tile = board.placed_tiles[cell]
-		last_placed_cell = cell
-		board.current_tile = null
-		show_possible_placements([])
-		phase = TurnPhase.PLACE_MEEPLE
-		Meeple.show_placement_hints(last_placed_tile)
-		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
-		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
-	else:
-		UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
-		print("Cannot place tile here – invalid placement.")
 
 func place_meeple(world_click: Vector2) -> void:
 	var temp: Meeple = MEEPLE_SCENE.instantiate() as Meeple
@@ -265,6 +259,56 @@ func is_local_players_turn() -> bool:
 		return true
 	return NetworkManager.get_local_player_index() == current_player_index
 
+func can_accept_tile_request(peer_id: int, cell: Vector2i, rotation_count: int) -> bool:
+	if not _is_peer_turn(peer_id):
+		return false
+	if not game_active or phase != TurnPhase.PLACE_TILE or board.current_tile == null:
+		return false
+
+	var original_rotation: int = board.current_tile.rotation_count
+	_set_current_tile_rotation(rotation_count)
+	var valid: bool = board.can_place(cell, board.current_tile)
+	_set_current_tile_rotation(original_rotation)
+	return valid
+
+func can_accept_meeple_request(peer_id: int, slot_id: String, feature: String) -> bool:
+	if not _is_peer_turn(peer_id):
+		return false
+	if not game_active or phase != TurnPhase.PLACE_MEEPLE or last_placed_tile == null:
+		return false
+	if current_player_index < 0 or current_player_index >= remaining_meeples.size():
+		return false
+	if remaining_meeples[current_player_index] <= 0:
+		return false
+	if not last_placed_tile.can_place_meeple(slot_id):
+		return false
+	return not score_system.is_segment_claimed(board, last_placed_cell, feature)
+
+func can_accept_skip_request(peer_id: int) -> bool:
+	return _is_peer_turn(peer_id) and game_active and phase == TurnPhase.PLACE_MEEPLE
+
+func receive_network_draw(tile_name: String) -> void:
+	if not NetworkManager.is_lan_match or NetworkManager.is_host():
+		return
+	if board.current_tile != null:
+		board.current_tile.queue_free()
+		board.current_tile = null
+
+	var tile_data := TileDeck.create_tile_data_by_name(tile_name)
+	if tile_data == null:
+		return
+
+	var tile_instance: Tile = board.tile_scene.instantiate()
+	tile_instance.tile_data = tile_data
+	board.add_child(tile_instance)
+	board.current_tile = tile_instance
+	current_drawn_tile = tile_instance
+	phase = TurnPhase.PLACE_TILE
+	show_possible_placements(board.get_all_valid_placement(tile_instance))
+	phase_changed.emit(phase)
+	if UI_manager:
+		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
+
 # Applies a host-approved tile placement using the synced rotation value.
 func apply_network_tile_placement(cell: Vector2i, rotation_count: int) -> bool:
 	if not game_active or phase != TurnPhase.PLACE_TILE or board.current_tile == null:
@@ -299,6 +343,8 @@ func apply_network_skip_meeple() -> bool:
 # Commits the current floating tile to the board and enters meeple phase.
 func _apply_current_tile_placement(cell: Vector2i) -> bool:
 	if not board.can_place(cell, board.current_tile):
+		if UI_manager:
+			UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
 		print("Cannot place tile here – invalid placement.")
 		return false
 	board.place_tile(cell, board.current_tile)
@@ -309,5 +355,21 @@ func _apply_current_tile_placement(cell: Vector2i) -> bool:
 	phase = TurnPhase.PLACE_MEEPLE
 	phase_changed.emit(phase)
 	Meeple.show_placement_hints(last_placed_tile)
+	if UI_manager:
+		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
 	print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	return true
+
+func _is_peer_turn(peer_id: int) -> bool:
+	if not NetworkManager.is_lan_match:
+		return true
+	if current_player_index < 0 or current_player_index >= NetworkManager.player_peer_ids.size():
+		return false
+	return NetworkManager.player_peer_ids[current_player_index] == peer_id
+
+func _set_current_tile_rotation(target_rotation: int) -> void:
+	if board.current_tile == null:
+		return
+	var normalized_target := posmod(target_rotation, 4)
+	while board.current_tile.rotation_count != normalized_target:
+		board.current_tile.rotate_clockwise()
