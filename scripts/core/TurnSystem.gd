@@ -195,12 +195,14 @@ func place_meeple(world_click: Vector2) -> void:
 		end_meeple_phase()
 
 # Finalizes scoring and advances the turn after meeple placement/skip.
-func end_meeple_phase() -> void:
+func end_meeple_phase(advance_turn: bool = true) -> void:
 	Meeple.hide_placement_hints(last_placed_tile)
 	score_system.score_and_apply(board, last_placed_cell)
 	last_placed_tile = null
 	phase = TurnPhase.DRAW_TILE
-	end_turn()
+	phase_changed.emit(phase)
+	if advance_turn:
+		end_turn()
 
 func end_turn() -> void:
 	print("Turn ended:", get_current_player())
@@ -289,6 +291,14 @@ func show_drawn_tile_by_name(tile_name: String) -> void:
 	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 
+func sync_current_player_index(player_index: int) -> void:
+	if player_index < 0 or player_index >= players.size():
+		return
+	if current_player_index == player_index:
+		return
+	current_player_index = player_index
+	turn_changed.emit(get_current_player(), current_player_index)
+
 func commit_tile_placement(cell: Vector2i, rotation_count: int) -> bool:
 	if not game_active or phase != TurnPhase.PLACE_TILE or board.current_tile == null:
 		return false
@@ -308,14 +318,14 @@ func commit_meeple_placement(slot_id: String, feature: String) -> bool:
 		return false
 	meeple_changed.emit(current_player_index)
 	Meeple.hide_placement_hints(last_placed_tile)
-	end_meeple_phase()
+	end_meeple_phase(not (NetworkManager.is_lan_match and not NetworkManager.is_host()))
 	return true
 
 func commit_skip_meeple() -> bool:
 	if not game_active or phase != TurnPhase.PLACE_MEEPLE:
 		return false
 	Meeple.hide_placement_hints(last_placed_tile)
-	end_meeple_phase()
+	end_meeple_phase(not (NetworkManager.is_lan_match and not NetworkManager.is_host()))
 	return true
 
 # Commits the current floating tile to the board and enters meeple phase.
