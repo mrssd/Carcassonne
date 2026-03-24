@@ -41,6 +41,8 @@ func _setup_connections() -> void:
 		# Set initial score display
 		_on_score_changed()
 
+	NetworkManager.action_failed.connect(_on_network_action_failed)
+
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	turn_label.text = "Turn: %s" % player_name
 	_update_turn_color(player_index)
@@ -90,3 +92,6 @@ func show_hint(message: String) -> void:
 
 func hide_hint() -> void:
 	hint_panel.hide()
+
+func _on_network_action_failed(message: String) -> void:
+	show_hint(message)

@@ -177,6 +177,10 @@ func place_meeple(world_click: Vector2) -> void:
 	var temp: Meeple = MEEPLE_SCENE.instantiate() as Meeple
 	var info = temp.get_placement_feature(last_placed_tile, world_click)
 	temp.free()
+	if last_placed_tile != null and not last_placed_tile.can_place_meeple(info["slot_id"]):
+		if UI_manager:
+			UI_manager.show_hint("That meeple slot is already occupied.\nTry another spot or press SPACE to skip.")
+		return
 	if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
 		UI_manager.show_hint("That feature is already claimed.\nTry another spot or press SPACE to skip.")
 		print("That feature is already claimed.")
