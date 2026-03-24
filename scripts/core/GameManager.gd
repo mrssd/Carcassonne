@@ -30,7 +30,9 @@ func _initialize_deck() -> void:
 func start_game():
 	if tile_deck == null:
 		_initialize_deck()
-	_place_starting_tile()
+	# Only the host places the starting tile in a LAN match to keep boards in sync.
+	if not NetworkManager.is_lan_match or NetworkManager.is_host():
+		_place_starting_tile()
 	# Delegate player / turn initialization to TurnSystem
 	if turn_system:
 		turn_system.start_game()
@@ -48,9 +50,25 @@ func _place_starting_tile() -> void:
 	if starting_tile_data == null:
 		return
 
-	## Placing the tile
 	var tile_instance: Tile = board.tile_scene.instantiate()
 	tile_instance.tile_data = starting_tile_data
+	board.add_child(tile_instance)
+	board.place_tile(Vector2i.ZERO, tile_instance)
+
+	# Broadcast the starting tile to non-host clients.
+	if NetworkManager.is_lan_match and NetworkManager.is_host():
+		NetworkManager.sync_starting_tile(starting_tile_data.name)
+
+# Called on non-host clients via RPC to place the synced starting tile.
+func receive_starting_tile(tile_name: String) -> void:
+	if board == null or board.tile_scene == null:
+		return
+	var tile_data = TileDeck.create_tile_data_by_name(tile_name)
+	if tile_data == null:
+		push_error("GameManager: could not find starting tile data for '%s'" % tile_name)
+		return
+	var tile_instance: Tile = board.tile_scene.instantiate()
+	tile_instance.tile_data = tile_data
 	board.add_child(tile_instance)
 	board.place_tile(Vector2i.ZERO, tile_instance)
 

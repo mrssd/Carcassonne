@@ -109,6 +109,10 @@ func submit_skip_meeple() -> bool:
 func on_tile_drawn(tile_name: String) -> void:
 	turn_coordinator.sync_drawn_tile(tile_name)
 
+func sync_starting_tile(tile_name: String) -> void:
+	if is_host():
+		rpc("_apply_starting_tile", tile_name)
+
 func on_game_over(message: String) -> bool:
 	return turn_coordinator.sync_game_over(message)
 
@@ -211,9 +215,15 @@ func _apply_place_meeple(slot_id: String, feature: String) -> void:
 func _apply_skip_meeple() -> void:
 	turn_coordinator.apply_skip_meeple()
 
-@rpc("authority", "call_local", "reliable")
+@rpc("authority", "call_remote", "reliable")
 func _show_drawn_tile(tile_name: String) -> void:
 	turn_coordinator.receive_draw(tile_name)
+
+@rpc("authority", "call_remote", "reliable")
+func _apply_starting_tile(tile_name: String) -> void:
+	var game_manager := get_game_manager()
+	if game_manager != null:
+		game_manager.receive_starting_tile(tile_name)
 
 @rpc("authority", "call_local", "reliable")
 func _apply_game_over(message: String) -> void:

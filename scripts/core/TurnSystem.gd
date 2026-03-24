@@ -302,6 +302,7 @@ func commit_meeple_placement(slot_id: String, feature: String) -> bool:
 	var placed = Meeple.try_place_on_tile_slot(last_placed_tile, slot_id, feature, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if not placed:
 		return false
+	meeple_changed.emit(current_player_index)
 	Meeple.hide_placement_hints(last_placed_tile)
 	end_meeple_phase()
 	return true
