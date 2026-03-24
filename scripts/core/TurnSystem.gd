@@ -174,9 +174,11 @@ func on_tile_placed() -> void:
 	_apply_current_tile_placement(cell)
 
 func place_meeple(world_click: Vector2) -> void:
-	var temp: Meeple = MEEPLE_SCENE.instantiate() as Meeple
-	var info = temp.get_placement_feature(last_placed_tile, world_click)
-	temp.free()
+	var info: Dictionary = _get_closest_available_meeple_slot(world_click)
+	if info.is_empty():
+		if UI_manager:
+			UI_manager.show_hint("That feature is already claimed.\nTry another spot or press SPACE to skip.")
+		return
 	if last_placed_tile != null and not last_placed_tile.can_place_meeple(info["slot_id"]):
 		if UI_manager:
 			UI_manager.show_hint("That meeple slot is already occupied.\nTry another spot or press SPACE to skip.")
@@ -187,7 +189,7 @@ func place_meeple(world_click: Vector2) -> void:
 		return
 	if NetworkManager.submit_meeple_placement(info["slot_id"], info["feature"]):
 		return
-	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
+	var placed = Meeple.try_place_on_tile_slot(last_placed_tile, info["slot_id"], info["feature"], current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
 		meeple_changed.emit(current_player_index)
 		UI_manager.show_hint("Meeple placed! Turn ending...")
@@ -276,7 +278,7 @@ func show_drawn_tile_by_name(tile_name: String) -> void:
 		board.current_tile.queue_free()
 		board.current_tile = null
 
-	var tile_data := TileDeck.create_tile_data_by_name(tile_name)
+	var tile_data: CarcassonneTileData = TileDeck.create_tile_data_by_name(tile_name)
 	if tile_data == null:
 		return
 
@@ -343,7 +345,8 @@ func _apply_current_tile_placement(cell: Vector2i) -> bool:
 	phase = TurnPhase.PLACE_MEEPLE
 	phase_changed.emit(phase)
 	if _can_interact_with_current_turn():
-		Meeple.show_placement_hints(last_placed_tile)
+		last_placed_tile.set_meta("allowed_meeple_slots", _get_available_meeple_slots(last_placed_tile))
+		Meeple.show_placement_hints(last_placed_tile, 24.0)
 	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
 	print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
@@ -364,3 +367,69 @@ func _update_tile_preview_visibility(valid_placements: Array) -> void:
 	if board.current_tile != null:
 		board.current_tile.visible = show_preview
 	show_possible_placements(valid_placements if show_preview else [])
+
+func _get_available_meeple_slots(tile: Tile) -> Array[Dictionary]:
+	var slots: Array[Dictionary] = []
+	if tile == null:
+		return slots
+	if tile.tile_data != null and tile.tile_data.meeple_positions.size() > 0:
+		for base_key in tile.tile_data.meeple_positions.keys():
+			var feature: String = _resolve_meeple_segment(tile, base_key)
+			var slot: Dictionary = {
+				"offset": Vector2(base_key.x, base_key.y) * 24.0,
+				"feature": feature,
+				"slot_id": "%d_%d_%s" % [base_key.x, base_key.y, feature]
+			}
+			if not tile.can_place_meeple(slot["slot_id"]):
+				continue
+			if score_system.is_segment_claimed(board, last_placed_cell, slot["feature"]):
+				continue
+			slots.append(slot)
+	else:
+		var center_slot: Dictionary = {
+			"offset": Vector2.ZERO,
+			"feature": "center",
+			"slot_id": "0_0_center"
+		}
+		if tile.can_place_meeple(center_slot["slot_id"]) and not score_system.is_segment_claimed(board, last_placed_cell, center_slot["feature"]):
+			slots.append(center_slot)
+	return slots
+
+func _resolve_meeple_segment(tile: Tile, pos: Vector2i) -> String:
+	if tile == null or tile.tile_data == null:
+		return "unknown"
+	if tile.tile_data.is_monastery:
+		return "monastery"
+	var r: int = posmod(tile.rotation_count, 4)
+	var rp: Vector2i = pos
+	for _i in range(r):
+		rp = Vector2i(-rp.y, rp.x)
+	var ax: int = abs(rp.x)
+	var ay: int = abs(rp.y)
+	var candidate_edges: Array = []
+	if ax == 0 and ay == 0:
+		candidate_edges = [0, 1, 2, 3]
+	elif ax > ay:
+		candidate_edges = [1 if rp.x > 0 else 3]
+	elif ay > ax:
+		candidate_edges = [0 if rp.y < 0 else 2]
+	else:
+		candidate_edges = [1 if rp.x > 0 else 3, 0 if rp.y < 0 else 2]
+	for edge in candidate_edges:
+		for seg_key in tile.tile_data.internal_connections:
+			if tile.tile_data.internal_connections[seg_key].has(edge):
+				return seg_key
+	return "unknown"
+
+func _get_closest_available_meeple_slot(world_click: Vector2) -> Dictionary:
+	if last_placed_tile == null:
+		return {}
+	var best_slot: Dictionary = {}
+	var best_dist: float = INF
+	for slot in _get_available_meeple_slots(last_placed_tile):
+		var world_candidate: Vector2 = last_placed_tile.to_global(slot["offset"])
+		var dist: float = world_click.distance_to(world_candidate)
+		if dist < best_dist:
+			best_dist = dist
+			best_slot = slot
+	return best_slot

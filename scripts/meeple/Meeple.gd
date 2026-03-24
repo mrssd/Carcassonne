@@ -69,7 +69,7 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 		"slot_id": best_slot_id
 	}
 
-func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_count: int = 0) -> String:
+static func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_count: int = 0) -> String:
 	if tile_data.is_monastery:
 		return "monastery"
 	# Rotate pos to match the post-rotation internal_connections edge indices.
@@ -132,7 +132,7 @@ static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vect
 
 # Converts a serialized slot id like "0_-1_road_0" back into local tile space.
 static func create_slot_offset(slot_id: String, unit_scale: float = 24.0) -> Vector2:
-	var parts := slot_id.split("_", false, 2)
+	var parts: PackedStringArray = slot_id.split("_", false, 2)
 	if parts.size() < 2:
 		return Vector2.ZERO
 	return Vector2(int(parts[0]), int(parts[1])) * unit_scale
@@ -192,13 +192,16 @@ static func show_placement_hints(tile: Tile, unit_scale: float = 24.0) -> void:
 	var hints := MeepleHints.new()
 	hints.name = "MeepleHints"
 
-	# Build positions using the SAME logic as get_placement_feature()
 	var positions: Array[Vector2] = []
-	if tile.tile_data and tile.tile_data.meeple_positions.size() > 0:
+	var allowed_slots = []
+	if tile.has_meta("allowed_meeple_slots"):
+		allowed_slots = tile.get_meta("allowed_meeple_slots")
+	if not allowed_slots.is_empty():
+		for slot in allowed_slots:
+			positions.append(slot["offset"])
+	elif tile.tile_data and tile.tile_data.meeple_positions.size() > 0:
 		for base_key in tile.tile_data.meeple_positions.keys():
-			var base_rel := Vector2(base_key.x, base_key.y)
-			var local_offset := base_rel * unit_scale
-			positions.append(local_offset)
+			positions.append(Vector2(base_key.x, base_key.y) * unit_scale)
 	else:
 		positions.append(Vector2.ZERO)
 
@@ -207,9 +210,8 @@ static func show_placement_hints(tile: Tile, unit_scale: float = 24.0) -> void:
 	hints.queue_redraw()
 
 static func hide_placement_hints(tile: Tile) -> void:
-	if tile and tile.has_node("MeepleHints"):
-		tile.get_node("MeepleHints").queue_free()
-
-
-
-
+	if tile:
+		if tile.has_meta("allowed_meeple_slots"):
+			tile.remove_meta("allowed_meeple_slots")
+		if tile.has_node("MeepleHints"):
+			tile.get_node("MeepleHints").queue_free()
