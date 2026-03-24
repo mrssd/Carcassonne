@@ -35,6 +35,7 @@ func _process(_dt):
 
 func place_tile(cell: Vector2i, tile: Tile): # NEED TO MATCH IN TILE SCRIPT
 	tile.position = index_to_coord(cell)
+	tile.visible = true
 	# ensure tile placed has full opacity
 	tile.modulate = Color(1, 1, 1, 1)
 	placed_tiles[cell] = tile

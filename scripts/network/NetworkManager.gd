@@ -115,7 +115,10 @@ func on_game_over(message: String) -> bool:
 func start_lan_match() -> void:
 	if not is_host():
 		return
-	rpc("_begin_match", expected_player_count, player_usernames)
+	if player_peer_ids.size() < expected_player_count:
+		_emit_status("Waiting for players: %d / %d" % [player_peer_ids.size(), expected_player_count])
+		return
+	rpc("_begin_match", player_peer_ids, expected_player_count, player_usernames)
 
 func request_place_tile(cell: Vector2i, rotation_count: int) -> void:
 	if not is_lan_match:
@@ -179,8 +182,8 @@ func _sync_lobby_state(peer_ids: Array[int], player_count: int, usernames: Dicti
 	_emit_status("Connected players: %d / %d" % [player_peer_ids.size(), expected_player_count])
 
 @rpc("authority", "call_local", "reliable")
-func _begin_match(player_count: int, usernames: Dictionary) -> void:
-	session.sync_lobby(player_peer_ids, player_count, usernames)
+func _begin_match(peer_ids: Array[int], player_count: int, usernames: Dictionary) -> void:
+	session.sync_lobby(peer_ids, player_count, usernames)
 	GameManager.player_count = player_count
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
 

@@ -109,11 +109,11 @@ func draw_tile() -> void:
 	board.current_tile = draw_result["tile"]
 	current_drawn_tile = board.current_tile
 
-	show_possible_placements(draw_result["valid_placements"])
-
 	phase = TurnPhase.PLACE_TILE
+	_update_tile_preview_visibility(draw_result["valid_placements"])
 	phase_changed.emit(phase)
-	UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
+	if UI_manager and _can_interact_with_current_turn():
+		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 	NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
 	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
@@ -280,9 +280,9 @@ func show_drawn_tile_by_name(tile_name: String) -> void:
 	board.current_tile = tile_instance
 	current_drawn_tile = tile_instance
 	phase = TurnPhase.PLACE_TILE
-	show_possible_placements(board.get_all_valid_placement(tile_instance))
+	_update_tile_preview_visibility(board.get_all_valid_placement(tile_instance))
 	phase_changed.emit(phase)
-	if UI_manager:
+	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 
 func commit_tile_placement(cell: Vector2i, rotation_count: int) -> bool:
@@ -327,8 +327,9 @@ func _apply_current_tile_placement(cell: Vector2i) -> bool:
 	show_possible_placements([])
 	phase = TurnPhase.PLACE_MEEPLE
 	phase_changed.emit(phase)
-	Meeple.show_placement_hints(last_placed_tile)
-	if UI_manager:
+	if _can_interact_with_current_turn():
+		Meeple.show_placement_hints(last_placed_tile)
+	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
 	print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	return true
@@ -339,3 +340,12 @@ func _set_current_tile_rotation(target_rotation: int) -> void:
 	var normalized_target := posmod(target_rotation, 4)
 	while board.current_tile.rotation_count != normalized_target:
 		board.current_tile.rotate_clockwise()
+
+func _can_interact_with_current_turn() -> bool:
+	return not NetworkManager.should_block_local_input(current_player_index)
+
+func _update_tile_preview_visibility(valid_placements: Array) -> void:
+	var show_preview := _can_interact_with_current_turn()
+	if board.current_tile != null:
+		board.current_tile.visible = show_preview
+	show_possible_placements(valid_placements if show_preview else [])
