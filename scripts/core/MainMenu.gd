@@ -4,6 +4,7 @@ var player_count: int = 2
 var count_label: Label
 var status_label: Label
 var players_label: Label
+var host_ip_label: Label
 var ip_input: LineEdit
 var port_input: LineEdit
 var username_input: LineEdit
@@ -88,8 +89,8 @@ func _build_network_panel(vbox: VBoxContainer) -> void:
 
 	var row_ip := HBoxContainer.new()
 	ip_input = LineEdit.new()
-	ip_input.placeholder_text = "Host IP"
-	ip_input.text = "127.0.0.1"
+	ip_input.placeholder_text = "Host IP (e.g. 192.168.1.5)"
+	ip_input.text = ""
 	ip_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row_ip.add_child(ip_input)
 
@@ -123,6 +124,11 @@ func _build_network_panel(vbox: VBoxContainer) -> void:
 	status_label.add_theme_color_override("font_color", Color.WHITE)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	panel_box.add_child(status_label)
+
+	host_ip_label = Label.new()
+	host_ip_label.add_theme_color_override("font_color", Color.YELLOW)
+	host_ip_label.visible = false
+	panel_box.add_child(host_ip_label)
 
 	players_label = Label.new()
 	players_label.add_theme_color_override("font_color", Color.WHITE)
@@ -166,6 +172,12 @@ func _refresh_lobby() -> void:
 		lines.append("%s%s" % [names[i], suffix])
 	players_label.text = "Lobby:\n%s" % ("\n".join(lines) if not lines.is_empty() else "No players connected")
 	host_start_button.visible = NetworkManager.is_host()
+	if host_ip_label != null:
+		if NetworkManager.is_host():
+			host_ip_label.text = "Your IP: %s" % _get_local_ip()
+			host_ip_label.visible = true
+		else:
+			host_ip_label.visible = false
 
 # Parses the port field and falls back to the default LAN port when empty.
 func _get_port() -> int:
@@ -181,3 +193,9 @@ func _get_username() -> String:
 	if username.is_empty():
 		return "Player"
 	return username
+
+func _get_local_ip() -> String:
+	for addr in IP.get_local_addresses():
+		if addr.begins_with("192.168.") or addr.begins_with("10.") or addr.begins_with("172."):
+			return addr
+	return "unknown"
