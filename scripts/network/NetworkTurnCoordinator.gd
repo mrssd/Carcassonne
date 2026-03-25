@@ -1,11 +1,3 @@
-#is also new and now owns LAN
-#gameplay orchestration: deciding whether non-host clients should wait for the
-#host to draw, blocking local input when it is not the local player’s turn,
-#forwarding placement/skip requests through the network, validating incoming
-#requests against the active turn, and applying synced tile/meeple/skip actions
-#back onto TurnSystem.
-
-
 class_name NetworkTurnCoordinator
 extends RefCounted
 
@@ -27,7 +19,9 @@ func should_defer_draw_to_host() -> bool:
 	return network_manager.is_lan_match and not network_manager.is_host()
 
 func should_block_local_input(current_player_index: int) -> bool:
-	return network_manager.is_lan_match and not is_local_players_turn(current_player_index)
+	if not network_manager.is_lan_match:
+		return false
+	return network_manager.get_local_player_index() != current_player_index
 
 func submit_tile_placement(cell: Vector2i, rotation_count: int) -> bool:
 	if not network_manager.is_lan_match:
@@ -47,9 +41,9 @@ func submit_skip_meeple() -> bool:
 	network_manager.request_skip_meeple()
 	return true
 
-func sync_drawn_tile(tile_name: String) -> void:
+func sync_drawn_tile(player_index: int, tile_name: String) -> void:
 	if network_manager.is_lan_match and network_manager.is_host():
-		network_manager.sync_drawn_tile(tile_name)
+		network_manager.sync_drawn_tile(player_index, tile_name)
 
 func sync_game_over(message: String) -> bool:
 	if network_manager.is_lan_match and network_manager.is_host():
@@ -57,9 +51,10 @@ func sync_game_over(message: String) -> bool:
 		return true
 	return false
 
-func receive_draw(tile_name: String) -> void:
+func receive_draw(player_index: int, tile_name: String) -> void:
 	var turn_system: TurnSystem = network_manager.get_turn_system()
 	if turn_system != null:
+		turn_system.sync_current_player_index(player_index)
 		turn_system.show_drawn_tile_by_name(tile_name)
 
 func apply_tile_placement(cell: Vector2i, rotation_count: int) -> void:
@@ -79,30 +74,21 @@ func apply_skip_meeple() -> void:
 
 func validate_tile_request(peer_id: int, cell: Vector2i, rotation_count: int) -> bool:
 	var turn_system: TurnSystem = network_manager.get_turn_system()
-	if turn_system == null:
-		return false
-	if not _is_peer_turn(turn_system, peer_id):
+	if turn_system == null or not _is_peer_turn(turn_system, peer_id):
 		return false
 	return turn_system.validate_tile_placement(cell, rotation_count)
 
 func validate_meeple_request(peer_id: int, slot_id: String, feature: String) -> bool:
 	var turn_system: TurnSystem = network_manager.get_turn_system()
-	if turn_system == null:
-		return false
-	if not _is_peer_turn(turn_system, peer_id):
+	if turn_system == null or not _is_peer_turn(turn_system, peer_id):
 		return false
 	return turn_system.validate_meeple_placement(slot_id, feature)
 
 func validate_skip_request(peer_id: int) -> bool:
 	var turn_system: TurnSystem = network_manager.get_turn_system()
-	if turn_system == null:
+	if turn_system == null or not _is_peer_turn(turn_system, peer_id):
 		return false
-	return _is_peer_turn(turn_system, peer_id) and turn_system.can_skip_meeple_phase()
-
-func is_local_players_turn(current_player_index: int) -> bool:
-	if not network_manager.is_lan_match:
-		return true
-	return network_manager.get_local_player_index() == current_player_index
+	return turn_system.can_skip_meeple_phase()
 
 func _is_peer_turn(turn_system: TurnSystem, peer_id: int) -> bool:
 	if not network_manager.is_lan_match:
