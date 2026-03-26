@@ -161,7 +161,7 @@ func place_meeple(world_click: Vector2) -> void:
 	temp.free()
 	if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
 		UI_manager.show_hint("That feature is already claimed")
-		print("That feature is already claimed.")
+		print(info["feature"], "is already claimed.")
 		return
 	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:

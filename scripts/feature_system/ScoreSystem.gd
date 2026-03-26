@@ -10,11 +10,32 @@ const ROAD_POINTS_PER_TILE : int = 1
 const CITY_POINTS_PER_TILE : int = 2
 const MONASTERY_COMPLETE_POINTS : int = 9
 
-# Array to point to neighbouring cell, so [0] would be the tile on top
+#Array to point to neighbouring cell, so [0] would be the tile on top
 var neighbor_directions : Array = [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]
 
-# Array to map a tile's edge to another tile's edge
+#Array to map a tile's edge to another tile's edge
 var opposite_index : Array = [2, 3, 0, 1]
+
+# Field numbering reference
+#     [0][1]
+# [7]       [2]
+# [6]       [3]
+#     [5][4]
+
+#Lookup table mapping where each half edge connects to which half edge of neighbour
+const HALF_EDGE_CONNECTIONS = [
+	[0, 5], 
+	[0, 4],  
+	[1, 7],  
+	[1, 6], 
+	[2, 1], 
+	[2, 0],  
+	[3, 3],  
+	[3, 2], 
+]
+
+#Maps edges to half edges
+const EDGE_TO_HALF_EDGES = [[0, 1], [2, 3], [4, 5], [6, 7]]
 
 # Prevent double scoring from the same features
 var _scored_features : Dictionary = {}
@@ -81,6 +102,8 @@ func _get_feature_type(segment_key, _tile_data):
 		return "road"
 	elif segment_key.begins_with("city"):
 		return "city"
+	elif segment_key.begins_with("field"):
+		return "field"
 	else:
 		return "other"
 
@@ -91,7 +114,7 @@ func score_and_apply(board, placed_cell):
 
 	for segment_key in tile.tile_data.internal_connections.keys():
 		var feature_type = _get_feature_type(segment_key, tile.tile_data)
-		if feature_type == "other": #skip if not road or city
+		if feature_type == "other" or feature_type == "field": #skip if not road or city (fields score at end game only)
 			continue
 
 		var explore_result = _explore_segment(board, placed_cell, segment_key) #explore segment 
@@ -164,7 +187,7 @@ func score_end_game(board) -> void:
 		var tile = board.placed_tiles[cell]
 		for segment_key in tile.tile_data.internal_connections.keys(): #loops through every feature on that tile
 			var feature_type = _get_feature_type(segment_key, tile.tile_data)
-			if feature_type == "other":
+			if feature_type == "other" or feature_type == "field":
 				continue
 
 			var explore_result = _explore_segment(board, cell, segment_key) #explore connected feature from this tile/segment
@@ -203,11 +226,122 @@ func score_end_game(board) -> void:
 					_award_to_majority(owners, 1 + surrounding_count) #award the score
 					_return_meeples(board, monastery_result)
 
+	score_end_game_farmers(board)
+
+#Awards 3*completed adjacent cities points to the player with most farmers on the tile
+func score_end_game_farmers(board) -> void:
+	var scored_fields: Dictionary = {} #Dictionary to prevent double scoring
+	for cell in board.placed_tiles.keys(): #Loops through all placed tiles
+		var tile = board.placed_tiles[cell]
+		for seg_key in tile.tile_data.internal_connections.keys():
+			if not seg_key.begins_with("field_"):
+				continue
+			var field_result = _explore_field(board, cell, seg_key)
+			var visited_keys = field_result["visited"].duplicate()
+			visited_keys.sort()
+			var field_key = "|".join(visited_keys)
+			if scored_fields.has(field_key):
+				continue
+			scored_fields[field_key] = true
+			var owners = _get_meeple_owners(board, field_result)
+			var city_count = _get_adjacent_completed_cities(board, field_result)
+			print("[FARMER] Field: %d tile(s), cities: %d, owners: %s" % [field_result["tiles"].size(), city_count, owners])
+			if owners.is_empty():
+				continue
+			_award_to_majority(owners, city_count * 3)
+			print("[FARMER] Awarded %d pts to majority of %s" % [city_count * 3, owners])
+			_return_meeples(board, field_result)
+
+#Finds the field segment key that contains a given half-edge index on a tile
+func _find_field_segment_for_half_edge(tile_data: CarcassonneTileData, half_edge: int) -> String:
+	for seg_key in tile_data.internal_connections:
+		if seg_key.begins_with("field_") and tile_data.internal_connections[seg_key].has(half_edge):
+			return seg_key
+	return ""
+
+#Traverses tiles using the half edge connection table, almost the same as _explore_segment
+func _explore_field(board, start_cell: Vector2i, segment_key: String) -> Dictionary:
+	var stack: Array = [[start_cell, segment_key]]
+	var visited: Dictionary = {}
+	var unique_tiles: Dictionary = {}
+	#DFS traversal through tiles
+	while not stack.is_empty():
+		var entry = stack.pop_back()
+		var cell = entry[0]
+		var seg_key = entry[1]
+		var visit_key = str(cell.x) + "," + str(cell.y) + "|" + seg_key
+		if visited.has(visit_key):
+			continue
+		visited[visit_key] = true
+		if not unique_tiles.has(cell):
+			unique_tiles[cell] = true
+		var tile = board.placed_tiles[cell]
+		var half_edges = tile.tile_data.internal_connections[seg_key]
+		for half_edge in half_edges:
+			var conn = HALF_EDGE_CONNECTIONS[half_edge]
+			var neighbor_cell = cell + neighbor_directions[conn[0]]
+			if not board.placed_tiles.has(neighbor_cell):
+				continue
+			var neighbor_tile = board.placed_tiles[neighbor_cell]
+			var neighbor_seg_key = _find_field_segment_for_half_edge(neighbor_tile.tile_data, conn[1])
+			if neighbor_seg_key == "":
+				continue
+			var neighbor_visit_key = str(neighbor_cell.x) + "," + str(neighbor_cell.y) + "|" + neighbor_seg_key
+			if not visited.has(neighbor_visit_key):
+				stack.append([neighbor_cell, neighbor_seg_key])
+	return {"tiles": unique_tiles.keys(), "visited": visited.keys()} #Returns tiles and visited, same format as _explore_segment
+
+#Checks if a field half edge overlaps with a city edge indicies
+#For example, city is on edge [0], field has half edge [0, 1, 4, 5, 6, 7], city edge 0 -> checks half edge 0 -> returns true
+#City on edge[1] (right side), field has same half edge, city edge 1 -> checks half edge 2 and 3 from lookup table HALF_EDGE_CONNECTIONS)-> no 2 and 3 -> return false
+func _field_adjacent_to_city(field_half_edges: Array, city_edge_indices: Array) -> bool:
+	for city_edge in city_edge_indices: #For each edge the city occupies
+		for h in EDGE_TO_HALF_EDGES[city_edge]: #For half edges
+			if field_half_edges.has(h): #If the half edge contains a city
+				return true
+	return false
+
+#Counts unique cities touching it
+func _get_adjacent_completed_cities(board, field_result: Dictionary) -> int:
+	var found_cities: Dictionary = {}
+	var cell_to_segs: Dictionary = {} #example {"0, 0: [field_0]"}
+	#Loops through visited field and build a cell_to_segs
+	for vkey in field_result["visited"]:
+		var parts = vkey.split("|")
+		var cell_str = parts[0]
+		var seg_key = parts[1]
+		if not cell_to_segs.has(cell_str):
+			cell_to_segs[cell_str] = []
+		cell_to_segs[cell_str].append(seg_key)
+	#Loops through each tile in the field
+	for cell in field_result["tiles"]:
+		var cell_str = str(cell.x) + "," + str(cell.y)
+		var tile_data = board.placed_tiles[cell].tile_data
+		for field_seg in cell_to_segs.get(cell_str, []):
+			var field_half_edges = tile_data.internal_connections[field_seg] #Grabs half edge for a city
+			for seg_key in tile_data.internal_connections:
+				if not seg_key.begins_with("city_"):
+					continue
+				if not _field_adjacent_to_city(field_half_edges, tile_data.internal_connections[seg_key]):
+					continue
+				var city_result = _explore_segment(board, cell, seg_key)
+				if city_result["open_ports"] > 0: #Incomplete cities
+					continue  
+				var city_visited = city_result["visited"].duplicate()
+				city_visited.sort()
+				found_cities["|".join(city_visited)] = true #If the next tile finds the same city again, it joins the visited key in one string and deduplicated automatically in found_cities dictionary
+	return found_cities.size()
+
+
+#Checks if the segment or field is claimed 
 func is_segment_claimed(board, cell: Vector2i, segment_key: String) -> bool:
 	if segment_key == "center" or segment_key == "unknown":
 		return false
 	if segment_key == "monastery":
 		return not board.placed_tiles[cell].meeples.is_empty()
+	if segment_key.begins_with("field_"):
+		var field_result = _explore_field(board, cell, segment_key)
+		return not _get_meeple_owners(board, field_result).is_empty()
 	var explore_result = _explore_segment(board, cell, segment_key)
 	return not _get_meeple_owners(board, explore_result).is_empty()
 
@@ -242,7 +376,7 @@ func _get_meeple_owners(board, explore_result: Dictionary) -> Dictionary:
 				counts[owner] = counts.get(owner, 0) + 1
 	return counts
 
-#if two players have same meeple, this functions finds the max count and awards full point to all players tied
+#If two players have same meeple, this functions finds the max count and awards full point to all players tied
 func _award_to_majority(counts: Dictionary, points: int) -> void:
 	if counts.is_empty():
 		return
@@ -251,6 +385,7 @@ func _award_to_majority(counts: Dictionary, points: int) -> void:
 		if counts[player] == max_count:
 			score_manager.add_score(player, points)
 
+#Returns meeple if a feature is completed
 func _return_meeples(board, explore_result: Dictionary) -> void:
 	var cell_to_segs = {}
 	for vkey in explore_result["visited"]:

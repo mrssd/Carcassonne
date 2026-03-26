@@ -90,60 +90,60 @@ func apply_segment_data():
 			internal_connections = {"city_0": [0, 1, 2, 3]}
 			has_shield = true
 		"city3":
-			internal_connections = {"city_0": [0, 1, 3]}
+			internal_connections = {"city_0": [0, 1, 3], "field_0": [3, 4, 5, 6]}
 		"city3sr":
-			internal_connections = {"city_0": [0, 1, 3], "road_0": [2]}
+			internal_connections = {"city_0": [0, 1, 3], "road_0": [2], "field_0": [3, 4], "field_1": [5, 6]}
 			has_shield = true
 		"city3s":
-			internal_connections = {"city_0": [0, 1, 3]}
+			internal_connections = {"city_0": [0, 1, 3], "field_0": [3, 4, 5, 6]}
 			has_shield = true
 		"city3r":
-			internal_connections = {"city_0": [0, 1, 3], "road_0": [2]}
+			internal_connections = {"city_0": [0, 1, 3], "road_0": [2], "field_0": [3, 4], "field_1": [5, 6]}
 		"city2wes":
-			internal_connections = {"city_0": [1, 3]}
+			internal_connections = {"city_0": [1, 3], "field_0": [0, 1, 2, 7], "field_1": [3, 4, 5, 6]}
 			has_shield = true
 		"city2we":
-			internal_connections = {"city_0": [1, 3]}
+			internal_connections = {"city_0": [1, 3], "field_0": [0, 1, 2, 7], "field_1": [3, 4, 5, 6]}
 		"city2nwsr":
-			internal_connections = {"city_0": [0, 3], "road_0": [1, 2]}
+			internal_connections = {"city_0": [0, 3], "road_0": [1, 2], "field_0": [1, 2, 5, 6], "field_1": [3, 4]}
 			has_shield = true
 		"city2nws":
-			internal_connections = {"city_0": [0, 3]}
+			internal_connections = {"city_0": [0, 3], "field_0": [1, 2, 3, 4, 5, 6]}
 			has_shield = true
 		"city2nwr":
-			internal_connections = {"city_0": [0, 3], "road_0": [1, 2]}
+			internal_connections = {"city_0": [0, 3], "road_0": [1, 2], "field_0": [1, 2, 5, 6], "field_1": [3, 4]}
 		"city2nw":
-			internal_connections = {"city_0": [0, 3]}
+			internal_connections = {"city_0": [0, 3], "field_0": [1, 2, 3, 4, 5, 6]}
 		"city1rwe":
-			internal_connections = {"city_0": [0], "road_0": [1, 3]}
+			internal_connections = {"city_0": [0], "road_0": [1, 3], "field_0": [0, 1, 2, 7], "field_1": [3, 4, 5, 6]}
 		"city1rswe":
-			internal_connections = {"city_0": [0], "road_0": [1], "road_1": [2], "road_2": [3]}
+			internal_connections = {"city_0": [0], "road_0": [1], "road_1": [2], "road_2": [3], "field_0": [0, 1, 2, 7], "field_1": [3, 4], "field_2": [5, 6]}
 		"city1rsw":
-			internal_connections = {"city_0": [0], "road_0": [2, 3]}
+			internal_connections = {"city_0": [0], "road_0": [2, 3], "field_0": [0, 1, 2, 3, 4, 7], "field_1": [5, 6]}
 		"city1rse":
-			internal_connections = {"city_0": [0], "road_0": [1, 2]}
+			internal_connections = {"city_0": [0], "road_0": [1, 2], "field_0": [0, 1, 2, 5, 6, 7], "field_1": [3, 4]}
 		"city1":
-			internal_connections = {"city_0": [0]}
+			internal_connections = {"city_0": [0], "field_0": [0, 1, 2, 3, 4, 5, 6, 7]}
 		"city11ne":
-			internal_connections = {"city_0": [0], "city_1": [1]}
+			internal_connections = {"city_0": [0], "city_1": [1], "field_0": [0, 3, 4, 5, 6, 7]}
 		"city11we":
-			internal_connections = {"city_0": [1], "city_1":  [3]}
+			internal_connections = {"city_0": [1], "city_1": [3], "field_0": [0, 1, 2, 3, 4, 5, 6, 7]}
 		"cloister":
-			internal_connections = {}
+			internal_connections = {"field_0": [0, 1, 2, 3, 4, 5, 6, 7]}
 			is_monastery = true
 		"cloisterr":
-			internal_connections = {"road_0": [2]}
+			internal_connections = {"road_0": [2], "field_0": [0, 1, 2, 3, 4, 5, 6, 7]}
 			is_monastery = true
 		"start":
-			internal_connections = {"city_0": [0], "road_0": [1, 3]}
+			internal_connections = {"city_0": [0], "road_0": [1, 3], "field_0": [0, 1, 2, 7], "field_1": [3, 4, 5, 6]}
 		"road4":
-			internal_connections = {"road_0": [0], "road_1": [1], "road_2": [2], "road_3": [3]}
+			internal_connections = {"road_0": [0], "road_1": [1], "road_2": [2], "road_3": [3], "field_0": [1, 2], "field_1": [3, 4], "field_2": [5, 6], "field_3": [7, 0]}
 		"road3":
-			internal_connections = {"road_1": [1], "road_2": [2], "road_3": [3]}
+			internal_connections = {"road_1": [1], "road_2": [2], "road_3": [3], "field_0": [7, 0, 1, 2], "field_1": [3, 4], "field_2": [5, 6]}
 		"road2sw":
-			internal_connections = {"road_0": [2, 3]}
+			internal_connections = {"road_0": [2, 3], "field_0": [0, 1, 2, 3, 4, 7], "field_1": [5, 6]}
 		"road2ns":
-			internal_connections = {"road_0": [0, 2]}
+			internal_connections = {"road_0": [0, 2], "field_0": [1, 2, 3, 4], "field_1": [5, 6, 7, 0]}
 		_:
 			push_warning("no segment data for tile '%s" % self.name)
 
@@ -161,13 +161,19 @@ func _rotate_internal_connections_clockwise():
 	for key in internal_connections:
 		var edges: Array = internal_connections[key]
 		for i in range(edges.size()):
-			edges[i] = (edges[i] + 1) % 4
+			if key.begins_with("field_"):
+				edges[i] = (edges[i] + 2) % 8  #mod 8 instead since fields have 8 halfedge
+			else:
+				edges[i] = (edges[i] + 1) % 4
 
 func _rotate_internal_connections_counter_clockwise():
 	for key in internal_connections:
 		var edges: Array = internal_connections[key]
 		for i in range(edges.size()):
-			edges[i] = (edges[i] - 1 + 4) % 4
+			if key.begins_with("field_"):
+				edges[i] = (edges[i] - 2 + 8) % 8  #mod 8 instead since fields have 8 halfedge
+			else:
+				edges[i] = (edges[i] - 1 + 4) % 4
 			
 func _rotate_meeple_positions_clockwise() -> void:
 	var temp_dictionary: Dictionary[Vector2i, PropertyType] = {}

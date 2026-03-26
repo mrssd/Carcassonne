@@ -49,11 +49,16 @@ script = ExtResource("3_0cp21")
 name = "road4"
 tile_texture = ExtResource("5_fhlq6")
 edge = Array[int]([2, 2, 2, 2])
+
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(-1, 0): 2,
 Vector2i(0, -1): 2,
 Vector2i(0, 1): 2,
-Vector2i(1, 0): 2
+Vector2i(1, 0): 2,
+Vector2i(-1, -1): 1,
+Vector2i(1, -1): 1,
+Vector2i(1, 1): 1,
+Vector2i(-1, 1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -69,7 +74,8 @@ name = "city3"
 tile_texture = ExtResource("6_fhlq6")
 edge = Array[int]([3, 3, 1, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, 0): 3
+Vector2i(0, 0): 3,
+Vector2i(0, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -85,7 +91,8 @@ name = "city3s"
 tile_texture = ExtResource("7_q346i")
 edge = Array[int]([3, 3, 1, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, 0): 3
+Vector2i(0, 0): 3,
+Vector2i(0, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -102,7 +109,9 @@ tile_texture = ExtResource("8_gjgr0")
 edge = Array[int]([3, 3, 2, 3])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(0, -2): 2,
-Vector2i(0, 0): 3
+Vector2i(0, 0): 3,
+Vector2i(-1, -2): 1,
+Vector2i(1, -2): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -119,7 +128,9 @@ tile_texture = ExtResource("9_7s5dn")
 edge = Array[int]([3, 3, 2, 3])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(0, -2): 2,
-Vector2i(0, 0): 3
+Vector2i(0, 0): 3,
+Vector2i(-1, -2): 1,
+Vector2i(1, -2): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -137,7 +148,10 @@ edge = Array[int]([1, 2, 2, 2])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(-2, 0): 2,
 Vector2i(0, -1): 2,
-Vector2i(2, 0): 2
+Vector2i(2, 0): 2,
+Vector2i(0, 1): 1,
+Vector2i(1, -1): 1,
+Vector2i(-1, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -153,7 +167,9 @@ name = "city2we"
 tile_texture = ExtResource("11_sa4n1")
 edge = Array[int]([1, 3, 1, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, 0): 3
+Vector2i(0, 0): 3,
+Vector2i(0, 2): 1,
+Vector2i(0, -2): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -169,7 +185,9 @@ name = "city2wes"
 tile_texture = ExtResource("12_58eru")
 edge = Array[int]([1, 3, 1, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, 0): 3
+Vector2i(0, 0): 3,
+Vector2i(0, 2): 1,
+Vector2i(0, -2): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -185,7 +203,9 @@ name = "road2ns"
 tile_texture = ExtResource("13_58eru")
 edge = Array[int]([2, 1, 2, 1])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, 0): 2
+Vector2i(0, 0): 2,
+Vector2i(1, 0): 1,
+Vector2i(-1, 0): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -201,7 +221,8 @@ name = "city2nw"
 tile_texture = ExtResource("14_8a5qd")
 edge = Array[int]([3, 1, 1, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(-1, 1): 3
+Vector2i(-1, 1): 3,
+Vector2i(1, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -217,7 +238,8 @@ name = "city2nws"
 tile_texture = ExtResource("15_4fci4")
 edge = Array[int]([3, 1, 1, 3])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(-1, 1): 3
+Vector2i(-1, 1): 3,
+Vector2i(1, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -234,7 +256,9 @@ tile_texture = ExtResource("16_cxcgf")
 edge = Array[int]([3, 2, 2, 3])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(-1, 1): 3,
-Vector2i(1, -1): 2
+Vector2i(1, -1): 2,
+Vector2i(0, 0): 1,
+Vector2i(2, -2): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -251,7 +275,9 @@ tile_texture = ExtResource("17_b5meo")
 edge = Array[int]([3, 2, 2, 3])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(-1, 1): 3,
-Vector2i(1, -1): 2
+Vector2i(1, -1): 2,
+Vector2i(0, 0): 1,
+Vector2i(2, -2): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -267,7 +293,9 @@ name = "road2sw"
 tile_texture = ExtResource("18_jdeib")
 edge = Array[int]([1, 1, 2, 2])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, -1): 2
+Vector2i(0, -1): 2,
+Vector2i(1, 1): 1,
+Vector2i(-1, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -284,7 +312,8 @@ tile_texture = ExtResource("19_mg2dl")
 edge = Array[int]([3, 3, 1, 1])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(0, 2): 3,
-Vector2i(2, 0): 3
+Vector2i(2, 0): 3,
+Vector2i(0, 0): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -301,7 +330,8 @@ tile_texture = ExtResource("20_0bx5p")
 edge = Array[int]([1, 3, 1, 3])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(-2, 0): 3,
-Vector2i(2, 0): 3
+Vector2i(2, 0): 3,
+Vector2i(0, 0): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -318,7 +348,8 @@ tile_texture = ExtResource("21_n2mrk")
 edge = Array[int]([1, 1, 2, 1])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(0, -2): 2,
-Vector2i(0, 0): 4
+Vector2i(0, 0): 4,
+Vector2i(0, 1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -334,7 +365,8 @@ name = "cloister"
 tile_texture = ExtResource("22_oe3xh")
 edge = Array[int]([1, 1, 1, 1])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, 0): 4
+Vector2i(0, 0): 4,
+Vector2i(0, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -350,7 +382,8 @@ name = "city1"
 tile_texture = ExtResource("23_ul3yg")
 edge = Array[int]([3, 1, 1, 1])
 meeple_positions = Dictionary[Vector2i, int]({
-Vector2i(0, 1): 3
+Vector2i(0, 1): 3,
+Vector2i(0, 0): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -367,7 +400,9 @@ tile_texture = ExtResource("24_vttbf")
 edge = Array[int]([3, 2, 2, 1])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(0, -1): 2,
-Vector2i(0, 1): 3
+Vector2i(0, 1): 3,
+Vector2i(-1, 0): 1,
+Vector2i(1, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -384,7 +419,9 @@ tile_texture = ExtResource("25_tbkoh")
 edge = Array[int]([3, 1, 2, 2])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(0, -1): 2,
-Vector2i(0, 1): 3
+Vector2i(0, 1): 3,
+Vector2i(-1, -1): 1,
+Vector2i(1, 0): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -402,8 +439,11 @@ edge = Array[int]([3, 2, 2, 2])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(-1, 0): 2,
 Vector2i(0, -1): 2,
-Vector2i(0, 1): 3,
-Vector2i(1, 0): 2
+Vector2i(0, 2): 3,
+Vector2i(1, 0): 2,
+Vector2i(-1, 1): 1,
+Vector2i(-1, -1): 1,
+Vector2i(1, -1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
@@ -420,7 +460,9 @@ tile_texture = ExtResource("27_l1oc6")
 edge = Array[int]([3, 2, 1, 2])
 meeple_positions = Dictionary[Vector2i, int]({
 Vector2i(0, 1): 3,
-Vector2i(1, 0): 2
+Vector2i(1, 0): 2,
+Vector2i(0, -1): 1,
+Vector2i(-1, 1): 1
 })
 metadata/_custom_type_script = "uid://m5aoiq606m64"
 
