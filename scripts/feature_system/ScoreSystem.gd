@@ -279,7 +279,11 @@ func _explore_field(board, start_cell: Vector2i, segment_key: String) -> Diction
 		var half_edges = tile.tile_data.internal_connections[seg_key]
 		for half_edge in half_edges:
 			var conn = HALF_EDGE_CONNECTIONS[half_edge]
-			var neighbor_cell = cell + neighbor_directions[conn[0]]
+			var edge_idx = conn[0]
+			# Fields never cross city edges
+			if tile.tile_data.edge[edge_idx] == CarcassonneTileData.PropertyType.CITY:
+				continue
+			var neighbor_cell = cell + neighbor_directions[edge_idx]
 			if not board.placed_tiles.has(neighbor_cell):
 				continue
 			var neighbor_tile = board.placed_tiles[neighbor_cell]
@@ -345,15 +349,13 @@ func is_segment_claimed(board, cell: Vector2i, segment_key: String) -> bool:
 	var explore_result = _explore_segment(board, cell, segment_key)
 	return not _get_meeple_owners(board, explore_result).is_empty()
 
-# Returns which segment key a meeple slot belongs to on a tile,
-# by mapping the slot's grid position to the nearest edge.
+# Returns which segment key a meeple slot belongs to on a tile, by mapping the slot's grid position to the nearest edge.
 func _segment_for_slot(slot_id: String) -> String:
 	# slot_id format: "x_y_segment_key" e.g. "0_-1_road_0"
 	# split into at most 3 parts on the first two underscores
 	return slot_id.split("_", true, 2)[2]
 
-# Collects meeple counts per player, only counting meeples whose position
-# maps to a segment that is part of the feature in explore_result.
+# Collects meeple counts per player, only counting meeples whose position maps to a segment that is part of the feature in explore_result.
 func _get_meeple_owners(board, explore_result: Dictionary) -> Dictionary:
 	var counts = {}
 	# Build map: "cx,cy" -> [segment_keys that belong to this feature]

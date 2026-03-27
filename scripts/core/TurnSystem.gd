@@ -166,6 +166,7 @@ func place_meeple(world_click: Vector2) -> void:
 	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
 		meeple_changed.emit(current_player_index)
+		print("Meeple placed on ", info["feature"])
 		UI_manager.show_hint("Meeple placed! Turn ending...")
 		Meeple.hide_placement_hints(last_placed_tile)
 		end_meeple_phase()

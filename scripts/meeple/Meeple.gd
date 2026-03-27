@@ -70,28 +70,21 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 	}
 
 func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_count: int = 0) -> String:
-	if tile_data.is_monastery:
+	if tile_data.is_monastery and tile_data.meeple_positions.get(pos, CarcassonneTileData.PropertyType.NONE) == CarcassonneTileData.PropertyType.MONASTERY:
 		return "monastery"
-	# Field positions: use half-edge lookup.
-	# meeple_positions are stored unrotated, but internal_connections are post-rotation,
-	# so rotate pos to match before computing half-edges.
+	# Un-rotate pos into tile-local space to match rotated internal_connections
+	var r = ((rotation_count % 4) + 4) % 4
+	var rp = pos
+	for _i in range(r):
+		rp = Vector2i(-rp.y, rp.x)
+	# Fields using half edge lookup
 	if tile_data.meeple_positions.get(pos, CarcassonneTileData.PropertyType.NONE) == CarcassonneTileData.PropertyType.FIELD:
-		var r = ((rotation_count % 4) + 4) % 4
-		var rp = pos
-		for _i in range(r):
-			rp = Vector2i(-rp.y, rp.x)
 		for he in _half_edges_for_pos(rp):
 			for seg_key in tile_data.internal_connections:
 				if seg_key.begins_with("field_") and tile_data.internal_connections[seg_key].has(he):
 					return seg_key
 		return "unknown"
-	# Road/city positions: edge-based lookup.
-	# Rotate pos to match the post-rotation internal_connections edge indices.
-	# Each clockwise rotation applies (x, y) -> (-y, x).
-	var r = ((rotation_count % 4) + 4) % 4
-	var rp = pos
-	for _i in range(r):
-		rp = Vector2i(-rp.y, rp.x)
+	#Road and city using edge lookup
 	var ax = abs(rp.x)
 	var ay = abs(rp.y)
 	var candidate_edges: Array
@@ -115,14 +108,14 @@ func _half_edges_for_pos(pos: Vector2i) -> Array:
 	# [7]   [2]
 	# [6]   [3]
 	#   [5][4]
-	if pos.y < 0 and pos.x < 0:   return [0, 7]  # top-left
-	elif pos.y < 0 and pos.x > 0: return [1, 2]  # top-right
-	elif pos.y > 0 and pos.x > 0: return [3, 4]  # bottom-right
-	elif pos.y > 0 and pos.x < 0: return [5, 6]  # bottom-left
-	elif pos.y < 0:                return [0, 1]  # top center
-	elif pos.y > 0:                return [4, 5]  # bottom center
-	elif pos.x > 0:                return [2, 3]  # right center
-	elif pos.x < 0:                return [6, 7]  # left center
+	if pos.y < 0 and pos.x < 0:   return [0, 7] 
+	elif pos.y < 0 and pos.x > 0: return [1, 2] 
+	elif pos.y > 0 and pos.x > 0: return [3, 4] 
+	elif pos.y > 0 and pos.x < 0: return [5, 6]  
+	elif pos.y < 0:                return [0, 1]  
+	elif pos.y > 0:                return [4, 5] 
+	elif pos.x > 0:                return [2, 3]  
+	elif pos.x < 0:                return [6, 7]  
 	return [0, 1, 2, 3, 4, 5, 6, 7]
 
 static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
