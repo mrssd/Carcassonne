@@ -89,27 +89,46 @@ func draw_tile() -> void:
 	if tile_deck == null:
 		push_error("TurnSystem: tile_deck is null.")
 		return
-	
-	var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
-	if tile_data == null:
-		UI_manager.show_hint("Game Over! No more tiles in the deck.")
-		print("No more tiles to draw. Game over!")
-		game_active = false
-		score_system.score_end_game(board)
-		game_manager.end_game("No more tiles! Game Over!")
-		return
-	
-	# instance tile
-	var tile_instance: Tile = board.tile_scene.instantiate()
-	# duplicate tile data resource so runtime rotations/mutations don't affect other instances
-	tile_instance.tile_data = tile_data.duplicate(true)
+
+	var tile_instance: Tile = null
+	var valid_placements: Array = []
+
+	#Keeps drawing until a tile that can be placed or the deck runs out
+	while true:
+		var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
+		if tile_data == null:
+			UI_manager.show_hint("Game Over! No more tiles in the deck.")
+			print("No more tiles to draw. Game over!")
+			game_active = false
+			score_system.score_end_game(board)
+			game_manager.end_game("No more tiles! Game Over!")
+			return
+
+		#Test all 4 rotations 
+		var test: Tile = board.tile_scene.instantiate()
+		test.tile_data = tile_data.duplicate(true)
+
+		var placeable := false
+		for _r in range(4):
+			valid_placements = board.get_all_valid_placement(test)
+			if valid_placements.size() > 0:
+				placeable = true
+				break
+			test.rotate_clockwise()
+
+		if placeable:
+			tile_instance = test
+			break
+		else:
+			# No valid placement in any rotation so discard and draw again
+			test.free()
+			UI_manager.show_hint("Tile could not be placed, drawing again...")
+
 	board.add_child(tile_instance)
 	board.current_tile = tile_instance
 	current_drawn_tile = tile_instance
 
-	var valid_placements = board.get_all_valid_placement(current_drawn_tile)
 	show_possible_placements(valid_placements)
-	
 	phase = TurnPhase.PLACE_TILE
 	phase_changed.emit(phase)
 	UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
