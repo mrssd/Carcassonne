@@ -10,6 +10,7 @@ var current_tile: Tile # NEED TO MATCH IN TILE SCRIPT
 @export var hover_placed_alpha: float = 1.0 # placed tile value
 @export var hover_current_alpha: float = 0.40 # tile in hand value
 var _hover_cell = null
+var freeze_tile = false;
 
 func coord_to_index(world_coord: Vector2) -> Vector2i:
 	return Vector2i(round(world_coord.x / CELL_SIZE), round(world_coord.y / CELL_SIZE))
@@ -22,7 +23,7 @@ func snap_to_grid(world_coord: Vector2) -> Vector2:
 	return index_to_coord(cell)
 
 func _process(_dt):
-	if not current_tile:
+	if not current_tile or freeze_tile:
 		return
 	current_tile.position = snap_to_grid(get_global_mouse_position())
 

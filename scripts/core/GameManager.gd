@@ -3,6 +3,7 @@ class_name GameManager extends Node
 signal game_ended(message: String)
 
 static var player_count: int = 2
+static var player_types: Array = [] #array for cpu and human player
 
 @onready var board = $"../Board"
 @onready var turn_system = $"../TurnSystem"
@@ -29,7 +30,6 @@ func start_game():
 	if tile_deck == null:
 		_initialize_deck()
 	_place_starting_tile()
-	# Delegate player / turn initialization to TurnSystem
 	if turn_system:
 		turn_system.start_game()
 

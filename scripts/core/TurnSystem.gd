@@ -12,6 +12,7 @@ enum TurnPhase {
 }
 
 var players = ["Player 1", "Player 2"]
+var player_types: Array = [] 
 var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
 var game_active: bool = false
@@ -38,10 +39,17 @@ func _ready() -> void:
 
 
 func start_game() -> void:
-	# Initialize players and meeples, wire score manager and deck, then start the first turn.
 	players.clear()
 	for i in range(GameManager.player_count):
 		players.append("Player %d" % (i + 1))
+
+	#initalize player types
+	player_types.clear()
+	if GameManager.player_types.size() == GameManager.player_count:
+		player_types = GameManager.player_types.duplicate()
+	else:
+		for i in range(GameManager.player_count):
+			player_types.append("human")
 
 	# initialize meeples per player
 	_init_meeples()
@@ -79,6 +87,9 @@ func _init_meeples() -> void:
 func get_current_player() -> String:
 	return players[current_player_index]
 
+func is_current_player_bot() -> bool:
+	return current_player_index < player_types.size() and player_types[current_player_index] == "bot"
+
 func start_turn() -> void:
 	print("Turn started:", get_current_player())
 	turn_changed.emit(get_current_player(), current_player_index)
@@ -90,6 +101,7 @@ func draw_tile() -> void:
 		push_error("TurnSystem: tile_deck is null.")
 		return
 
+	board.freeze_tile = false
 	var tile_instance: Tile = null
 	var valid_placements: Array = []
 
@@ -131,10 +143,18 @@ func draw_tile() -> void:
 	show_possible_placements(valid_placements)
 	phase = TurnPhase.PLACE_TILE
 	phase_changed.emit(phase)
-	UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
-	print("Place tile")
+
+	if is_current_player_bot():
+		board.freeze_tile = true; #Freezes tile
+		UI_manager.show_hint("Bot is thinking...")
+		print("Bot is thinking...")
+		await get_tree().create_timer(0.8).timeout
+		_bot_place_tile()
+	else:
+		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
+		print("Place tile")
 
 
 func show_possible_placements(valid_placements):
@@ -205,8 +225,38 @@ func end_turn() -> void:
 func next_turn() -> void:
 	current_player_index = (current_player_index + 1) % players.size()
 
+func _bot_place_tile() -> void:
+	#Finds all valid placements of all 4 rotation
+	var options = []
+	for r in range(4):
+		var placements = board.get_all_valid_placement(current_drawn_tile)
+		for p in placements:
+			options.append({"cell": p["cell"], "rotations": r})
+		current_drawn_tile.rotate_clockwise()
+	if options.is_empty():
+		end_meeple_phase()
+		return
+
+	#Picks a random placement from the option array
+	var choice = options[randi() % options.size()]
+
+	#Rotates tile to the rotation from options
+	for _i in range(choice["rotations"]):
+		current_drawn_tile.rotate_clockwise()
+
+	#Places the tile
+	board.current_tile.position = board.index_to_coord(choice["cell"])
+	on_tile_placed()
+
+	#0.5 second delay to look cool 
+	await get_tree().create_timer(0.5).timeout
+	end_meeple_phase()
+
+
 func _input(event) -> void:
 	if not game_active:
+		return
+	if is_current_player_bot():
 		return
 
 	if phase == TurnPhase.PLACE_TILE:

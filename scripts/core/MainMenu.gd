@@ -1,7 +1,9 @@
 extends Node
 
 var player_count: int = 2
+var cpu_count: int = 0
 var count_label: Label
+var cpu_label: Label
 
 func _ready() -> void:
 	var vbox = $VBoxContainer
@@ -38,16 +40,65 @@ func _ready() -> void:
 	vbox.add_child(row)
 	vbox.move_child(row, 0)
 
+	var cpu_row = HBoxContainer.new()
+	cpu_row.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var cpu_title = Label.new()
+	cpu_title.text = "CPU Players: "
+	cpu_title.add_theme_color_override("font_color", Color.WHITE)
+	cpu_title.add_theme_font_size_override("font_size", 30)
+	cpu_row.add_child(cpu_title)
+
+	var cpu_minus = Button.new()
+	cpu_minus.text = " - "
+	cpu_minus.add_theme_font_size_override("font_size", 30)
+	cpu_minus.pressed.connect(_on_cpu_minus_pressed)
+	cpu_row.add_child(cpu_minus)
+
+	cpu_label = Label.new()
+	cpu_label.text = str(cpu_count)
+	cpu_label.add_theme_color_override("font_color", Color.WHITE)
+	cpu_label.add_theme_font_size_override("font_size", 30)
+	cpu_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cpu_label.custom_minimum_size = Vector2(40, 0)
+	cpu_row.add_child(cpu_label)
+
+	var cpu_plus = Button.new()
+	cpu_plus.text = " + "
+	cpu_plus.add_theme_font_size_override("font_size", 30)
+	cpu_plus.pressed.connect(_on_cpu_plus_pressed)
+	cpu_row.add_child(cpu_plus)
+
+	vbox.add_child(cpu_row)
+	vbox.move_child(cpu_row, 1)
+
 func _on_minus_pressed() -> void:
 	player_count = max(2, player_count - 1)
 	count_label.text = str(player_count)
+	cpu_count = min(cpu_count, player_count - 1)
+	cpu_label.text = str(cpu_count)
 
 func _on_plus_pressed() -> void:
 	player_count = min(5, player_count + 1)
 	count_label.text = str(player_count)
 
+func _on_cpu_minus_pressed() -> void:
+	cpu_count = max(0, cpu_count - 1)
+	cpu_label.text = str(cpu_count)
+
+func _on_cpu_plus_pressed() -> void:
+	cpu_count = min(player_count - 1, cpu_count + 1)
+	cpu_label.text = str(cpu_count)
+
 func _on_start_pressed() -> void:
 	GameManager.player_count = player_count
+	GameManager.player_types.clear()
+	for i in range(player_count):
+		# Last cpu_count players are bots
+		if i >= player_count - cpu_count:
+			GameManager.player_types.append("bot")
+		else:
+			GameManager.player_types.append("human")
 	get_tree().change_scene_to_file("res://scenes/main/Main.tscn")
 
 func _on_options_pressed() -> void:
