@@ -147,7 +147,9 @@ func draw_tile() -> void:
 	print("Tile drawn for", get_current_player())
 
 	if is_current_player_bot():
-		board.freeze_tile = true; #Freezes tile
+		board.freeze_tile = true
+		board.current_tile.visible = false
+		show_possible_placements([])
 		UI_manager.show_hint("Bot is thinking...")
 		print("Bot is thinking...")
 		await get_tree().create_timer(0.8).timeout
@@ -245,10 +247,12 @@ func _bot_place_tile() -> void:
 		current_drawn_tile.rotate_clockwise()
 
 	#Places the tile
+	board.current_tile.visible = true
 	board.current_tile.position = board.index_to_coord(choice["cell"])
 	on_tile_placed()
+	Meeple.hide_placement_hints(last_placed_tile)
 
-	#0.5 second delay to look cool 
+	#0.5 second delay to look cool
 	await get_tree().create_timer(0.5).timeout
 	end_meeple_phase()
 
