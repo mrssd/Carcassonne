@@ -20,20 +20,14 @@ var hint_visible: bool = false #Boolean of hint of best tile
 
 const MEEPLE_SCENE: PackedScene = preload("res://scenes/meeple/Meeple.tscn")
 const HIGHLIGHT_SCENE = preload("res://scenes/highlight/Highlight.tscn")
-<<<<<<< Updated upstream
 const LAST_PLACED_HIGHLIGHT_SCRIPT = preload("res://scenes/highlight/lastplacedhighlight.gd")
-=======
 const HINT_HIGHLIGHT_SCENE = preload("res://scenes/highlight/HintHighlight.tscn")
->>>>>>> Stashed changes
 
 var meeples_per_player: int = 7
 var remaining_meeples: Array = []
 var highlight_nodes := []
-<<<<<<< Updated upstream
 var last_tile_highlights := {}
-=======
 var _hint_highlight_node: Node2D = null
->>>>>>> Stashed changes
 
 @onready var board = $"../Board"
 @onready var game_manager = $"../GameManager"
