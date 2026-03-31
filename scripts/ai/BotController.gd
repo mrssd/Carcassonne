@@ -12,12 +12,11 @@ func setup(p_turn_system: TurnSystem, p_board: Board, p_score_system: Node) -> v
 	board = p_board
 	score_system = p_score_system
 
-
-# Main entry point — called by TurnSystem when it's a bot's turn
+#Main function for bot logic
 func take_turn(bot_type: String) -> void:
 	var current_drawn_tile = turn_system.current_drawn_tile
 
-	# Collect all valid (rotation, cell) combos across all 4 rotations
+	#Finds all valid placements of all 4 rotation
 	var options = []
 	for r in range(4):
 		var placements = board.get_all_valid_placement(current_drawn_tile)
@@ -35,7 +34,7 @@ func take_turn(bot_type: String) -> void:
 	else:
 		choice = options[randi() % options.size()]
 
-	# Rotate tile to chosen orientation
+	#Rotates tile to the rotation from options
 	for _i in range(choice["rotations"]):
 		current_drawn_tile.rotate_clockwise()
 
@@ -47,7 +46,7 @@ func take_turn(bot_type: String) -> void:
 
 	await get_tree().create_timer(0.5).timeout
 
-	# Meeple placement
+	#Places the tile
 	if bot_type == "greedy_bot":
 		var best_meeple_coords = _greedy_evaluate_meeple()
 		if best_meeple_coords == null:
@@ -57,9 +56,7 @@ func take_turn(bot_type: String) -> void:
 	else:
 		turn_system.end_meeple_phase()
 
-
-# --- Greedy placement ---
-
+#Loops through options (From _bot_place_tiles) and returns the best possible tile from options
 func _pick_best_placement(options: Array) -> Dictionary:
 	var high_score: float = -1
 	var best_option = null
@@ -68,7 +65,7 @@ func _pick_best_placement(options: Array) -> Dictionary:
 	for option in options:
 		for _r in range(option["rotations"]):
 			tile.rotate_clockwise()
-		var temp_score = _greedy_evaluate_placement(option["cell"], tile)
+		var temp_score = _greedy_evaluate_placement(option["cell"], tile, turn_system.current_player_index)
 		if temp_score > high_score:
 			high_score = temp_score
 			best_option = option
@@ -78,7 +75,8 @@ func _pick_best_placement(options: Array) -> Dictionary:
 	return best_option
 
 
-func _greedy_evaluate_placement(cell: Vector2i, tile: Tile) -> float:
+#Calculates a value of the given tile
+func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -> float:
 	board.placed_tiles[cell] = tile
 	var score: float = 0
 
@@ -86,18 +84,23 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile) -> float:
 		if seg.begins_with("field_"):
 			continue
 		var dic = score_system._explore_segment(board, cell, seg)
+		var seg_value: float
 		if seg.begins_with("city_"):
-			score += (dic["tiles"].size() * 2 + dic["shield_count"] * 2) / (dic["open_ports"] + 1)
+			seg_value = (dic["tiles"].size() * 2 + dic["shield_count"] * 2) / (dic["open_ports"] + 1)
 		else:
-			score += dic["tiles"].size() / (dic["open_ports"] + 1)
+			seg_value = dic["tiles"].size() / (dic["open_ports"] + 1)
+
+		if _feature_has_opponent_meeple(dic["visited"], player_index):
+			score -= seg_value * 0.5  #Penalizes helping opponent features
+		else:
+			score += seg_value
 
 	board.placed_tiles.erase(cell)
 	return score
 
 
-# --- Greedy meeple ---
-
-func _greedy_evaluate_meeple() -> Variant:
+#Calculates all possible meeple placement and returns the best placement
+func _greedy_evaluate_meeple() -> Variant: #Variant which allows both Vector2i and null returned
 	var last_placed_tile = turn_system.last_placed_tile
 	var last_placed_cell = turn_system.last_placed_cell
 	var current_player_index = turn_system.current_player_index
@@ -110,20 +113,21 @@ func _greedy_evaluate_meeple() -> Variant:
 	if remaining_meeples[current_player_index] <= 0:
 		return null
 
-	for key in last_placed_tile.tile_data.meeple_positions.keys():
+	for key in last_placed_tile.tile_data.meeple_positions.keys(): #Loop through all meeple placement of the last_placed_tile
 		var world_pos = last_placed_tile.to_global(Vector2(key.x, key.y) * 24.0)
 		var temp_meeple: Meeple = MEEPLE_SCENE.instantiate() as Meeple
 		var info = temp_meeple.get_placement_feature(last_placed_tile, world_pos)
 		temp_meeple.free()
-
-		if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
-			continue
-		if info["feature"].begins_with("field_"):
+ 
+		if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):  #Ignore claimed feature
 			continue
 
-		if info["feature"] == "monastery":
+		if info["feature"].begins_with("field_"): #Ignore fields for now
+			continue
+
+		if info["feature"] == "monastery": #Monastery scoring
 			var neighbor: int = 0
-			for dx in [-1, 0, 1]:
+			for dx in [-1, 0, 1]: #Loops -1 to 1, representing neighbour tile coordinates
 				for dy in [-1, 0, 1]:
 					if dx == 0 and dy == 0:
 						continue
@@ -136,9 +140,10 @@ func _greedy_evaluate_meeple() -> Variant:
 			continue
 
 		var dic = score_system._explore_segment(board, last_placed_cell, info["feature"])
-		if info["feature"].begins_with("city_"):
+
+		if info["feature"].begins_with("city_"): #City value calculation
 			temp_value = dic["tiles"].size() * 2 + dic["shield_count"] * 2
-		else:
+		else: #Road value calculation
 			temp_value = dic["tiles"].size()
 
 		if temp_value > best_value:
@@ -148,3 +153,18 @@ func _greedy_evaluate_meeple() -> Variant:
 	if best_value >= 1 and best_key != null:
 		return last_placed_tile.to_global(Vector2(best_key.x, best_key.y) * 20.0)
 	return null
+
+
+#Returns true if any opponent has a meeple on any tile in the visited segment
+func _feature_has_opponent_meeple(visited: Array, current_player_index: int) -> bool:
+	for entry in visited: #visited example: 1,0|city_0
+		var parts = entry.split("|") #split string
+		var coords = parts[0].split(",")
+		var cell = Vector2i(int(coords[0]), int(coords[1]))
+		if not board.placed_tiles.has(cell):
+			continue
+		var tile = board.placed_tiles[cell]
+		for meeple in tile.meeples.values():
+			if meeple.owner_index != current_player_index:
+				return true
+	return false
