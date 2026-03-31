@@ -88,7 +88,13 @@ func get_current_player() -> String:
 	return players[current_player_index]
 
 func is_current_player_bot() -> bool:
-	return current_player_index < player_types.size() and player_types[current_player_index] == "bot"
+	var t = get_current_player_type()
+	return t == "random_bot" or t == "greedy_bot"
+
+func get_current_player_type() -> String:
+	if current_player_index < player_types.size():
+		return player_types[current_player_index]
+	return "human"
 
 func start_turn() -> void:
 	print("Turn started:", get_current_player())
@@ -227,6 +233,7 @@ func end_turn() -> void:
 func next_turn() -> void:
 	current_player_index = (current_player_index + 1) % players.size()
 
+#Main function for bot logic
 func _bot_place_tile() -> void:
 	#Finds all valid placements of all 4 rotation
 	var options = []
@@ -239,8 +246,11 @@ func _bot_place_tile() -> void:
 		end_meeple_phase()
 		return
 
-	#Picks a random placement from the option array
-	var choice = options[randi() % options.size()]
+	var choice: Dictionary
+	if get_current_player_type() == "greedy_bot":
+		choice = _pick_best_placement(options)
+	else:
+		choice = options[randi() % options.size()]
 
 	#Rotates tile to the rotation from options
 	for _i in range(choice["rotations"]):
@@ -254,7 +264,95 @@ func _bot_place_tile() -> void:
 
 	#0.5 second delay to look cool
 	await get_tree().create_timer(0.5).timeout
-	end_meeple_phase()
+	
+	#Meeple placement for bot
+	if get_current_player_type() == "greedy_bot":
+		var best_meeple_coords = _greedy_evaluate_meeple()
+		if best_meeple_coords == null:
+			end_meeple_phase()
+		else: place_meeple(best_meeple_coords)
+	else: end_meeple_phase()
+
+#Loops through options (From _bot_place_tiles) and returns the best possible tile from options
+func _pick_best_placement(options: Array) -> Dictionary:
+	var high_score : float = -1
+	var best_option = null
+	var temp_tile = current_drawn_tile
+	for option in options:
+		for r in range(option["rotations"]):
+			temp_tile.rotate_clockwise()
+		var temp_score = _greedy_evaluate_placement(option["cell"], temp_tile)
+		if temp_score > high_score: 
+			high_score = temp_score
+			best_option = option
+		for t in range(4 - option["rotations"]):
+			temp_tile.rotate_clockwise()
+
+	return best_option
+
+#Calculates a value of the given tile
+func _greedy_evaluate_placement(cell, tile) -> float:
+	board.placed_tiles[cell] = tile; #Temporary testing tile
+	var score : float = 0;	
+	for seg in tile.tile_data.internal_connections.keys():
+		if (seg.begins_with("field_")): #Calculate ignore fields for now
+			continue
+		var dic = score_system._explore_segment(board, cell, seg) #{tiles, open_ports, shield_count}
+		if (seg.begins_with("city_")): #City calculation
+			score += (dic["tiles"].size() * 2 + dic["shield_count"] * 2) / (dic["open_ports"] + 1)
+		else: #Road calculation
+			score += dic["tiles"].size() / (dic["open_ports"] + 1)
+	board.placed_tiles.erase(cell) #Removes temporary tile
+	return score
+
+#Calculates all possible meeple placement and returns the best placement
+func _greedy_evaluate_meeple() -> Variant: #Variant which allows both Vector2i and null returned
+	var best_key = null
+	var best_value : float = -1
+	var temp_value : float = -1
+	if remaining_meeples[current_player_index] <= 0:
+		return null
+	else:
+		for key in last_placed_tile.tile_data.meeple_positions.keys(): #Loop through all meeple placement of the last_placed_tile
+			var world_pos = last_placed_tile.to_global(Vector2(key.x, key.y) * 24.0)
+			var temp_meeple: Meeple = MEEPLE_SCENE.instantiate() as Meeple
+			var info = temp_meeple.get_placement_feature(last_placed_tile, world_pos)
+			temp_meeple.free()
+
+			if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]): #Ignore claimed feature
+				continue
+
+			if info["feature"].begins_with("field_"): #Ignore fields for now
+				continue
+
+			if info["feature"] == "monastery": #Monastery scoring
+				var neighbor : int = 0
+				for dx in [-1, 0, 1]: #Loops -1 to 1, representing neighbour tile coordinates
+					for dy in [-1, 0, 1]:
+						if dx == 0 and dy == 0:
+							continue
+						if board.placed_tiles.has(last_placed_cell + Vector2i(dx, dy)):
+							neighbor += 1
+				temp_value = neighbor + 1
+				if temp_value > best_value and temp_value >= 4:
+					best_value = temp_value
+					best_key = key
+				continue
+
+			var dic = score_system._explore_segment(board, last_placed_cell, info["feature"])
+			if (info["feature"].begins_with("city_")): #City value
+				temp_value = dic["tiles"].size() * 2 + dic["shield_count"] * 2
+			else:
+				temp_value = dic["tiles"].size() #Road value
+			if temp_value > best_value:
+				best_value = temp_value
+				best_key = key
+
+	if best_value >= 1 and best_key != null:
+		return last_placed_tile.to_global(Vector2(best_key.x, best_key.y) * 20.0)
+	else:
+		return null
+			
 
 
 func _input(event) -> void:

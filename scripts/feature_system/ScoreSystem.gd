@@ -90,7 +90,7 @@ func _explore_segment(board, start_cell, segment_key):
 						stack.append([neighbor_cell, neighbor_seg_key])
 
 	return {
-		"tiles": unique_tiles.keys(),
+		"tiles": unique_tiles.keys(), #Returns {tiles, open_ports, shield_count}
 		"open_ports": open_ports,
 		"shield_count": shield_count,
 		"visited": visited.keys()

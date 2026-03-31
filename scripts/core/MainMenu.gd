@@ -2,8 +2,10 @@ extends Node
 
 var player_count: int = 2
 var cpu_count: int = 0
+var cpu_difficulty: String = "random_bot"
 var count_label: Label
 var cpu_label: Label
+var difficulty_label: Label
 
 func _ready() -> void:
 	var vbox = $VBoxContainer
@@ -72,6 +74,38 @@ func _ready() -> void:
 	vbox.add_child(cpu_row)
 	vbox.move_child(cpu_row, 1)
 
+	var diff_row = HBoxContainer.new()
+	diff_row.alignment = BoxContainer.ALIGNMENT_CENTER
+
+	var diff_title = Label.new()
+	diff_title.text = "CPU Difficulty: "
+	diff_title.add_theme_color_override("font_color", Color.WHITE)
+	diff_title.add_theme_font_size_override("font_size", 30)
+	diff_row.add_child(diff_title)
+
+	var diff_btn = Button.new()
+	diff_btn.text = " < "
+	diff_btn.add_theme_font_size_override("font_size", 30)
+	diff_btn.pressed.connect(_on_difficulty_pressed)
+	diff_row.add_child(diff_btn)
+
+	difficulty_label = Label.new()
+	difficulty_label.text = "Random"
+	difficulty_label.add_theme_color_override("font_color", Color.WHITE)
+	difficulty_label.add_theme_font_size_override("font_size", 30)
+	difficulty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	difficulty_label.custom_minimum_size = Vector2(120, 0)
+	diff_row.add_child(difficulty_label)
+
+	var diff_btn2 = Button.new()
+	diff_btn2.text = " > "
+	diff_btn2.add_theme_font_size_override("font_size", 30)
+	diff_btn2.pressed.connect(_on_difficulty_pressed)
+	diff_row.add_child(diff_btn2)
+
+	vbox.add_child(diff_row)
+	vbox.move_child(diff_row, 2)
+
 func _on_minus_pressed() -> void:
 	player_count = max(2, player_count - 1)
 	count_label.text = str(player_count)
@@ -90,13 +124,20 @@ func _on_cpu_plus_pressed() -> void:
 	cpu_count = min(player_count - 1, cpu_count + 1)
 	cpu_label.text = str(cpu_count)
 
+func _on_difficulty_pressed() -> void:
+	if cpu_difficulty == "random_bot":
+		cpu_difficulty = "greedy_bot"
+		difficulty_label.text = "Greedy"
+	else:
+		cpu_difficulty = "random_bot"
+		difficulty_label.text = "Random"
+
 func _on_start_pressed() -> void:
 	GameManager.player_count = player_count
 	GameManager.player_types.clear()
 	for i in range(player_count):
-		# Last cpu_count players are bots
 		if i >= player_count - cpu_count:
-			GameManager.player_types.append("bot")
+			GameManager.player_types.append(cpu_difficulty)
 		else:
 			GameManager.player_types.append("human")
 	get_tree().change_scene_to_file("res://scenes/main/Main.tscn")

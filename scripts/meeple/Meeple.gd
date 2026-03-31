@@ -64,9 +64,9 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 		best_slot_id = "0_0_center"
 
 	return {
-		"offset": best_local,
-		"feature": best_feature,
-		"slot_id": best_slot_id
+		"offset": best_local, #Local position on the tile
+		"feature": best_feature, #e.g. "city_0", "road_1", "field_2", "monastery"
+		"slot_id": best_slot_id #unique ID for that slot
 	}
 
 func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_count: int = 0) -> String:
