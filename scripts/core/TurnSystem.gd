@@ -16,15 +16,24 @@ var player_types: Array = []
 var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
 var game_active: bool = false
+var hint_visible: bool = false #Boolean of hint of best tile 
 
 const MEEPLE_SCENE: PackedScene = preload("res://scenes/meeple/Meeple.tscn")
 const HIGHLIGHT_SCENE = preload("res://scenes/highlight/Highlight.tscn")
+<<<<<<< Updated upstream
 const LAST_PLACED_HIGHLIGHT_SCRIPT = preload("res://scenes/highlight/lastplacedhighlight.gd")
+=======
+const HINT_HIGHLIGHT_SCENE = preload("res://scenes/highlight/HintHighlight.tscn")
+>>>>>>> Stashed changes
 
 var meeples_per_player: int = 7
 var remaining_meeples: Array = []
 var highlight_nodes := []
+<<<<<<< Updated upstream
 var last_tile_highlights := {}
+=======
+var _hint_highlight_node: Node2D = null
+>>>>>>> Stashed changes
 
 @onready var board = $"../Board"
 @onready var game_manager = $"../GameManager"
@@ -172,7 +181,6 @@ func draw_tile() -> void:
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 		print("Place tile")
 
-
 func show_possible_placements(valid_placements):
 		#refresh the highlighted nodes
 		for node in highlight_nodes:
@@ -226,6 +234,7 @@ func on_tile_placed() -> void:
 		_show_last_placed_tile_highlight(cell, current_player_index)
 		board.current_tile = null
 		show_possible_placements([])
+		clear_hint_highlight()
 		phase = TurnPhase.PLACE_MEEPLE
 		Meeple.show_placement_hints(last_placed_tile)
 		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
@@ -265,8 +274,16 @@ func end_turn() -> void:
 func next_turn() -> void:
 	current_player_index = (current_player_index + 1) % players.size()
 
-	
+func show_hint_highlight(cell: Vector2i) -> void:
+	clear_hint_highlight()
+	_hint_highlight_node = HINT_HIGHLIGHT_SCENE.instantiate()
+	_hint_highlight_node.position = board.index_to_coord(cell)
+	add_child(_hint_highlight_node)
 
+func clear_hint_highlight() -> void:
+	if _hint_highlight_node != null:
+		_hint_highlight_node.queue_free()
+		_hint_highlight_node = null
 
 func _input(event) -> void:
 	if not game_active:
@@ -284,15 +301,30 @@ func _input(event) -> void:
 				board.current_tile.rotate_clockwise()
 				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
 				show_possible_placements(valid_placements)
+				clear_hint_highlight()
+				hint_visible = false
 		elif event is InputEventKey and event.pressed:
 			if event.keycode == KEY_Q:
 				board.current_tile.rotate_counter_clockwise()
 				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
 				show_possible_placements(valid_placements)
+				clear_hint_highlight()
+				hint_visible = false
 			elif event.keycode == KEY_E:
 				board.current_tile.rotate_clockwise()
 				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
 				show_possible_placements(valid_placements)
+				clear_hint_highlight()
+				hint_visible = false
+		elif event is InputEventKey and event.is_pressed and event.keycode == KEY_H:
+			if hint_visible:
+				clear_hint_highlight()
+				hint_visible = false
+			else:
+				var best_cell = bot_controller.get_best_placement(current_drawn_tile)
+				if best_cell != Vector2i.MIN:
+					show_hint_highlight(best_cell)
+					hint_visible = true
 	elif phase == TurnPhase.PLACE_MEEPLE:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			place_meeple(board.get_global_mouse_position())

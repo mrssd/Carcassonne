@@ -168,3 +168,15 @@ func _feature_has_opponent_meeple(visited: Array, current_player_index: int) -> 
 			if meeple.owner_index != current_player_index:
 				return true
 	return false
+
+#Public method that returns the best cell for a given tile
+func get_best_placement(tile: Tile) -> Vector2i:
+	var options = []
+	for p in board.get_all_valid_placement(tile):
+		options.append({"cell": p["cell"], "rotations": 0})
+
+	if options.is_empty():
+		return Vector2i.MIN
+
+	var best = _pick_best_placement(options)
+	return best["cell"]
