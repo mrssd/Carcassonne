@@ -274,3 +274,12 @@ func _input(event) -> void:
 			print("Skipping meeple placement")
 			Meeple.hide_placement_hints(last_placed_tile)
 			end_meeple_phase()
+
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F1:
+		print("DEBUG: Force ending game")
+		game_active = false
+		if board.current_tile:
+			board.current_tile.queue_free()
+			board.current_tile = null
+		score_system.score_end_game(board)
+		game_manager.end_game("Debug: Game force ended!")
