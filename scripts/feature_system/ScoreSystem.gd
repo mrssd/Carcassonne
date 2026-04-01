@@ -1,7 +1,7 @@
 class_name ScoreSystem extends Node
 
 signal meeple_returned(player_index: int)
-signal meeple_scored(world_pos: Vector2, score: int)
+signal meeple_scored(meeple: Node2D, score: int)
 
 @onready var score_manager : ScoreManager = $"../ScoreManager"
 @onready var game_manager = $"../GameManager"
@@ -408,8 +408,9 @@ func _return_meeples(board, explore_result: Dictionary, points: int = 0) -> void
 		for slot_id in to_remove:
 			var m = tile.meeples[slot_id]
 			var owner = m.owner_index
-			if points > 0:
-				meeple_scored.emit(m.global_position, points)
-			m.remove()
 			tile.meeples.erase(slot_id)
+			if points > 0:
+				meeple_scored.emit(m, points)
+			else:
+				m.remove()
 			meeple_returned.emit(owner)

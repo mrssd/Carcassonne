@@ -90,8 +90,8 @@ func _on_meeple_returned(player_index: int) -> void:
 		remaining_meeples[player_index] += 1
 		meeple_changed.emit(player_index)
 
-func _on_meeple_scored(world_pos: Vector2, score: int) -> void:
-	score_bubble.play(board, world_pos, score)
+func _on_meeple_scored(meeple: Node2D, score: int) -> void:
+	score_bubble.play(board, meeple, score)
 
 func _init_meeples() -> void:
 	remaining_meeples.clear()
