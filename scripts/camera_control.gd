@@ -21,16 +21,17 @@ func _process(delta):
 		global_position += camera_coord * SPEED * delta
 
 func _unhandled_input(event):
-	if event.is_action_pressed("zoom_in"):
-		_apply_zoom(-ZOOM_STEP)
-	if event.is_action_pressed("zoom_out"):
-		_apply_zoom(ZOOM_STEP)
-
-	if event is InputEventKey and event.pressed:
-		if event.physical_keycode == KEY_MINUS:
-			_apply_zoom(ZOOM_STEP)
-		elif event.physical_keycode == KEY_PLUS or event.physical_keycode == KEY_EQUAL:
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_apply_zoom(-ZOOM_STEP)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_apply_zoom(ZOOM_STEP)
+	#For touchpad zooming
+	elif event is InputEventPanGesture:
+		_apply_zoom(event.delta.y * ZOOM_STEP)
+	elif event is InputEventMagnifyGesture:
+		zoom = (zoom * event.factor).clamp(Vector2.ONE * MIN_ZOOM, Vector2.ONE * MAX_ZOOM)
 
+#Applies zoom
 func _apply_zoom(delta: float) -> void:
 	zoom = (zoom + Vector2.ONE * delta).clamp(Vector2.ONE * MIN_ZOOM, Vector2.ONE * MAX_ZOOM)

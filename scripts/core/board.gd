@@ -1,7 +1,7 @@
 extends Node2D
 class_name Board
 
-const CELL_SIZE: int = 96
+const CELL_SIZE: int = 128
 @export var tile_scene: PackedScene
 
 var placed_tiles := {}

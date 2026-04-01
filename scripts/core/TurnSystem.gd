@@ -303,11 +303,14 @@ func _input(event) -> void:
 			if hint_visible:
 				clear_hint_highlight()
 				hint_visible = false
+				show_possible_placements(board.get_all_valid_placement(current_drawn_tile))
 			else:
 				var best_cell = bot_controller.get_best_placement(current_drawn_tile)
 				if best_cell != Vector2i.MIN:
 					show_hint_highlight(best_cell)
 					hint_visible = true
+					var filtered = board.get_all_valid_placement(current_drawn_tile).filter(func(p): return p["cell"] != best_cell)
+					show_possible_placements(filtered)
 	elif phase == TurnPhase.PLACE_MEEPLE:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			place_meeple(board.get_global_mouse_position())

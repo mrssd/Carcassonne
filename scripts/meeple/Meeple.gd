@@ -44,7 +44,7 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 	var best_local := Vector2.ZERO
 	var best_slot_id := "0_0_center"
 
-	var unit_scale := 24.0
+	var unit_scale := Board.CELL_SIZE / 4.0
 
 	if tile.tile_data.meeple_positions.size() > 0:
 		for base_key in tile.tile_data.meeple_positions.keys():
@@ -172,7 +172,7 @@ class MeepleHints:
 			draw_circle(p, radius, Color.WHITE)
 			draw_arc(p, radius, 0.0, TAU, 24, Color(0, 0, 0, 0.75), 1.0, true)
 
-static func show_placement_hints(tile: Tile, unit_scale: float = 24.0) -> void:
+static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE / 4.0) -> void:
 	if tile == null:
 		return
 
