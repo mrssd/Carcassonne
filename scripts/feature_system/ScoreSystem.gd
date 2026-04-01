@@ -1,6 +1,7 @@
 class_name ScoreSystem extends Node
 
 signal meeple_returned(player_index: int)
+signal meeple_scored(world_pos: Vector2, score: int)
 
 @onready var score_manager : ScoreManager = $"../ScoreManager"
 @onready var game_manager = $"../GameManager"
@@ -134,7 +135,7 @@ func score_and_apply(board, placed_cell):
 				points = explore_result["tiles"].size() * CITY_POINTS_PER_TILE + explore_result["shield_count"] * 2
 			var owners = _get_meeple_owners(board, explore_result)
 			_award_to_majority(owners, points)
-			_return_meeples(board, explore_result)
+			_return_meeples(board, explore_result, points)
 
 	_check_monasteries(board, placed_cell)
 
@@ -172,7 +173,7 @@ func _check_monasteries(board, placed_cell):
 					}
 					var owners = _get_meeple_owners(board, monastery_result)
 					_award_to_majority(owners, MONASTERY_COMPLETE_POINTS)
-					_return_meeples(board, monastery_result)
+					_return_meeples(board, monastery_result, MONASTERY_COMPLETE_POINTS)
 
 #end game score function
 func score_end_game(board) -> void:
@@ -208,7 +209,7 @@ func score_end_game(board) -> void:
 			elif feature_type == "city": #if its a city the score should be halfed
 				points = explore_result["tiles"].size() + explore_result["shield_count"]
 			_award_to_majority(owners, points) #award point
-			_return_meeples(board, explore_result) #return meeple (for no reason tbh)
+			_return_meeples(board, explore_result, points)
 
 		if tile.tile_data.is_monastery: #monestary doesnt use internal connections so separate if statement to deal with it
 			var mkey = "monastery|" + str(cell.x) + "," + str(cell.y) 
@@ -224,7 +225,7 @@ func score_end_game(board) -> void:
 				var owners = _get_meeple_owners(board, monastery_result)
 				if not owners.is_empty(): #if theres a owner
 					_award_to_majority(owners, 1 + surrounding_count) #award the score
-					_return_meeples(board, monastery_result)
+					_return_meeples(board, monastery_result, 1 + surrounding_count)
 
 	score_end_game_farmers(board)
 
@@ -249,8 +250,7 @@ func score_end_game_farmers(board) -> void:
 			if owners.is_empty():
 				continue
 			_award_to_majority(owners, city_count * 3)
-			print("[FARMER] Awarded %d pts to majority of %s" % [city_count * 3, owners])
-			_return_meeples(board, field_result)
+			_return_meeples(board, field_result, city_count * 3)
 
 #Finds the field segment key that contains a given half-edge index on a tile
 func _find_field_segment_for_half_edge(tile_data: CarcassonneTileData, half_edge: int) -> String:
@@ -388,7 +388,7 @@ func _award_to_majority(counts: Dictionary, points: int) -> void:
 			score_manager.add_score(player, points)
 
 #Returns meeple if a feature is completed
-func _return_meeples(board, explore_result: Dictionary) -> void:
+func _return_meeples(board, explore_result: Dictionary, points: int = 0) -> void:
 	var cell_to_segs = {}
 	for vkey in explore_result["visited"]:
 		var parts = vkey.split("|")
@@ -408,6 +408,8 @@ func _return_meeples(board, explore_result: Dictionary) -> void:
 		for slot_id in to_remove:
 			var m = tile.meeples[slot_id]
 			var owner = m.owner_index
+			if points > 0:
+				meeple_scored.emit(m.global_position, points)
 			m.remove()
 			tile.meeples.erase(slot_id)
 			meeple_returned.emit(owner)

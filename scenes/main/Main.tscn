@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bhc24iana05ko"]
+[gd_scene load_steps=11 format=3 uid="uid://bhc24iana05ko"]
 
 [ext_resource type="Script" uid="uid://yppp74rwgvg" path="res://scripts/feature_system/ScoreSystem.gd" id="1_hujxm"]
 [ext_resource type="Script" uid="uid://b0kali0tyw2vh" path="res://scripts/core/board.gd" id="1_nha0i"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://btuilk5cm3t1k" path="res://scripts/core/TurnSystem.gd" id="3_k2fmo"]
 [ext_resource type="Script" uid="uid://32bpxtinsc84" path="res://scripts/core/UIManager.gd" id="6_ui_manager"]
 [ext_resource type="Script" uid="uid://cxgm7k2pf4qh1" path="res://scripts/core/GameManager.gd" id="8_ko0rf"]
+[ext_resource type="Script" path="res://scripts/animations/ScoreBubble.gd" id="9_scorebubble"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sjxhf"]
 bg_color = Color(0, 0, 0, 0.33333334)
@@ -191,3 +192,6 @@ text = "HINT"
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("8_ko0rf")
+
+[node name="ScoreBubble" type="Node" parent="."]
+script = ExtResource("9_scorebubble")

@@ -33,6 +33,7 @@ var _hint_highlight_node: Node2D = null
 @onready var game_manager = $"../GameManager"
 @onready var score_system = $"../ScoreSystem"
 @onready var UI_manager = $"../UI/UIPanel"
+@onready var score_bubble: ScoreBubble = $"../ScoreBubble"
 
 var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
@@ -43,6 +44,7 @@ var bot_controller: BotController
 
 func _ready() -> void:
 	score_system.meeple_returned.connect(_on_meeple_returned)
+	score_system.meeple_scored.connect(_on_meeple_scored)
 	bot_controller = BotController.new()
 	add_child(bot_controller)
 	bot_controller.setup(self, board, score_system)
@@ -87,7 +89,9 @@ func _on_meeple_returned(player_index: int) -> void:
 	if player_index >= 0 and player_index < remaining_meeples.size():
 		remaining_meeples[player_index] += 1
 		meeple_changed.emit(player_index)
-		print("%s meeple returned (%d remaining)" % [players[player_index], remaining_meeples[player_index]])
+
+func _on_meeple_scored(world_pos: Vector2, score: int) -> void:
+	score_bubble.play(board, world_pos, score)
 
 func _init_meeples() -> void:
 	remaining_meeples.clear()
