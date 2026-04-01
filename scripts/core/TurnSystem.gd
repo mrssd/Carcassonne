@@ -107,7 +107,9 @@ func get_current_player_type() -> String:
 	return "human"
 
 func start_turn() -> void:
-	_clear_player_last_tile_highlight(current_player_index)
+	if last_tile_highlights.has(current_player_index) and is_instance_valid(last_tile_highlights[current_player_index]):
+		last_tile_highlights[current_player_index].queue_free()
+		last_tile_highlights.erase(current_player_index)
 	print("Turn started:", get_current_player())
 	turn_changed.emit(get_current_player(), current_player_index)
 	phase = TurnPhase.DRAW_TILE
@@ -174,6 +176,7 @@ func draw_tile() -> void:
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 		print("Place tile")
 
+#FDisplays possible placements for current tile
 func show_possible_placements(valid_placements):
 		#refresh the highlighted nodes
 		for node in highlight_nodes:
@@ -186,28 +189,19 @@ func show_possible_placements(valid_placements):
 			add_child(highlight)
 			highlight_nodes.append(highlight)
 
-func _clear_player_last_tile_highlight(player_index: int) -> void:
-	if not last_tile_highlights.has(player_index):
-		return
-	var highlight: Node2D = last_tile_highlights[player_index]
-	if is_instance_valid(highlight):
-		highlight.queue_free()
-	last_tile_highlights.erase(player_index)
-
+#Highlights last placed tile by each player
 func _show_last_placed_tile_highlight(cell: Vector2i, player_index: int) -> void:
-	var last_tile_highlight: Node2D = null
-	if last_tile_highlights.has(player_index):
-		last_tile_highlight = last_tile_highlights[player_index]
-	if not is_instance_valid(last_tile_highlight):
-		last_tile_highlight = HIGHLIGHT_SCENE.instantiate()
-		last_tile_highlight.set_script(LAST_PLACED_HIGHLIGHT_SCRIPT)
-		add_child(last_tile_highlight)
-		last_tile_highlights[player_index] = last_tile_highlight
-	if UI_manager != null and last_tile_highlight.has_method("set_player_colors"):
-		last_tile_highlight.set_player_colors(UI_manager.player_colors)
-	if last_tile_highlight.has_method("set_last_tile_highlight"):
-		last_tile_highlight.set_last_tile_highlight(player_index)
-	last_tile_highlight.position = board.index_to_coord(cell)
+	#Clear previous highlight for this player if it exists
+	if last_tile_highlights.has(player_index) and is_instance_valid(last_tile_highlights[player_index]):
+		last_tile_highlights[player_index].queue_free()
+	#Instantiates highlight from last placed highlight script
+	var highlight: Node2D = HIGHLIGHT_SCENE.instantiate()
+	highlight.set_script(LAST_PLACED_HIGHLIGHT_SCRIPT)
+	add_child(highlight)
+	highlight.set_player_colors(UI_manager.player_colors)
+	highlight.set_last_tile_highlight(player_index)
+	highlight.position = board.index_to_coord(cell)
+	last_tile_highlights[player_index] = highlight
 
 func on_tile_placed() -> void:
 	if not game_active:
