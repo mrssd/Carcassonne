@@ -160,7 +160,6 @@ func draw_tile() -> void:
 	show_possible_placements(valid_placements)
 	phase = TurnPhase.PLACE_TILE
 	phase_changed.emit(phase)
-	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 
 	if is_current_player_bot():
@@ -279,6 +278,11 @@ func clear_hint_highlight() -> void:
 		_hint_highlight_node.queue_free()
 		_hint_highlight_node = null
 
+func _refresh_placement_display() -> void:
+	show_possible_placements(board.get_all_valid_placement(current_drawn_tile))
+	clear_hint_highlight()
+	hint_visible = false
+
 func _input(event) -> void:
 	if not game_active:
 		return
@@ -293,23 +297,14 @@ func _input(event) -> void:
 				on_tile_placed()
 			elif event.button_index == MOUSE_BUTTON_RIGHT:
 				board.current_tile.rotate_clockwise()
-				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
-				show_possible_placements(valid_placements)
-				clear_hint_highlight()
-				hint_visible = false
+				_refresh_placement_display()
 		elif event is InputEventKey and event.pressed:
 			if event.keycode == KEY_Q:
 				board.current_tile.rotate_counter_clockwise()
-				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
-				show_possible_placements(valid_placements)
-				clear_hint_highlight()
-				hint_visible = false
+				_refresh_placement_display()
 			elif event.keycode == KEY_E:
 				board.current_tile.rotate_clockwise()
-				var valid_placements = board.get_all_valid_placement(current_drawn_tile)
-				show_possible_placements(valid_placements)
-				clear_hint_highlight()
-				hint_visible = false
+				_refresh_placement_display()
 		elif event is InputEventKey and event.is_pressed and event.keycode == KEY_H:
 			if hint_visible:
 				clear_hint_highlight()

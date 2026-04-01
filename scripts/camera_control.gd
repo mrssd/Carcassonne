@@ -22,13 +22,15 @@ func _process(delta):
 
 func _unhandled_input(event):
 	if event.is_action_pressed("zoom_in"):
-		zoom = (zoom - Vector2.ONE * ZOOM_STEP).clamp(Vector2.ONE * MIN_ZOOM, Vector2.ONE * MAX_ZOOM)
+		_apply_zoom(-ZOOM_STEP)
 	if event.is_action_pressed("zoom_out"):
-		zoom = (zoom + Vector2.ONE * ZOOM_STEP).clamp(Vector2.ONE * MIN_ZOOM, Vector2.ONE * MAX_ZOOM)
-	
-	# Keyboard shortcuts for zoom with + and - keys
+		_apply_zoom(ZOOM_STEP)
+
 	if event is InputEventKey and event.pressed:
 		if event.physical_keycode == KEY_MINUS:
-			zoom = (zoom - Vector2.ONE * ZOOM_STEP).clamp(Vector2.ONE * MIN_ZOOM, Vector2.ONE * MAX_ZOOM)
+			_apply_zoom(ZOOM_STEP)
 		elif event.physical_keycode == KEY_PLUS or event.physical_keycode == KEY_EQUAL:
-			zoom = (zoom + Vector2.ONE * ZOOM_STEP).clamp(Vector2.ONE * MIN_ZOOM, Vector2.ONE * MAX_ZOOM)
+			_apply_zoom(-ZOOM_STEP)
+
+func _apply_zoom(delta: float) -> void:
+	zoom = (zoom + Vector2.ONE * delta).clamp(Vector2.ONE * MIN_ZOOM, Vector2.ONE * MAX_ZOOM)

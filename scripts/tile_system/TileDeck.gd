@@ -26,7 +26,6 @@ func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
 			# fixes the inverted Y coordinate for tiles in the resource file
 			_draw_pile.back().invert_Y_meeple_positions()
 	_draw_pile.shuffle()
-	_draw_pile.shuffle()
 	#Starting tile
 	_draw_pile.append(tile_resources[-1].carcassone_tile_data)
 	_draw_pile.back().apply_segment_data()
@@ -68,6 +67,3 @@ func get_draw_pile_size() -> int:
 func get_discard_pile_size() -> int:
 	return _discard_pile.size()
 
-## Debugging function
-func print_draw_pile() -> void:
-	pass
