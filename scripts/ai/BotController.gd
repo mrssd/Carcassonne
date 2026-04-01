@@ -90,8 +90,17 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 		else:
 			seg_value = dic["tiles"].size() / (dic["open_ports"] + 1)
 
+		#Discount segment value by amount of open ports
+		var tile_open_ports: int = 0
+		for edge_index in tile.tile_data.internal_connections[seg]:
+			var neighbor_cell = cell + score_system.neighbor_directions[edge_index]
+			if not board.placed_tiles.has(neighbor_cell):
+				tile_open_ports += 1
+		seg_value /= (tile_open_ports + 1)
+
+		#Penalizes helping opponent features
 		if _feature_has_opponent_meeple(dic["visited"], player_index):
-			score -= seg_value * 0.5  #Penalizes helping opponent features
+			score -= seg_value * 0.5  
 		else:
 			score += seg_value
 
