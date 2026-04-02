@@ -62,7 +62,8 @@ func _setup_connections() -> void:
 		# Set initial score display
 		_on_score_changed()
 
-	NetworkManager.action_failed.connect(_on_network_action_failed)
+	# FIXME: NetworkManager not implemented
+	#NetworkManager.action_failed.connect(_on_network_action_failed)
 	
 	# Connect options menu buttons
 	if options_menu_trigger:
