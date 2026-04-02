@@ -4,6 +4,8 @@ class_name Board
 const CELL_SIZE: int = 128
 @export var tile_scene: PackedScene
 
+@onready var turn_system: TurnSystem = $"../TurnSystem"
+
 var placed_tiles := {}
 var current_tile: Tile # NEED TO MATCH IN TILE SCRIPT
 # Hover/transparency config
@@ -35,12 +37,12 @@ func _process(_dt):
 		_clear_hover_transparency()
 
 func place_tile(cell: Vector2i, tile: Tile): # NEED TO MATCH IN TILE SCRIPT
-	tile.position = index_to_coord(cell)
-	# ensure tile placed has full opacity
-	tile.modulate = Color(1, 1, 1, 1)
+	var final_pos := index_to_coord(cell)
 	placed_tiles[cell] = tile
-	# clear hover state when placing
 	_clear_hover_transparency()
+	#Plays animation when placing tile if its a bot
+	if turn_system.is_current_player_bot():
+		TilePlaceAnimation.play(tile, final_pos)
 
 
 func _set_hover_transparency(cell: Vector2i) -> void:
