@@ -13,11 +13,11 @@ enum TurnPhase {
 }
 
 var players = ["Player 1", "Player 2"]
-var player_types: Array = [] 
+var player_types: Array = []
 var current_player_index := 0
 var phase := TurnPhase.DRAW_TILE
 var game_active: bool = false
-var hint_visible: bool = false #Boolean of hint of best tile 
+var hint_visible: bool = false # Boolean of hint of best tile
 
 const MEEPLE_SCENE: PackedScene = preload("res://scenes/meeple/Meeple.tscn")
 const HIGHLIGHT_SCENE = preload("res://scenes/highlight/Highlight.tscn")
@@ -48,7 +48,7 @@ func _ready() -> void:
 	score_system.meeple_scored.connect(_on_meeple_scored)
 	bot_controller = BotController.new()
 	add_child(bot_controller)
-	bot_controller.setup(self, board, score_system)
+	bot_controller.setup(self , board, score_system)
 
 
 func start_game() -> void:
@@ -134,8 +134,9 @@ func draw_tile() -> void:
 		print("No placeable tiles remain. Game over!")
 		game_active = false
 		score_system.score_end_game(board)
-		if not NetworkManager.on_game_over("No placeable tiles remain! Game Over!"):
-			game_manager.end_game("No placeable tiles remain! Game Over!")
+		# FIXME: NetworkManager not implemented
+		#if not NetworkManager.on_game_over("No placeable tiles remain! Game Over!"):
+		game_manager.end_game("No placeable tiles remain! Game Over!")
 		return
 
 	board.current_tile = draw_result["tile"]
@@ -147,8 +148,8 @@ func draw_tile() -> void:
 	tile_drawn.emit(current_drawn_tile)
 	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
-	NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
-	tile_deck.print_draw_pile()
+	# FIXME: NetworkManager not implemented
+	#NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
 
@@ -288,7 +289,9 @@ func _refresh_placement_display() -> void:
 	hint_visible = false
 
 func _can_interact_with_current_turn() -> bool:
-	return not NetworkManager.should_block_local_input(current_player_index)
+	# FIXME: NetworkManager not implemented - allowing local input
+	return true
+	#return not NetworkManager.should_block_local_input(current_player_index)
 
 func _update_tile_preview_visibility(valid_placements: Array) -> void:
 	var show_preview := _can_interact_with_current_turn()
