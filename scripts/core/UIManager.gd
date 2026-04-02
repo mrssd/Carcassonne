@@ -12,8 +12,13 @@ class_name UIManager
 @onready var hint_panel: PanelContainer = %hint_panel
 @onready var player_stack_container: MarginContainer = %player_stack
 @onready var options_menu_trigger: Button = %options_menu_triger
-@onready var options_menu: PanelContainer = %OptionsMenu
+@onready var in_game_options_menu: PanelContainer = %OptionsMenu
 @onready var options_menu_close: Button = %options_menu_close
+@onready var highlight_placement_toggle: CheckButton = %highlight_placement
+@onready var hint_messages_toggle: CheckButton = %hint_messages
+
+var highlight_placements_enabled: bool = true
+var hint_messages_enabled: bool = true
 
 # Player card references
 var player_cards: Array[PanelContainer] = []
@@ -67,9 +72,13 @@ func _setup_connections() -> void:
 	
 	# Connect options menu buttons
 	if options_menu_trigger:
-		options_menu_trigger.pressed.connect(_on_options_menu_open)
+		options_menu_trigger.pressed.connect(_on_in_game_options_menu_open)
 	if options_menu_close:
-		options_menu_close.pressed.connect(_on_options_menu_close)
+		options_menu_close.pressed.connect(_on_in_game_options_menu_close)
+	if highlight_placement_toggle:
+		highlight_placement_toggle.toggled.connect(_on_highlight_placement_toggled)
+	if hint_messages_toggle:
+		hint_messages_toggle.toggled.connect(_on_hint_messages_toggled)
 
 func _on_tile_drawn(tile: Tile) -> void:
 	if current_action_tile_texture and tile and tile.tile_data and tile.tile_data.tile_texture:
@@ -112,6 +121,8 @@ func _update_scoreboard_display() -> void:
 	pass
 
 func show_hint(message: String) -> void:
+	if not hint_messages_enabled:
+		return
 	hint_label.text = message
 	hint_panel.show()
 
@@ -271,12 +282,22 @@ func _animate_stack_expansion(expand: bool) -> void:
 			var offset_x = 20 * i # Compact stacking with flow to right
 			tween.tween_property(card, "position:x", offset_x, 0.4)
 
+func _on_highlight_placement_toggled(pressed: bool) -> void:
+	highlight_placements_enabled = pressed
+	if not pressed and turn_system:
+		turn_system.show_possible_placements([])
+
+func _on_hint_messages_toggled(pressed: bool) -> void:
+	hint_messages_enabled = pressed
+	if not pressed:
+		hint_panel.hide()
+
 ## Open options menu
-func _on_options_menu_open() -> void:
-	if options_menu:
-		options_menu.visible = true
+func _on_in_game_options_menu_open() -> void:
+	if in_game_options_menu:
+		in_game_options_menu.visible = true
 
 ## Close options menu
-func _on_options_menu_close() -> void:
-	if options_menu:
-		options_menu.visible = false
+func _on_in_game_options_menu_close() -> void:
+	if in_game_options_menu:
+		in_game_options_menu.visible = false

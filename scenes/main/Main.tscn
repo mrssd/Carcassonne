@@ -1,8 +1,8 @@
 [gd_scene load_steps=27 format=3 uid="uid://bhc24iana05ko"]
 
-[ext_resource type="Script" uid="uid://djkjx33uip40o" path="res://scripts/animations/ScoreBubble.gd" id="1_scrbbl"]
 [ext_resource type="Script" uid="uid://yppp74rwgvg" path="res://scripts/feature_system/ScoreSystem.gd" id="1_hujxm"]
 [ext_resource type="Script" uid="uid://b0kali0tyw2vh" path="res://scripts/core/board.gd" id="1_nha0i"]
+[ext_resource type="Script" uid="uid://djkjx33uip40o" path="res://scripts/animations/ScoreBubble.gd" id="1_scrbbl"]
 [ext_resource type="Script" uid="uid://cn0pahhi58djk" path="res://scripts/camera_control.gd" id="1_u1xfj"]
 [ext_resource type="Script" uid="uid://bd53wgaaabmen" path="res://scripts/feature_system/ScoreManager.gd" id="1_yyfjg"]
 [ext_resource type="PackedScene" uid="uid://c2eaduakgdpp1" path="res://scenes/tile/tile.tscn" id="2_tile"]
@@ -11,10 +11,10 @@
 [ext_resource type="Script" uid="uid://cxgm7k2pf4qh1" path="res://scripts/core/GameManager.gd" id="8_ko0rf"]
 [ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="8_ostsq"]
 [ext_resource type="Texture2D" uid="uid://bx5dh536u7f73" path="res://assets/images/layers-stack.svg" id="8_p5fgu"]
-[ext_resource type="Shader" path="res://scenes/main/Main.gdshader" id="9_qkm1d"]
+[ext_resource type="Shader" uid="uid://b80r6vgogen4r" path="res://scenes/main/Main.gdshader" id="9_qkm1d"]
 [ext_resource type="Texture2D" uid="uid://csn683gvw184d" path="res://assets/images/industry.svg" id="10_2tpxt"]
 [ext_resource type="Texture2D" uid="uid://cfg8ne4y62ffm" path="res://assets/tiles/road4.png" id="10_p5fgu"]
-[ext_resource type="Shader" path="res://scenes/main/BlurBackground.gdshader" id="13_jsdfw"]
+[ext_resource type="Shader" uid="uid://cnkc2aeuaapol" path="res://scenes/main/BlurBackground.gdshader" id="13_jsdfw"]
 [ext_resource type="Texture2D" uid="uid://drhkbs8velujj" path="res://assets/images/x-close.svg" id="14_tck0d"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hjnkw"]
@@ -358,11 +358,12 @@ layout_mode = 2
 layout_mode = 2
 theme_override_fonts/font = ExtResource("8_ostsq")
 theme_override_font_sizes/font_size = 21
-text = "Highlight possible placment"
+text = "Tile Placement Highlight"
 
 [node name="highlight_placement" type="CheckButton" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+button_pressed = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options"]
 layout_mode = 2
@@ -376,10 +377,12 @@ layout_mode = 2
 layout_mode = 2
 theme_override_fonts/font = ExtResource("8_ostsq")
 theme_override_font_sizes/font_size = 21
-text = "show hint messages"
+text = "Action Hints"
 
-[node name="CheckButton" type="CheckButton" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer2/HBoxContainer"]
+[node name="hint_messages" type="CheckButton" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
+button_pressed = true
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("8_ko0rf")

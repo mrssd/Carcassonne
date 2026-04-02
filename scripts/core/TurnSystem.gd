@@ -193,6 +193,8 @@ func show_possible_placements(valid_placements):
 		for node in highlight_nodes:
 			node.queue_free()
 		highlight_nodes.clear()
+		if UI_manager == null or not UI_manager.highlight_placements_enabled:
+			return
 		#new highlight
 		for placement in valid_placements:
 			var highlight = HIGHLIGHT_SCENE.instantiate()
