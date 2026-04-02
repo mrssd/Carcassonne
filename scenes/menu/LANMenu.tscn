@@ -1,0 +1,294 @@
+[gd_scene load_steps=14 format=3 uid="uid://b3bft5wy0bwk7"]
+
+[ext_resource type="Script" uid="uid://b7vvdsm5kksuh" path="res://scripts/core/MainMenu.gd" id="1_fxe7t"]
+[ext_resource type="Texture2D" uid="uid://bccqqkrpber8w" path="res://assets/images/MainMenuBackground.png" id="2_ftqmb"]
+[ext_resource type="FontFile" uid="uid://cceljjwqdxima" path="res://assets/fonts/carcassonne.ttf" id="3_7rqhx"]
+[ext_resource type="Texture2D" uid="uid://bfjmq88g8eu25" path="res://assets/images/left-arrow.svg" id="4_7rqhx"]
+[ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="4_ftqmb"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_46wf3"]
+texture = ExtResource("2_ftqmb")
+modulate_color = Color(0.728822, 0.728822, 0.728822, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kugfe"]
+bg_color = Color(0.94509804, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fxe7t"]
+bg_color = Color(0.023529412, 0.03529412, 0.03137255, 0.6745098)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftqmb"]
+bg_color = Color(0.105882354, 0.105882354, 0.105882354, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7rqhx"]
+bg_color = Color(0.18764207, 0.14773649, 0.18100855, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3kui1"]
+bg_color = Color(0.1882353, 0.14901961, 0.18039216, 0.5294118)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kwdvf"]
+bg_color = Color(0.1882353, 0.14901961, 0.18039216, 0.52156866)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kugfe"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fxe7t")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_46wf3")
+
+[node name="back_menu" type="Button" parent="."]
+unique_name_in_owner = true
+z_index = 1
+custom_minimum_size = Vector2(20, 30)
+layout_mode = 0
+offset_left = 188.0
+offset_top = 241.0
+offset_right = 275.0
+offset_bottom = 274.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_normal_color = Color(1.1155957, 1.1155957, 1.1155957, 1)
+theme_override_colors/icon_disabled_color = Color(1, 1, 1, 0.4)
+theme_override_constants/outline_size = 0
+theme_override_constants/h_separation = 7
+theme_override_constants/icon_max_width = 24
+theme_override_constants/align_to_largest_stylebox = 2
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxFlat_kugfe")
+text = "Back"
+icon = ExtResource("4_7rqhx")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -211.0
+offset_top = 51.0
+offset_right = 213.0
+offset_bottom = 142.0
+grow_horizontal = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 3
+theme_override_fonts/font = ExtResource("3_7rqhx")
+theme_override_font_sizes/font_size = 90
+text = "Carcassonne"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -475.0
+offset_top = -132.0
+offset_right = 475.0
+offset_bottom = 268.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="Panel2" type="Panel" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_fxe7t")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/Panel2"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -223.0
+offset_right = 223.0
+offset_bottom = 108.0
+grow_horizontal = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Panel2/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Label2" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 25
+text = "LAN Multiplayer "
+horizontal_alignment = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer/Panel2/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VFlowContainer" type="VFlowContainer" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/VFlowContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 25
+text = "Display Name: "
+horizontal_alignment = 1
+
+[node name="user_name" type="LineEdit" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/VFlowContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+max_length = 200
+
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/VFlowContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label3" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/VFlowContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 25
+text = "Host IP:"
+horizontal_alignment = 1
+
+[node name="ip_input" type="LineEdit" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/VFlowContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+placeholder_text = "e.g 192.168.88.1"
+max_length = 200
+
+[node name="MarginContainer3" type="MarginContainer" parent="VBoxContainer/Panel2/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VFlowContainer" type="VFlowContainer" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer3"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer3/VFlowContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 25
+text = "Port: "
+horizontal_alignment = 1
+
+[node name="port" type="LineEdit" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer3/VFlowContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+placeholder_text = "7777"
+max_length = 200
+
+[node name="MarginContainer4" type="MarginContainer" parent="VBoxContainer/Panel2/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4/HBoxContainer"]
+custom_minimum_size = Vector2(300, 200)
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4/HBoxContainer/VBoxContainer2"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ftqmb")
+
+[node name="players_lobby" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4/HBoxContainer/VBoxContainer2/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="host_lan" type="Button" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 65)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_7rqhx")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3kui1")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kwdvf")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_kugfe")
+text = "Host LAN"
+
+[node name="join_lan" type="Button" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 65)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_7rqhx")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3kui1")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kwdvf")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_kugfe")
+text = "Join"
+
+[node name="start_match" type="Button" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer4/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 65)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_ftqmb")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_7rqhx")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_3kui1")
+theme_override_styles/hover = SubResource("StyleBoxFlat_kwdvf")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_kugfe")
+text = "Start Match"

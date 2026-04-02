@@ -4,6 +4,7 @@ class_name TurnSystem
 signal turn_changed(player_name: String, player_index: int)
 signal phase_changed(phase: int)
 signal meeple_changed(player_index: int)
+signal tile_drawn(tile: Tile)
 
 enum TurnPhase {
 	DRAW_TILE,
@@ -125,48 +126,31 @@ func draw_tile() -> void:
 		return
 
 	board.freeze_tile = false
-	var tile_instance: Tile = null
-	var valid_placements: Array = []
+	var draw_result := _draw_placeable_tile()
+	
+	if draw_result.is_empty():
+		if UI_manager:
+			UI_manager.show_hint("Game Over! No placeable tiles remain.")
+		print("No placeable tiles remain. Game over!")
+		game_active = false
+		score_system.score_end_game(board)
+		if not NetworkManager.on_game_over("No placeable tiles remain! Game Over!"):
+			game_manager.end_game("No placeable tiles remain! Game Over!")
+		return
 
-	#Keeps drawing until a tile that can be placed or the deck runs out
-	while true:
-		var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
-		if tile_data == null:
-			UI_manager.show_hint("Game Over! No more tiles in the deck.")
-			print("No more tiles to draw. Game over!")
-			game_active = false
-			score_system.score_end_game(board)
-			game_manager.end_game("No more tiles! Game Over!")
-			return
+	board.current_tile = draw_result["tile"]
+	current_drawn_tile = board.current_tile
 
-		#Test all 4 rotations 
-		var test: Tile = board.tile_scene.instantiate()
-		test.tile_data = tile_data.duplicate(true)
-
-		var placeable := false
-		for _r in range(4):
-			valid_placements = board.get_all_valid_placement(test)
-			if valid_placements.size() > 0:
-				placeable = true
-				break
-			test.rotate_clockwise()
-
-		if placeable:
-			tile_instance = test
-			break
-		else:
-			# No valid placement in any rotation so discard and draw again
-			test.free()
-			UI_manager.show_hint("Tile could not be placed, drawing again...")
-
-	board.add_child(tile_instance)
-	board.current_tile = tile_instance
-	current_drawn_tile = tile_instance
-
-	show_possible_placements(valid_placements)
 	phase = TurnPhase.PLACE_TILE
+	_update_tile_preview_visibility(draw_result["valid_placements"])
 	phase_changed.emit(phase)
+	tile_drawn.emit(current_drawn_tile)
+	if UI_manager and _can_interact_with_current_turn():
+		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
+	NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
+	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
+	print("Place tile")
 
 	if is_current_player_bot():
 		board.freeze_tile = true
@@ -176,9 +160,31 @@ func draw_tile() -> void:
 		print("Bot is thinking...")
 		await get_tree().create_timer(0.8).timeout
 		bot_controller.take_turn(get_current_player_type())
-	else:
-		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
-		print("Place tile")
+
+func _draw_placeable_tile() -> Dictionary:
+	var attempts := tile_deck.get_draw_pile_size()
+
+	for _i in range(attempts):
+		var tile_data: CarcassonneTileData = tile_deck.draw_next_tile()
+		if tile_data == null:
+			return {}
+
+		var tile_instance: Tile = board.tile_scene.instantiate()
+		tile_instance.tile_data = tile_data.duplicate(true)
+		board.add_child(tile_instance)
+
+		var valid_placements = board.get_all_valid_placement(tile_instance)
+		if not valid_placements.is_empty():
+			return {
+				"tile": tile_instance,
+				"valid_placements": valid_placements,
+			}
+
+		board.remove_child(tile_instance)
+		tile_instance.queue_free()
+		tile_deck.return_drawn_tile(tile_data)
+
+	return {}
 
 #FDisplays possible placements for current tile
 func show_possible_placements(valid_placements):
@@ -280,6 +286,15 @@ func _refresh_placement_display() -> void:
 	show_possible_placements(board.get_all_valid_placement(current_drawn_tile))
 	clear_hint_highlight()
 	hint_visible = false
+
+func _can_interact_with_current_turn() -> bool:
+	return not NetworkManager.should_block_local_input(current_player_index)
+
+func _update_tile_preview_visibility(valid_placements: Array) -> void:
+	var show_preview := _can_interact_with_current_turn()
+	if board.current_tile != null:
+		board.current_tile.visible = show_preview
+	show_possible_placements(valid_placements if show_preview else [])
 
 func _input(event) -> void:
 	if not game_active:

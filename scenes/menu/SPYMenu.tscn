@@ -1,0 +1,233 @@
+[gd_scene load_steps=15 format=3 uid="uid://b1fgqi5rvgqas"]
+
+[ext_resource type="Script" uid="uid://b7vvdsm5kksuh" path="res://scripts/core/MainMenu.gd" id="1_gggdo"]
+[ext_resource type="Texture2D" uid="uid://bccqqkrpber8w" path="res://assets/images/MainMenuBackground.png" id="2_qntiw"]
+[ext_resource type="FontFile" uid="uid://cceljjwqdxima" path="res://assets/fonts/carcassonne.ttf" id="3_ak3sq"]
+[ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="4_0ir86"]
+[ext_resource type="Texture2D" uid="uid://bfjmq88g8eu25" path="res://assets/images/left-arrow.svg" id="5_0ir86"]
+[ext_resource type="Texture2D" uid="uid://dmepfurl4yiu0" path="res://assets/images/green-add-button.svg" id="5_ak3sq"]
+[ext_resource type="Texture2D" uid="uid://d2er0vr3icjs0" path="res://assets/images/minus-circle-red-symbol.svg" id="6_0ir86"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_46wf3"]
+texture = ExtResource("2_qntiw")
+modulate_color = Color(0.728822, 0.728822, 0.728822, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stod6"]
+bg_color = Color(0.94509804, 0, 0, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fxe7t"]
+bg_color = Color(0.023529412, 0.03529412, 0.03137255, 0.6745098)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u3ywg"]
+bg_color = Color(0.23611766, 0.46621662, 9.62615e-08, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mridn"]
+bg_color = Color(0.1882353, 0.14901961, 0.18039216, 0.5294118)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_eltkr"]
+bg_color = Color(0.1882353, 0.14901961, 0.18039216, 0.52156866)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_stod6"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gggdo")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_46wf3")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -211.0
+offset_top = 51.0
+offset_right = 213.0
+offset_bottom = 142.0
+grow_horizontal = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 3
+theme_override_fonts/font = ExtResource("3_ak3sq")
+theme_override_font_sizes/font_size = 90
+text = "Carcassonne"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="back_menu" type="Button" parent="."]
+unique_name_in_owner = true
+z_index = 1
+custom_minimum_size = Vector2(20, 30)
+layout_mode = 1
+offset_left = 372.0
+offset_top = 225.0
+offset_right = 459.0
+offset_bottom = 258.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_normal_color = Color(1.1155957, 1.1155957, 1.1155957, 1)
+theme_override_colors/icon_disabled_color = Color(1, 1, 1, 0.4)
+theme_override_constants/outline_size = 0
+theme_override_constants/h_separation = 7
+theme_override_constants/icon_max_width = 24
+theme_override_constants/align_to_largest_stylebox = 2
+theme_override_fonts/font = ExtResource("4_0ir86")
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("StyleBoxFlat_stod6")
+text = "Back"
+icon = ExtResource("5_0ir86")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -282.0
+offset_top = -145.5
+offset_right = 282.0
+offset_bottom = 145.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="Panel2" type="Panel" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_fxe7t")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/Panel2"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -223.0
+offset_right = 223.0
+offset_bottom = 108.0
+grow_horizontal = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Panel2/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Label2" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_0ir86")
+theme_override_font_sizes/font_size = 25
+text = "Single Player "
+horizontal_alignment = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer/Panel2/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_0ir86")
+theme_override_font_sizes/font_size = 22
+text = "Bot Players : "
+
+[node name="add_bot_player" type="Button" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+icon = ExtResource("5_ak3sq")
+flat = true
+expand_icon = true
+
+[node name="bot_players" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_0ir86")
+theme_override_font_sizes/font_size = 22
+text = "5"
+
+[node name="remove_bot_player" type="Button" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+icon = ExtResource("6_0ir86")
+flat = true
+expand_icon = true
+
+[node name="MarginContainer3" type="MarginContainer" parent="VBoxContainer/Panel2/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer3"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer3/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_0ir86")
+theme_override_font_sizes/font_size = 22
+text = "Bots Difficulty: "
+
+[node name="bots_difficulty" type="OptionButton" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer3/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "Randomly"
+popup/item_0/id = 0
+popup/item_1/text = "Greedy"
+popup/item_1/id = 1
+
+[node name="strat_game" type="Button" parent="VBoxContainer/Panel2/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxFlat_u3ywg")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_mridn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_eltkr")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_stod6")
+text = "Start"

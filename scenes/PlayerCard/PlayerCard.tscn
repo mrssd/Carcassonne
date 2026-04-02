@@ -1,0 +1,96 @@
+[gd_scene load_steps=9 format=3 uid="uid://b2umgf63jqcop"]
+
+[ext_resource type="Texture2D" path="res://assets/images/CarcassoneAvatars/Player1Avatar.png" id="1_5pmsl"]
+[ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="2_5pmsl"]
+[ext_resource type="Texture2D" uid="uid://clwisk1pd7aa4" path="res://assets/images/sword-white.svg" id="3_c70en"]
+[ext_resource type="Texture2D" uid="uid://fdma4xgyp8sl" path="res://assets/images/trophy.svg" id="4_4foc5"]
+[ext_resource type="Script" uid="uid://dw0m82wm02tma" path="res://scripts/ui/PlayerCardUI.gd" id="5_player_ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c70en"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.105882354, 0.105882354, 0.105882354, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5pmsl"]
+bg_color = Color(0.15307656, 0.15307656, 0.15307647, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_c70en"]
+
+[node name="PlayerCard" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 60)
+offset_right = 78.0
+offset_bottom = 33.0
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_c70en")
+script = ExtResource("5_player_ui")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="PanelContainer" type="PanelContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_5pmsl")
+
+[node name="player_avatar" type="TextureRect" parent="HBoxContainer/PanelContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("1_5pmsl")
+expand_mode = 3
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 3
+
+[node name="player_name" type="Label" parent="HBoxContainer/VBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_5pmsl")
+theme_override_font_sizes/font_size = 16
+text = "player name"
+
+[node name="VFlowContainer" type="HBoxContainer" parent="HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="meepls" type="Label" parent="HBoxContainer/VBoxContainer2/VFlowContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "7"
+
+[node name="TextureRect" type="TextureRect" parent="HBoxContainer/VBoxContainer2/VFlowContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("3_c70en")
+expand_mode = 1
+
+[node name="VSeparator" type="VSeparator" parent="HBoxContainer/VBoxContainer2/VFlowContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+theme_override_styles/separator = SubResource("StyleBoxEmpty_c70en")
+
+[node name="player_score" type="Label" parent="HBoxContainer/VBoxContainer2/VFlowContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "7"
+
+[node name="TextureRect2" type="TextureRect" parent="HBoxContainer/VBoxContainer2/VFlowContainer"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("4_4foc5")
+expand_mode = 1

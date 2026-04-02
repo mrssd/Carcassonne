@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bhc24iana05ko"]
+[gd_scene load_steps=26 format=3 uid="uid://bhc24iana05ko"]
 
 [ext_resource type="Script" uid="uid://yppp74rwgvg" path="res://scripts/feature_system/ScoreSystem.gd" id="1_hujxm"]
 [ext_resource type="Script" uid="uid://b0kali0tyw2vh" path="res://scripts/core/board.gd" id="1_nha0i"]
@@ -8,14 +8,64 @@
 [ext_resource type="Script" uid="uid://btuilk5cm3t1k" path="res://scripts/core/TurnSystem.gd" id="3_k2fmo"]
 [ext_resource type="Script" uid="uid://32bpxtinsc84" path="res://scripts/core/UIManager.gd" id="6_ui_manager"]
 [ext_resource type="Script" uid="uid://cxgm7k2pf4qh1" path="res://scripts/core/GameManager.gd" id="8_ko0rf"]
-[ext_resource type="Script" path="res://scripts/animations/ScoreBubble.gd" id="9_scorebubble"]
+[ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="8_ostsq"]
+[ext_resource type="Texture2D" uid="uid://bx5dh536u7f73" path="res://assets/images/layers-stack.svg" id="8_p5fgu"]
+[ext_resource type="Shader" uid="uid://b80r6vgogen4r" path="res://scenes/main/Main.gdshader" id="9_qkm1d"]
+[ext_resource type="Texture2D" uid="uid://csn683gvw184d" path="res://assets/images/industry.svg" id="10_2tpxt"]
+[ext_resource type="Texture2D" uid="uid://cfg8ne4y62ffm" path="res://assets/tiles/road4.png" id="10_p5fgu"]
+[ext_resource type="Shader" uid="uid://cnkc2aeuaapol" path="res://scenes/main/BlurBackground.gdshader" id="13_jsdfw"]
+[ext_resource type="Texture2D" uid="uid://drhkbs8velujj" path="res://assets/images/x-close.svg" id="14_tck0d"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hjnkw"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sjxhf"]
-bg_color = Color(0, 0, 0, 0.33333334)
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.023529412, 0.03529412, 0.03137255, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jsdfw"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tck0d"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3km4f"]
+bg_color = Color(0.08627451, 0.08627451, 0.08627451, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qkm1d"]
+resource_local_to_scene = true
+bg_color = Color(0.9999998, 0.3522608, 0.17307943, 1)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+shadow_color = Color(0.78039217, 0, 0, 0.14117648)
+shadow_size = 10
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2tpxt"]
+shader = ExtResource("9_qkm1d")
+shader_parameter/roundness = 0.1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_u8lgh"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u8lgh"]
+shader = ExtResource("13_jsdfw")
+shader_parameter/lod = 2.5670001219325
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hjnkw"]
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
 
 [node name="Main" type="Node2D"]
 
@@ -38,36 +88,126 @@ script = ExtResource("1_u1xfj")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="UIPanel" type="Control" parent="UI"]
-layout_mode = 3
+[node name="UIPanel" type="PanelContainer" parent="UI"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 4
 size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxEmpty_hjnkw")
 script = ExtResource("6_ui_manager")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="UI_Layout" type="Control" parent="UI/UIPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="TileInfo" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
 layout_mode = 1
-anchors_preset = 11
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -380.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = -10.0
+offset_left = -40.0
+offset_bottom = 40.0
 grow_horizontal = 0
-grow_vertical = 2
-theme_override_constants/separation = 4
-
-[node name="Information" type="Panel" parent="UI/UIPanel/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
+size_flags_horizontal = 0
+size_flags_vertical = 8
 theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
 
-[node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel/VBoxContainer/Information"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/TileInfo"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="TextureRect" type="TextureRect" parent="UI/UIPanel/MarginContainer/UI_Layout/TileInfo/HBoxContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+texture = ExtResource("8_p5fgu")
+expand_mode = 1
+
+[node name="tile_remaining" type="Label" parent="UI/UIPanel/MarginContainer/UI_Layout/TileInfo/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("8_ostsq")
+theme_override_font_sizes/font_size = 25
+text = "68 / 72"
+
+[node name="Top-Left" type="VBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
+layout_mode = 1
+offset_right = 88.0
+offset_bottom = 88.0
+
+[node name="player_stack" type="MarginContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_filter = 0
+
+[node name="Options" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left/Options"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="options_menu_triger" type="Button" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left/Options/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/normal = SubResource("StyleBoxEmpty_jsdfw")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_tck0d")
+icon = ExtResource("10_2tpxt")
+icon_alignment = 1
+expand_icon = true
+
+[node name="CurrentAction" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -340.0
+offset_top = -302.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PanelTitle" type="Label" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer"]
+layout_mode = 2
+text = "Current Action:"
+
+[node name="current_action_user_panel" type="Panel" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_3km4f")
+
+[node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer/current_action_user_panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -75,123 +215,167 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
+theme_override_constants/margin_top = 3
 theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_bottom = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer/Information/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer/current_action_user_panel/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="PanelTitle" type="Label" parent="UI/UIPanel/VBoxContainer/Information/MarginContainer/VBoxContainer"]
+[node name="current_action_user_status_mark" type="Panel" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer/current_action_user_panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
-text = "Info:"
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_qkm1d")
 
-[node name="DeckLabel" type="Label" parent="UI/UIPanel/VBoxContainer/Information/MarginContainer/VBoxContainer"]
+[node name="current_action_user_display_name" type="Label" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer/current_action_user_panel/MarginContainer/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Tiles: 72"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("8_ostsq")
+theme_override_font_sizes/font_size = 18
+text = "Satyar's turn"
 
-[node name="GameOverLabel" type="Label" parent="UI/UIPanel/VBoxContainer/Information/MarginContainer/VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_bottom = 18
 
-[node name="Scoreboard" type="Panel" parent="UI/UIPanel/VBoxContainer"]
+[node name="current_action_tile" type="TextureRect" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer/MarginContainer"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_2tpxt")
+custom_minimum_size = Vector2(150, 150)
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("10_p5fgu")
+expand_mode = 1
+stretch_mode = 4
 
-[node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel/VBoxContainer/Scoreboard"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer/Scoreboard/MarginContainer"]
-layout_mode = 2
-
-[node name="PanelTitle" type="Label" parent="UI/UIPanel/VBoxContainer/Scoreboard/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "ScoreBoard: "
-
-[node name="ScoreLabel" type="Label" parent="UI/UIPanel/VBoxContainer/Scoreboard/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-
-[node name="CurrentAction" type="Panel" parent="UI/UIPanel/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
-
-[node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel/VBoxContainer/CurrentAction"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer/CurrentAction/MarginContainer"]
-layout_mode = 2
-
-[node name="PanelTitle" type="Label" parent="UI/UIPanel/VBoxContainer/CurrentAction/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "Action:"
-
-[node name="TurnLabel" type="Label" parent="UI/UIPanel/VBoxContainer/CurrentAction/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Turn: Player 1"
-
-[node name="VBoxContainer2" type="VBoxContainer" parent="UI/UIPanel"]
+[node name="Bottom" type="VBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -120.0
-offset_right = 840.0
-offset_bottom = -10.0
 grow_vertical = 0
+size_flags_vertical = 8
 theme_override_constants/separation = 4
 
-[node name="Hint" type="Panel" parent="UI/UIPanel/VBoxContainer2"]
+[node name="hint_panel" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Bottom"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/VBoxContainer2/Hint"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Bottom/hint_panel"]
+layout_mode = 2
+
+[node name="hint_label" type="Label" parent="UI/UIPanel/MarginContainer/UI_Layout/Bottom/hint_panel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "HINT"
+
+[node name="OptionsMenu" type="PanelContainer" parent="UI/UIPanel"]
+unique_name_in_owner = true
+visible = false
+z_index = 100
+custom_minimum_size = Vector2(600, 500)
+layout_mode = 2
+mouse_force_pass_scroll_events = false
+theme_override_styles/panel = SubResource("StyleBoxEmpty_u8lgh")
+
+[node name="BlurBackground" type="ColorRect" parent="UI/UIPanel/OptionsMenu"]
+material = SubResource("ShaderMaterial_u8lgh")
+layout_mode = 2
+
+[node name="option-panel" type="PanelContainer" parent="UI/UIPanel/OptionsMenu"]
+custom_minimum_size = Vector2(600, 500)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_hjnkw")
+
+[node name="Control" type="Control" parent="UI/UIPanel/OptionsMenu/option-panel"]
+layout_mode = 2
+
+[node name="Close" type="PanelContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control"]
+layout_mode = 1
+offset_right = 88.0
+offset_bottom = 88.0
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Close"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="options_menu_close" type="Button" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Close/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/normal = SubResource("StyleBoxEmpty_jsdfw")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_tck0d")
+icon = ExtResource("14_tck0d")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Options" type="VBoxContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -99.5
-offset_top = -21.0
-offset_right = 99.5
-offset_bottom = 21.0
+offset_left = -175.0
+offset_top = -29.0
+offset_right = 175.0
+offset_bottom = 29.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 20
 
-[node name="HintLabel" type="Label" parent="UI/UIPanel/VBoxContainer2/Hint/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("8_ostsq")
+theme_override_font_sizes/font_size = 21
+text = "Highlight possible placment"
+
+[node name="highlight_placement" type="CheckButton" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
-text = "HINT"
+size_flags_vertical = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer2/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("8_ostsq")
+theme_override_font_sizes/font_size = 21
+text = "show hint messages"
+
+[node name="CheckButton" type="CheckButton" parent="UI/UIPanel/OptionsMenu/option-panel/Control/Options/HBoxContainer2/HBoxContainer"]
+layout_mode = 2
 
 [node name="GameManager" type="Node" parent="."]
 script = ExtResource("8_ko0rf")
-
-[node name="ScoreBubble" type="Node" parent="."]
-script = ExtResource("9_scorebubble")
