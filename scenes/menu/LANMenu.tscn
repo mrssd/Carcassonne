@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://b3bft5wy0bwk7"]
+[gd_scene load_steps=14 format=3 uid="uid://dnwbr2lkw2osh"]
 
 [ext_resource type="Script" uid="uid://b7vvdsm5kksuh" path="res://scripts/core/MainMenu.gd" id="1_fxe7t"]
 [ext_resource type="Texture2D" uid="uid://bccqqkrpber8w" path="res://assets/images/MainMenuBackground.png" id="2_ftqmb"]
@@ -74,7 +74,7 @@ theme_override_styles/panel = SubResource("StyleBoxTexture_46wf3")
 
 [node name="back_menu" type="Button" parent="."]
 unique_name_in_owner = true
-z_index = 1
+z_index = 15
 custom_minimum_size = Vector2(20, 30)
 layout_mode = 0
 offset_left = 188.0

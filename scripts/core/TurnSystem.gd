@@ -147,7 +147,7 @@ func draw_tile() -> void:
 	phase_changed.emit(phase)
 	tile_drawn.emit(current_drawn_tile)
 	if UI_manager and _can_interact_with_current_turn():
-		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
+		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.\nPress H for a hint (best placement).")
 	# FIXME: NetworkManager not implemented
 	#NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
 	print("Tile drawn for", get_current_player())

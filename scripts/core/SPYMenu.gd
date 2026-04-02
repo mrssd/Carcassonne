@@ -5,18 +5,24 @@ var total_players: int = 2
 var bot_difficulty: String = "random_bot"
 var bot_players_label: Label
 var bots_difficulty_button: OptionButton
+var back_button: Button
 
 func _ready() -> void:
 	# Get references to UI elements
 	bot_players_label = %bot_players
 	bots_difficulty_button = %bots_difficulty
+	back_button = %back_menu
 	
 	# Connect buttons
 	%add_bot_player.pressed.connect(_on_add_bot_pressed)
 	%remove_bot_player.pressed.connect(_on_remove_bot_pressed)
 	%strat_game.pressed.connect(_on_start_pressed)
-	%back_menu.pressed.connect(_on_back_pressed)
+	back_button.pressed.connect(_on_back_pressed)
 	bots_difficulty_button.item_selected.connect(_on_difficulty_selected)
+	
+	print("Back button connected: ", back_button)
+	print("Back button disabled: ", back_button.disabled)
+	print("Back button mouse filter: ", back_button.mouse_filter)
 	
 	# Initialize display
 	_update_bot_display()
@@ -53,7 +59,12 @@ func _on_start_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main/Main.tscn")
 
 func _on_back_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn")
+	print("Back button pressed")
+	call_deferred("_go_back")
 
 func _update_bot_display() -> void:
 	bot_players_label.text = str(bot_count)
+
+func _go_back() -> void:
+	print("Going back to main menu")
+	get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn")
