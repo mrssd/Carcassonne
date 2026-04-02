@@ -22,9 +22,9 @@ func _process(delta):
 
 func _unhandled_input(event):
 	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_apply_zoom(-ZOOM_STEP)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			_apply_zoom(ZOOM_STEP)
 	#For touchpad zooming
 	elif event is InputEventPanGesture:
