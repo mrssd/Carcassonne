@@ -1,6 +1,6 @@
 [gd_scene load_steps=14 format=3 uid="uid://dnwbr2lkw2osh"]
 
-[ext_resource type="Script" uid="uid://b7vvdsm5kksuh" path="res://scripts/core/MainMenu.gd" id="1_fxe7t"]
+[ext_resource type="Script" path="res://scripts/core/LANMenu.gd" id="1_fxe7t"]
 [ext_resource type="Texture2D" uid="uid://bccqqkrpber8w" path="res://assets/images/MainMenuBackground.png" id="2_ftqmb"]
 [ext_resource type="FontFile" uid="uid://cceljjwqdxima" path="res://assets/fonts/carcassonne.ttf" id="3_7rqhx"]
 [ext_resource type="Texture2D" uid="uid://bfjmq88g8eu25" path="res://assets/images/left-arrow.svg" id="4_7rqhx"]
@@ -292,3 +292,5 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_3kui1")
 theme_override_styles/hover = SubResource("StyleBoxFlat_kwdvf")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_kugfe")
 text = "Start Match"
+
+[connection signal="pressed" from="back_menu" to="." method="_on_back_pressed"]
