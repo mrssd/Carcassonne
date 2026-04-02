@@ -118,9 +118,13 @@ static func _half_edges_for_pos(pos: Vector2i) -> Array:
 	elif pos.x < 0:                return [6, 7]  
 	return [0, 1, 2, 3, 4, 5, 6, 7]
 
-static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
+static func try_place_on_board(allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
 	if allowed_tile == null:
 		print("No tile to place meeple on.")
+		return false
+
+	if remaining_meeples[player_index] <= 0:
+		print("No meeples remaining for Player %d" % [player_index])
 		return false
 
 	var temp_meeple: Meeple = meeple_scene.instantiate() as Meeple
@@ -131,11 +135,6 @@ static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vect
 	var info = temp_meeple.get_placement_feature(allowed_tile, world_click)
 	var slot_id = info["slot_id"]
 	var feature = info["feature"]
-
-	# No per-tile occupancy check (your rule guarantees at most one placement this phase)
-	if remaining_meeples[player_index] <= 0:
-		print("No meeples remaining for Player %d" % [player_index])
-		return false
 
 	temp_meeple.set_player(player_index)
 	temp_meeple.place_on_tile(allowed_tile, info["offset"], feature)

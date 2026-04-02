@@ -249,7 +249,7 @@ func place_meeple(world_click: Vector2) -> void:
 		UI_manager.show_hint("That feature is already claimed")
 		print(info["feature"], "is already claimed.")
 		return
-	var placed = Meeple.try_place_on_board(board, last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
+	var placed = Meeple.try_place_on_board(last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
 		meeple_changed.emit(current_player_index)
 		print("Meeple placed on ", info["feature"])
