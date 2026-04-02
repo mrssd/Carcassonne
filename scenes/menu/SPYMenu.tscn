@@ -1,6 +1,6 @@
-[gd_scene load_steps=15 format=3 uid="uid://b1fgqi5rvgqas"]
+[gd_scene load_steps=15 format=3 uid="uid://clto5j2jad8me"]
 
-[ext_resource type="Script" uid="uid://b7vvdsm5kksuh" path="res://scripts/core/MainMenu.gd" id="1_gggdo"]
+[ext_resource type="Script" uid="uid://b8ekkmlrgdobe" path="res://scripts/core/SPYMenu.gd" id="1_0ir86"]
 [ext_resource type="Texture2D" uid="uid://bccqqkrpber8w" path="res://assets/images/MainMenuBackground.png" id="2_qntiw"]
 [ext_resource type="FontFile" uid="uid://cceljjwqdxima" path="res://assets/fonts/carcassonne.ttf" id="3_ak3sq"]
 [ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="4_0ir86"]
@@ -49,14 +49,14 @@ corner_radius_bottom_left = 15
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_stod6"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu2" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_gggdo")
+script = ExtResource("1_0ir86")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 1

@@ -152,6 +152,6 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_xkvkj")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_60uub")
 text = "Exit"
 
-[connection signal="pressed" from="VBoxContainer/VFlowContainer/singleplayer" to="." method="_on_options_pressed"]
-[connection signal="pressed" from="VBoxContainer/VFlowContainer/multiplayer" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="VBoxContainer/VFlowContainer/singleplayer" to="." method="_on_singleplayer_pressed"]
+[connection signal="pressed" from="VBoxContainer/VFlowContainer/multiplayer" to="." method="_on_multiplayer_pressed"]
 [connection signal="pressed" from="VBoxContainer/exit" to="." method="_on_exit_pressed"]
