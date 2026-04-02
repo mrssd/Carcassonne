@@ -19,11 +19,8 @@ func _ready() -> void:
 	%strat_game.pressed.connect(_on_start_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 	bots_difficulty_button.item_selected.connect(_on_difficulty_selected)
-	
-	print("Back button connected: ", back_button)
-	print("Back button disabled: ", back_button.disabled)
-	print("Back button mouse filter: ", back_button.mouse_filter)
-	
+	back_button.move_to_front()
+
 	# Initialize display
 	_update_bot_display()
 
@@ -59,12 +56,9 @@ func _on_start_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main/Main.tscn")
 
 func _on_back_pressed() -> void:
-	print("Back button pressed")
-	call_deferred("_go_back")
+	get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn")                                                                                                                            
+
 
 func _update_bot_display() -> void:
 	bot_players_label.text = str(bot_count)
 
-func _go_back() -> void:
-	print("Going back to main menu")
-	get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn")
