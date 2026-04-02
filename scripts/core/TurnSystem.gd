@@ -234,7 +234,7 @@ func on_tile_placed() -> void:
 		show_possible_placements([])
 		clear_hint_highlight()
 		phase = TurnPhase.PLACE_MEEPLE
-		Meeple.show_placement_hints(last_placed_tile)
+		Meeple.show_placement_hints(last_placed_tile, Board.CELL_SIZE / 4.0, score_system, board, last_placed_cell)
 		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
 		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	else:

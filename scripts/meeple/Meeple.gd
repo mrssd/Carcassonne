@@ -69,7 +69,7 @@ func get_placement_feature(tile: Tile, world_click: Vector2) -> Dictionary:
 		"slot_id": best_slot_id #unique ID for that slot
 	}
 
-func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_count: int = 0) -> String:
+static func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_count: int = 0) -> String:
 	if tile_data.is_monastery and tile_data.meeple_positions.get(pos, CarcassonneTileData.PropertyType.NONE) == CarcassonneTileData.PropertyType.MONASTERY:
 		return "monastery"
 	# Un-rotate pos into tile-local space to match rotated internal_connections
@@ -103,7 +103,7 @@ func _resolve_segment(tile_data: CarcassonneTileData, pos: Vector2i, rotation_co
 				return seg_key
 	return "unknown"
 
-func _half_edges_for_pos(pos: Vector2i) -> Array:
+static func _half_edges_for_pos(pos: Vector2i) -> Array:
 	#   [0][1]
 	# [7]   [2]
 	# [6]   [3]
@@ -164,7 +164,7 @@ class MeepleHints:
 			draw_circle(p, radius, Color.WHITE)
 			draw_arc(p, radius, 0.0, TAU, 24, Color(0, 0, 0, 0.75), 1.0, true)
 
-static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE / 4.0) -> void:
+static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE / 4.0, score_system = null, board = null, cell: Vector2i = Vector2i.ZERO) -> void:
 	if tile == null:
 		return
 
@@ -179,6 +179,10 @@ static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE
 	var positions: Array[Vector2] = []
 	if tile.tile_data and tile.tile_data.meeple_positions.size() > 0:
 		for base_key in tile.tile_data.meeple_positions.keys():
+			if score_system != null and board != null:
+				var feature = _resolve_segment(tile.tile_data, base_key, tile.rotation_count)
+				if score_system.is_segment_claimed(board, cell, feature):
+					continue
 			var base_rel := Vector2(base_key.x, base_key.y)
 			var local_offset := base_rel * unit_scale
 			positions.append(local_offset)
