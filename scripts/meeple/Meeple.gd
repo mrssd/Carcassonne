@@ -119,16 +119,8 @@ func _half_edges_for_pos(pos: Vector2i) -> Array:
 	return [0, 1, 2, 3, 4, 5, 6, 7]
 
 static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
-	var clicked_cell: Vector2i = board.coord_to_index(world_click)
-	if not board.placed_tiles.has(clicked_cell):
-		print("Meeple must be placed on the tile just placed this turn.")
-		return false
-
-	var target_tile: Tile = board.placed_tiles[clicked_cell]
-
-	# Enforce: only place on the tile just placed
-	if allowed_tile == null or target_tile != allowed_tile:
-		print("You can only place a meeple on the tile you just placed.")
+	if allowed_tile == null:
+		print("No tile to place meeple on.")
 		return false
 
 	var temp_meeple: Meeple = meeple_scene.instantiate() as Meeple
@@ -136,7 +128,7 @@ static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vect
 		print("Failed to instantiate meeple.")
 		return false
 
-	var info = temp_meeple.get_placement_feature(target_tile, world_click)
+	var info = temp_meeple.get_placement_feature(allowed_tile, world_click)
 	var slot_id = info["slot_id"]
 	var feature = info["feature"]
 
@@ -146,8 +138,8 @@ static func try_place_on_board(board: Node,allowed_tile: Tile, world_click: Vect
 		return false
 
 	temp_meeple.set_player(player_index)
-	temp_meeple.place_on_tile(target_tile, info["offset"], feature)
-	target_tile.add_meeple(slot_id, temp_meeple)
+	temp_meeple.place_on_tile(allowed_tile, info["offset"], feature)
+	allowed_tile.add_meeple(slot_id, temp_meeple)
 
 	remaining_meeples[player_index] -= 1
 	print("Meeple placed for Player %d, remaining: %d" % [player_index, remaining_meeples[player_index]])
@@ -200,9 +192,3 @@ static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE
 static func hide_placement_hints(tile: Tile) -> void:
 	if tile and tile.has_node("MeepleHints"):
 		tile.get_node("MeepleHints").queue_free()
-
-
-
-
-
-
