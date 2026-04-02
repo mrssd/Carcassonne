@@ -52,14 +52,14 @@ func take_turn(bot_type: String) -> void:
 		if best_meeple_coords == null:
 			turn_system.end_meeple_phase()
 		else:
-			turn_system.place_meeple(best_meeple_coords)
+			turn_system.place_meeple(best_meeple_coords, false)
 	else:
 		turn_system.end_meeple_phase()
 
 #Loops through options (From _bot_place_tiles) and returns the best possible tile from options
 func _pick_best_placement(options: Array) -> Dictionary:
-	var high_score: float = -1
-	var best_option = null
+	var high_score: float = -INF
+	var best_option: Dictionary = options[0]
 	var tile = turn_system.current_drawn_tile
 
 	for option in options:

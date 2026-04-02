@@ -243,7 +243,7 @@ func on_tile_placed() -> void:
 		UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
 		print("Cannot place tile here – invalid placement.")
 
-func place_meeple(world_click: Vector2) -> void:
+func place_meeple(world_click: Vector2, animate: bool = true) -> void:
 	var temp: Meeple = MEEPLE_SCENE.instantiate() as Meeple
 	var info = temp.get_placement_feature(last_placed_tile, world_click)
 	temp.free()
@@ -251,7 +251,7 @@ func place_meeple(world_click: Vector2) -> void:
 		UI_manager.show_hint("That feature is already claimed")
 		print(info["feature"], "is already claimed.")
 		return
-	var placed = Meeple.try_place_on_board(last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE)
+	var placed = Meeple.try_place_on_board(last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE, animate)
 	if placed:
 		meeple_changed.emit(current_player_index)
 		print("Meeple placed on ", info["feature"])

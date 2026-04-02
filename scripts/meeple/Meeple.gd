@@ -22,7 +22,7 @@ func set_player(player_idx: int):
 func is_placed() -> bool:
 	return placed
 
-func place_on_tile(tile: Node2D, feature_position: Vector2, feature: String):
+func place_on_tile(tile: Node2D, feature_position: Vector2, feature: String, animate: bool = true):
 	placed = true
 	feature_name = feature
 	tile.add_child(self)
@@ -32,6 +32,8 @@ func place_on_tile(tile: Node2D, feature_position: Vector2, feature: String):
 	z_as_relative = false
 	if has_node("Sprite2D"):
 		$Sprite2D.z_index = 100
+	if animate:
+		MeeplePlaceAnimation.play(self)
 
 func remove():
 	placed = false
@@ -118,7 +120,7 @@ static func _half_edges_for_pos(pos: Vector2i) -> Array:
 	elif pos.x < 0:                return [6, 7]  
 	return [0, 1, 2, 3, 4, 5, 6, 7]
 
-static func try_place_on_board(allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
+static func try_place_on_board(allowed_tile: Tile, world_click: Vector2, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene, animate: bool = true) -> bool:
 	if allowed_tile == null:
 		print("No tile to place meeple on.")
 		return false
@@ -137,7 +139,7 @@ static func try_place_on_board(allowed_tile: Tile, world_click: Vector2, player_
 	var feature = info["feature"]
 
 	temp_meeple.set_player(player_index)
-	temp_meeple.place_on_tile(allowed_tile, info["offset"], feature)
+	temp_meeple.place_on_tile(allowed_tile, info["offset"], feature, animate)
 	allowed_tile.add_meeple(slot_id, temp_meeple)
 
 	remaining_meeples[player_index] -= 1

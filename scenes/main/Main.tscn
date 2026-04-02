@@ -113,35 +113,6 @@ theme_override_constants/margin_bottom = 40
 [node name="UI_Layout" type="Control" parent="UI/UIPanel/MarginContainer"]
 layout_mode = 2
 
-[node name="Options" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
-layout_mode = 0
-offset_left = -22.0
-offset_top = 57.0
-offset_right = 66.0
-offset_bottom = 145.0
-scale = Vector2(0.5, 0.5)
-size_flags_horizontal = 0
-size_flags_vertical = 8
-theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Options"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_constants/separation = 10
-
-[node name="options_menu_triger" type="Button" parent="UI/UIPanel/MarginContainer/UI_Layout/Options/HBoxContainer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme_override_styles/normal = SubResource("StyleBoxEmpty_jsdfw")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_tck0d")
-icon = ExtResource("10_2tpxt")
-icon_alignment = 1
-expand_icon = true
-
 [node name="TileInfo" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
 layout_mode = 1
 anchors_preset = 1
@@ -187,6 +158,30 @@ layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 mouse_filter = 0
+
+[node name="Options" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_sjxhf")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left/Options"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="options_menu_triger" type="Button" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left/Options/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/normal = SubResource("StyleBoxEmpty_jsdfw")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_tck0d")
+icon = ExtResource("10_2tpxt")
+icon_alignment = 1
+expand_icon = true
 
 [node name="CurrentAction" type="PanelContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
 layout_mode = 1
