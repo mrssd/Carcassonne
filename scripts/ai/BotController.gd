@@ -123,7 +123,7 @@ func _greedy_evaluate_meeple() -> Variant: #Variant which allows both Vector2i a
 		return null
 
 	for key in last_placed_tile.tile_data.meeple_positions.keys(): #Loop through all meeple placement of the last_placed_tile
-		var world_pos = last_placed_tile.to_global(Vector2(key.x, key.y) * 24.0)
+		var world_pos = last_placed_tile.to_global(Vector2(key.x, key.y) * (Board.CELL_SIZE / 4.0))
 		var temp_meeple: Meeple = MEEPLE_SCENE.instantiate() as Meeple
 		var info = temp_meeple.get_placement_feature(last_placed_tile, world_pos)
 		temp_meeple.free()
@@ -160,7 +160,7 @@ func _greedy_evaluate_meeple() -> Variant: #Variant which allows both Vector2i a
 			best_key = key
 
 	if best_value >= 1 and best_key != null:
-		return last_placed_tile.to_global(Vector2(best_key.x, best_key.y) * 20.0)
+		return last_placed_tile.to_global(Vector2(best_key.x, best_key.y) * (Board.CELL_SIZE / 4.0))
 	return null
 
 

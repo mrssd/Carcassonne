@@ -1,6 +1,6 @@
 [gd_scene load_steps=9 format=3 uid="uid://b2umgf63jqcop"]
 
-[ext_resource type="Texture2D" path="res://assets/images/CarcassoneAvatars/Player1Avatar.png" id="1_5pmsl"]
+[ext_resource type="Texture2D" uid="uid://hrl5ob5cenp" path="res://assets/images/Avatars/Player1Avatar.png" id="1_5pmsl"]
 [ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="2_5pmsl"]
 [ext_resource type="Texture2D" uid="uid://clwisk1pd7aa4" path="res://assets/images/sword-white.svg" id="3_c70en"]
 [ext_resource type="Texture2D" uid="uid://fdma4xgyp8sl" path="res://assets/images/trophy.svg" id="4_4foc5"]

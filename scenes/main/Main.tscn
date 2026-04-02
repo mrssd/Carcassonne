@@ -1,5 +1,6 @@
-[gd_scene load_steps=26 format=3 uid="uid://bhc24iana05ko"]
+[gd_scene load_steps=27 format=3 uid="uid://bhc24iana05ko"]
 
+[ext_resource type="Script" uid="uid://djkjx33uip40o" path="res://scripts/animations/ScoreBubble.gd" id="1_scrbbl"]
 [ext_resource type="Script" uid="uid://yppp74rwgvg" path="res://scripts/feature_system/ScoreSystem.gd" id="1_hujxm"]
 [ext_resource type="Script" uid="uid://b0kali0tyw2vh" path="res://scripts/core/board.gd" id="1_nha0i"]
 [ext_resource type="Script" uid="uid://cn0pahhi58djk" path="res://scripts/camera_control.gd" id="1_u1xfj"]
@@ -78,6 +79,9 @@ script = ExtResource("1_yyfjg")
 [node name="TurnSystem" type="Node" parent="."]
 script = ExtResource("3_k2fmo")
 metadata/_custom_type_script = "uid://btuilk5cm3t1k"
+
+[node name="ScoreBubble" type="Node" parent="."]
+script = ExtResource("1_scrbbl")
 
 [node name="Board" type="Node2D" parent="."]
 script = ExtResource("1_nha0i")

@@ -18,7 +18,7 @@ func init_scores(player_count: int) -> void:
 #Adds score to player
 func add_score(player_index : int, points_added : int) -> void:
     # ensure valid index
-    if player_index < 0:
+    if player_index < 0 or player_index >= scores.size():
         return
 
     scores[player_index] += points_added

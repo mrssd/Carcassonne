@@ -27,8 +27,9 @@ func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:
 			_draw_pile.back().invert_Y_meeple_positions()
 	_draw_pile.shuffle()
 	#Starting tile
-	_draw_pile.append(tile_resources[-1].carcassone_tile_data)
+	_draw_pile.append(tile_resources[-1].carcassone_tile_data.duplicate(true))
 	_draw_pile.back().apply_segment_data()
+	_draw_pile.back().invert_Y_meeple_positions()
 	deck_changed.emit()
 	return self
 
