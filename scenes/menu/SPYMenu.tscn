@@ -212,11 +212,13 @@ text = "Bots Difficulty: "
 [node name="bots_difficulty" type="OptionButton" parent="VBoxContainer/Panel2/VBoxContainer/MarginContainer3/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-item_count = 2
-popup/item_0/text = "Randomly"
+item_count = 3
+popup/item_0/text = "Greedy"
 popup/item_0/id = 0
-popup/item_1/text = "Greedy"
+popup/item_1/text = "Smart"
 popup/item_1/id = 1
+popup/item_2/text = "Expert"
+popup/item_2/id = 2
 
 [node name="strat_game" type="Button" parent="VBoxContainer/Panel2/VBoxContainer"]
 unique_name_in_owner = true

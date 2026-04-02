@@ -2,7 +2,7 @@ extends Node
 
 var bot_count: int = 1
 var total_players: int = 2
-var bot_difficulty: String = "random_bot"
+var bot_difficulty: String = "greedy_bot"
 var bot_players_label: Label
 var bots_difficulty_button: OptionButton
 var back_button: Button
@@ -38,9 +38,11 @@ func _on_remove_bot_pressed() -> void:
 
 func _on_difficulty_selected(index: int) -> void:
 	if index == 0:
-		bot_difficulty = "random_bot"
-	elif index == 1:
 		bot_difficulty = "greedy_bot"
+	elif index == 1:
+		bot_difficulty = "smart_bot"
+	elif index == 2:
+		bot_difficulty = "expert_bot"
 
 func _on_start_pressed() -> void:
 	GameManager.player_count = total_players

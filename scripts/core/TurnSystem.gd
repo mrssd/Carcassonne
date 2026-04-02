@@ -104,7 +104,7 @@ func get_current_player() -> String:
 
 func is_current_player_bot() -> bool:
 	var t = get_current_player_type()
-	return t == "random_bot" or t == "greedy_bot"
+	return t == "greedy_bot" or t == "smart_bot" or t == "expert_bot"
 
 func get_current_player_type() -> String:
 	if current_player_index < player_types.size():
