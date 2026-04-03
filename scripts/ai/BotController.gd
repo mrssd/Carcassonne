@@ -101,8 +101,8 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 			if seen_features.has(fkey):
 				continue
 			seen_features.append(fkey)
-			var has_mine = _feature_has_my_meeple(field_dic["visited"], player_index)
-			var has_opp = _feature_has_opponent_meeple(field_dic["visited"], player_index)
+			var has_mine = _count_meeples_on_feature(field_dic["visited"], player_index)
+			var has_opp = _count_meeples_on_feature(field_dic["visited"], (player_index + 1) % turn_system.players.size())
 			var cities = score_system._get_adjacent_completed_cities(board, field_dic)
 			if has_mine:
 				score += cities * 3.0 * 0.25
@@ -120,8 +120,8 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 			continue
 		seen_features.append(fkey)
 
-		var has_mine = _feature_has_my_meeple(dic["visited"], player_index)
-		var has_opp = _feature_has_opponent_meeple(dic["visited"], player_index)
+		var mine = _count_meeples_on_feature(dic["visited"], player_index)
+		var opp  = _count_meeples_on_feature(dic["visited"], (player_index + 1) % turn_system.players.size())
 		var is_complete = dic["open_ports"] == 0
 
 		#Raw point value of this feature
@@ -131,22 +131,26 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 		else:
 			raw = dic["tiles"].size() * 1.0
 
-		#Value of completing a feature scores immediately (Heavy weighting compared to raw)
+		#Completing a feature scores immediately use majority logic for contested features
 		if is_complete:
-			if has_mine:
-				score += raw * 2.0 #Extreme value if completing own feature
-			elif has_opp:
-				score -= raw * 1.0 #Negative value if completing opponent's feature
-		
-		#Discount by number of open ends remaining since incomplete
+			if mine > opp:
+				score += raw * 2.0    # Win majority: full immediate points
+			elif mine == opp and mine > 0:
+				score += raw * 1.0    # Tie both score, still good
+			elif opp > mine and mine > 0:
+				score += raw * 0.5    # Lose majority but still score something
+			elif opp > 0:
+				score -= raw * 1.0    # Opponent wins, completing it for them
+
+		#Incomplete: discount by open ports, weight by meeple advantage
 		else:
 			var discounted = raw / (dic["open_ports"] + 1.0)
-			if has_mine:
-				score += discounted * 1.2  #Add points for extending own in progress feature
-			elif has_opp:
-				score -= discounted * 0.6  #Deduct points for extending opponent's feature
+			if mine > 0 or opp > 0:
+				var total = mine + opp
+				var advantage = float(mine - opp) / float(total)  
+				score += discounted * advantage
 			else:
-				score += discounted * 0.2  #Neutral
+				score += discounted * 0.2  # Unclaimed neutral territory
 
 	#Bonus value for placing adjacent to own monastery 
 	score += _score_monastery_adjacency(cell, player_index)
@@ -262,6 +266,9 @@ func _expert_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 			var open_ratio = float(dic["open_ports"]) / float(tiles_left + 1)
 			score -= open_ratio * dic["tiles"].size() * 0.5
 
+	#Bonus for walling off near-complete opponent features
+	score += _blocking_bonus(cell, tile, player_index)
+
 	board.placed_tiles.erase(cell)
 	return score
 
@@ -287,27 +294,25 @@ func _expert_evaluate_meeple() -> Variant:
 		var info = temp_meeple.get_placement_feature(last_placed_tile, world_pos)
 		temp_meeple.free()
 
-		if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
-			continue
-
 		var temp_value: float = -1.0
 
-		#Field consideration
+		#Field consideration 
 		if info["feature"].begins_with("field_"):
-			if tiles_left > 20: #Only considers placing farmers when less than 20 tiles left
+			if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]): #skip claimed fields, can't meaningfully contest
 				continue
-			#Counts completed cities adjcaent to field
-			var field_result = score_system._explore_field(board, last_placed_cell, info["feature"]) 
+			if tiles_left > 20: #Only thinks when endgame to prevent wasting meeples
+				continue
+			var field_result = score_system._explore_field(board, last_placed_cell, info["feature"])
 			var city_count = score_system._get_adjacent_completed_cities(board, field_result)
-			#Value calculation scales with tiles_left
-			temp_value = city_count * 3.0 * (1.0 - float(tiles_left) / 72.0) 
-			if temp_value < 3.0: #Not worth placing a meeple
+			temp_value = city_count * 3.0 * (1.0 - float(tiles_left) / 72.0)
+			if temp_value < 3.0: #Threshold, can be changed
 				continue
 
-		#Monastery consideration
+		#Monastery consideration 
 		elif info["feature"] == "monastery":
+			if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]): #skip claimed monastery
+				continue
 			var neighbor: int = 0
-			#Loops through all 9 surrounding tiles
 			for dx in [-1, 0, 1]:
 				for dy in [-1, 0, 1]:
 					if dx == 0 and dy == 0:
@@ -315,21 +320,36 @@ func _expert_evaluate_meeple() -> Variant:
 					if board.placed_tiles.has(last_placed_cell + Vector2i(dx, dy)):
 						neighbor += 1
 			temp_value = neighbor + 1
-			if temp_value < 4: #Monastery with less than 3 neighbour not worth commiting a meeple
+			if temp_value < 4: #Threshold again
 				continue
 
 		#Cities and roads evaluation
 		else:
 			var dic = score_system._explore_segment(board, last_placed_cell, info["feature"])
-			if info["feature"].begins_with("city_"):
-				temp_value = dic["tiles"].size() * 2 + dic["shield_count"] * 2
-			else:
-				temp_value = dic["tiles"].size()
+			var my_count = _count_meeples_on_feature(dic["visited"], current_player_index)
+			var opp_count = _count_meeples_on_feature(dic["visited"], (current_player_index + 1) % turn_system.players.size())
 
-			#Only place on features close to completion if low on meeples (less than 3)
-			if remaining <= 2:
-				var completion_ratio = 1.0 / (dic["open_ports"] + 1.0)
-				temp_value *= completion_ratio * 2.0
+			if my_count > 0:
+				continue  #Already have a meeple on this feature
+
+			var raw: float
+			if info["feature"].begins_with("city_"):
+				raw = dic["tiles"].size() * 2.0 + dic["shield_count"] * 2.0
+			else:
+				raw = dic["tiles"].size() * 1.0
+
+			if opp_count == 0:
+				# Unclaimed 
+				temp_value = raw
+				if remaining <= 2:
+					temp_value *= (1.0 / (dic["open_ports"] + 1.0)) * 2.0
+			elif opp_count == 1:
+				# Tie by joining only worth if its a large feature
+				if raw < 6.0:
+					continue
+				temp_value = raw * 0.5
+			else:
+				continue  #Opponent has too many meeples to contest
 
 		if temp_value > best_value:
 			best_value = temp_value
@@ -398,6 +418,38 @@ func _greedy_evaluate_meeple() -> Variant: #Variant which allows both Vector2i a
 	return null
 
 
+#Bonus for walling off a near-complete opponent feature without extending it
+func _blocking_bonus(cell: Vector2i, tile: Tile, player_index: int) -> float:
+	var bonus: float = 0.0
+	for edge_idx in range(4):
+		var neighbor_cell = cell + score_system.neighbor_directions[edge_idx]
+		if not board.placed_tiles.has(neighbor_cell):
+			continue
+		var neighbor_tile = board.placed_tiles[neighbor_cell]
+		var opposite_edge = score_system.opposite_index[edge_idx]
+		var seg = score_system._find_segment_for_edge(neighbor_tile.tile_data, opposite_edge)
+		#Skip field
+		if seg == "" or seg.begins_with("field_"):
+			continue
+		var dic = score_system._explore_segment(board, neighbor_cell, seg)
+		if _count_meeples_on_feature(dic["visited"], player_index) > 0:
+			continue  # Skip own features
+		if _count_meeples_on_feature(dic["visited"], (player_index + 1) % turn_system.players.size()) == 0:
+			continue  # Skip unclaimed features
+		# My tile edge type vs the neighbor connecting edge type
+		var my_edge_type = tile.tile_data.edge[edge_idx]
+		var their_edge_type = neighbor_tile.tile_data.edge[opposite_edge]
+		# If edges dont match this tile walls off their open port
+		if my_edge_type != their_edge_type and dic["open_ports"] <= 2:
+			var raw: float
+			if seg.begins_with("city_"):
+				raw = dic["tiles"].size() * 2.0 + dic["shield_count"] * 2.0
+			else:
+				raw = dic["tiles"].size() * 1.0
+			bonus += raw / float(dic["open_ports"] + 1)
+	return bonus
+
+
 #Returns true if the current player has a meeple in the visited segment
 func _feature_has_my_meeple(visited: Array, player_index: int) -> bool:
 	for entry in visited:
@@ -459,3 +511,20 @@ func get_best_placement(tile: Tile) -> Vector2i:
 
 	var best = _pick_best_placement_expert(options)
 	return best["cell"]
+
+#Returns number of meeple on a feature for a specific player
+func _count_meeples_on_feature(visited: Array, player_index: int) -> int:
+	var count = 0
+	for entry in visited:
+		var parts = entry.split("|")
+		var coords = parts[0].split(",")
+		var cell = Vector2i(int(coords[0]), int(coords[1]))
+		if not board.placed_tiles.has(cell):
+			continue
+		for meeple in board.placed_tiles[cell].meeples.values():
+			if meeple.owner_index == player_index:
+				count += 1
+	return count
+
+
+	
