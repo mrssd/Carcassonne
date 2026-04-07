@@ -20,10 +20,10 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hjnkw"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sjxhf"]
-content_margin_left = 20.0
-content_margin_top = 20.0
-content_margin_right = 20.0
-content_margin_bottom = 20.0
+content_margin_left = 15.0
+content_margin_top = 15.0
+content_margin_right = 15.0
+content_margin_bottom = 15.0
 bg_color = Color(0.023529412, 0.03529412, 0.03137255, 1)
 corner_radius_top_left = 20
 corner_radius_top_right = 20
@@ -105,10 +105,10 @@ script = ExtResource("6_ui_manager")
 
 [node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 40
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
 [node name="UI_Layout" type="Control" parent="UI/UIPanel/MarginContainer"]
 layout_mode = 2
@@ -132,7 +132,7 @@ size_flags_vertical = 4
 theme_override_constants/separation = 10
 
 [node name="TextureRect" type="TextureRect" parent="UI/UIPanel/MarginContainer/UI_Layout/TileInfo/HBoxContainer"]
-custom_minimum_size = Vector2(30, 30)
+custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 texture = ExtResource("8_p5fgu")
 expand_mode = 1
@@ -141,15 +141,13 @@ expand_mode = 1
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_fonts/font = ExtResource("8_ostsq")
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 20
 text = "68 / 72"
 
 [node name="Top-Left" type="VBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout"]
 layout_mode = 1
-offset_left = -35.0
-offset_top = -35.0
-offset_right = 53.0
-offset_bottom = 53.0
+offset_right = 88.0
+offset_bottom = 172.0
 
 [node name="player_stack" type="MarginContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left"]
 unique_name_in_owner = true
@@ -173,7 +171,7 @@ theme_override_constants/separation = 10
 
 [node name="options_menu_triger" type="Button" parent="UI/UIPanel/MarginContainer/UI_Layout/Top-Left/Options/HBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(48, 48)
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
