@@ -9,6 +9,9 @@ var ip_input: LineEdit
 var port_input: LineEdit
 var username_input: LineEdit
 var host_start_button: Button
+var discovery_button: Button
+var servers_label: Label
+var selected_server: Dictionary = {}
 
 func _ready() -> void:
 	var vbox = $VBoxContainer
@@ -119,6 +122,33 @@ func _build_network_panel(vbox: VBoxContainer) -> void:
 	row_buttons.add_child(host_start_button)
 	panel_box.add_child(row_buttons)
 
+	# Discovery Testing Section
+	var discovery_title := Label.new()
+	discovery_title.text = "Auto LAN Discovery (Testing)"
+	discovery_title.add_theme_color_override("font_color", Color.CYAN)
+	discovery_title.add_theme_font_size_override("font_size", 20)
+	discovery_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	panel_box.add_child(discovery_title)
+
+	var discovery_row := HBoxContainer.new()
+	discovery_button = Button.new()
+	discovery_button.text = "Scan for Servers"
+	discovery_button.pressed.connect(_on_discovery_scan_pressed)
+	discovery_row.add_child(discovery_button)
+
+	var connect_discovered_btn := Button.new()
+	connect_discovered_btn.text = "Connect to Selected"
+	connect_discovered_btn.pressed.connect(_on_connect_discovered_pressed)
+	discovery_row.add_child(connect_discovered_btn)
+	panel_box.add_child(discovery_row)
+
+	servers_label = Label.new()
+	servers_label.text = "No servers discovered"
+	servers_label.add_theme_color_override("font_color", Color.LIGHT_GRAY)
+	servers_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	servers_label.custom_minimum_size = Vector2(0, 60)
+	panel_box.add_child(servers_label)
+
 	status_label = Label.new()
 	status_label.text = "Offline"
 	status_label.add_theme_color_override("font_color", Color.WHITE)
@@ -199,3 +229,50 @@ func _get_local_ip() -> String:
 		if addr.begins_with("192.168.") or addr.begins_with("10.") or addr.begins_with("172."):
 			return addr
 	return "unknown"
+
+# Discovery Testing Functions
+func _on_discovery_scan_pressed() -> void:
+	"""Start scanning for servers on the LAN"""
+	status_label.text = "Scanning for servers..."
+	NetworkManager.start_client_discovery()
+	discovery_button.disabled = true
+	await get_tree().create_timer(2.0).timeout # Wait 2 seconds for responses
+	_display_discovered_servers()
+	discovery_button.disabled = false
+
+func _display_discovered_servers() -> void:
+	"""Display the list of discovered servers"""
+	var servers = NetworkManager.get_discovered_servers()
+	
+	if servers.is_empty():
+		servers_label.text = "No servers found"
+		status_label.text = "Scan complete: No servers found"
+		return
+	
+	var server_text = "Discovered Servers:\n"
+	for i in range(servers.size()):
+		var server = servers[i]
+		server_text += "[%d] %s at %s:%d\n" % [i + 1, server["name"], server["ip"], server["port"]]
+	
+	servers_label.text = server_text
+	selected_server = servers[0] # Auto-select first server
+	status_label.text = "Found %d server(s). Selected: %s" % [servers.size(), selected_server["name"]]
+
+func _on_connect_discovered_pressed() -> void:
+	"""Connect to the selected discovered server"""
+	if selected_server.is_empty():
+		status_label.text = "No server selected. Scan first."
+		return
+	
+	var err := NetworkManager.join_game(
+		selected_server["ip"],
+		_get_username(),
+		selected_server["port"]
+	)
+	
+	if err != OK:
+		status_label.text = "Failed to connect to %s:%d" % [selected_server["ip"], selected_server["port"]]
+	else:
+		status_label.text = "Connecting to %s..." % selected_server["name"]
+	
+	NetworkManager.stop_discovery()

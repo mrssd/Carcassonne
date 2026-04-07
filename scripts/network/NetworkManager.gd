@@ -10,9 +10,13 @@ const GAME_SCENE_PATH := "res://scenes/main/Main.tscn"
 
 const NetworkSessionScript = preload("res://scripts/network/NetworkSession.gd")
 const NetworkTurnCoordinatorScript = preload("res://scripts/network/NetworkTurnCoordinator.gd")
+const NetworkDiscoveryScript = preload("res://scripts/network/NetworkDiscovery.gd")
 
 var session := NetworkSessionScript.new()
-var turn_coordinator := NetworkTurnCoordinatorScript.new(self)
+var turn_coordinator := NetworkTurnCoordinatorScript.new(self )
+var discovery := NetworkDiscoveryScript.new()
+var discovery_timer: float = 0.0
+var discovered_servers: Array[Dictionary] = []
 
 var is_lan_match: bool:
 	get:
@@ -40,18 +44,37 @@ func _ready() -> void:
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 
+func _process(delta: float) -> void:
+	if discovery == null:
+		return
+	
+	# Server: broadcast presence
+	if is_host():
+		discovery_timer += delta
+		if discovery_timer >= NetworkDiscoveryScript.BROADCAST_INTERVAL:
+			discovery.broadcast_server(delta)
+			discovery_timer = 0.0
+
 func reset_session() -> void:
 	var peer := multiplayer.multiplayer_peer
 	if peer != null:
 		peer.close()
 	multiplayer.multiplayer_peer = null
 	session.reset()
+	discovery.close()
+	discovery_timer = 0.0
 	_emit_status("Offline")
 	session_updated.emit()
 	lobby_updated.emit()
 
 func host_game(player_count: int, username: String, port: int = DEFAULT_PORT) -> Error:
 	reset_session()
+	
+	# Start broadcasting server discovery
+	var discovery_err = start_server_discovery(username, port)
+	if discovery_err != OK:
+		_emit_status("Discovery broadcast failed")
+	
 	var peer := ENetMultiplayerPeer.new()
 	var err := peer.create_server(port, NetworkSessionScript.MAX_PLAYERS)
 	if err != OK:
@@ -81,6 +104,22 @@ func join_game(address: String, username: String, port: int = DEFAULT_PORT) -> E
 
 func is_host() -> bool:
 	return session.is_host(multiplayer.get_unique_id())
+
+func start_server_discovery(username: String, port: int = DEFAULT_PORT) -> Error:
+	"""Start broadcasting server on LAN"""
+	return discovery.start_server_broadcast(username, port)
+
+func start_client_discovery() -> Error:
+	"""Start listening for servers on LAN"""
+	return discovery.start_client_discovery()
+
+func get_discovered_servers() -> Array[Dictionary]:
+	"""Returns list of available servers: [{"name": "...", "ip": "...", "port": ...}]"""
+	return discovery.get_available_servers()
+
+func stop_discovery() -> void:
+	"""Stop discovery and clean up"""
+	discovery.close()
 
 func get_local_player_index() -> int:
 	return session.get_local_player_index(multiplayer.get_unique_id())
