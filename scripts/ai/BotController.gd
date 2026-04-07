@@ -102,7 +102,7 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 				continue
 			seen_features.append(fkey)
 			var has_mine = _count_meeples_on_feature(field_dic["visited"], player_index)
-			var has_opp = _count_meeples_on_feature(field_dic["visited"], (player_index + 1) % turn_system.players.size())
+			var has_opp = _max_opponent_meeple_count(field_dic["visited"], player_index)
 			var cities = score_system._get_adjacent_completed_cities(board, field_dic)
 			if has_mine:
 				score += cities * 3.0 * 0.25
@@ -121,7 +121,7 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 		seen_features.append(fkey)
 
 		var mine = _count_meeples_on_feature(dic["visited"], player_index)
-		var opp  = _count_meeples_on_feature(dic["visited"], (player_index + 1) % turn_system.players.size())
+		var opp  = _max_opponent_meeple_count(dic["visited"], player_index)
 		var is_complete = dic["open_ports"] == 0
 
 		#Raw point value of this feature
@@ -145,12 +145,14 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 		#Incomplete: discount by open ports, weight by meeple advantage
 		else:
 			var discounted = raw / (dic["open_ports"] + 1.0)
-			if mine > 0 or opp > 0:
+			if mine > 0 and opp == 0:
+				score += discounted * 1.5  # Own uncontested feature — extend aggressively
+			elif mine > 0 or opp > 0:
 				var total = mine + opp
-				var advantage = float(mine - opp) / float(total)  
+				var advantage = float(mine - opp) / float(total)
 				score += discounted * advantage
 			else:
-				score += discounted * 0.2  # Unclaimed neutral territory
+				score += discounted * 0.4  # Unclaimed neutral territory
 
 	#Bonus value for placing adjacent to own monastery 
 	score += _score_monastery_adjacency(cell, player_index)
@@ -163,29 +165,40 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 func _pick_best_placement_minimax(options: Array) -> Dictionary:
 	var tile = turn_system.current_drawn_tile
 	var my_index = turn_system.current_player_index
-	var opp_index = (my_index + 1) % turn_system.players.size()
+
+	# Pre-score greedily and keep top 8 to limit minimax cost
+	var scored = []
+	for option in options:
+		for _r in range(option["rotations"]):
+			tile.rotate_clockwise()
+		scored.append({"option": option, "score": _greedy_evaluate_placement(option["cell"], tile, my_index)})
+		for _t in range(4 - option["rotations"]):
+			tile.rotate_clockwise()
+	scored.sort_custom(func(a, b): return a["score"] > b["score"])
+	var candidates = scored.slice(0, min(8, scored.size()))
 
 	var best_score: float = -INF
-	var best_option: Dictionary = options[0]
+	var best_option: Dictionary = candidates[0]["option"]
 
-	for option in options:
+	for entry in candidates:
+		var option = entry["option"]
 		for _r in range(option["rotations"]):
 			tile.rotate_clockwise()
 
 		var cell = option["cell"]
 		var my_tile_score = _greedy_evaluate_placement(cell, tile, my_index)
 
-		#Temporarily place my tile so opponent placement search sees the updated board
 		board.placed_tiles[cell] = tile
 		var opp_best: float = 0.0
-		var opp_placements = board.get_all_valid_placement(tile)
-		for opp_p in opp_placements:
-			var opp_score = _greedy_evaluate_placement(opp_p["cell"], tile, opp_index)
-			if opp_score > opp_best:
-				opp_best = opp_score
+		for opp_i in range(turn_system.players.size()):
+			if opp_i == my_index:
+				continue
+			for opp_p in board.get_all_valid_placement(tile):
+				var opp_score = _greedy_evaluate_placement(opp_p["cell"], tile, opp_i)
+				if opp_score > opp_best:
+					opp_best = opp_score
 		board.placed_tiles.erase(cell)
 
-		#Penalise opponent opportunity at half weight (uncertainty about their tile)
 		var minimax_score = my_tile_score - opp_best * 0.5
 		if minimax_score > best_score:
 			best_score = minimax_score
@@ -201,12 +214,23 @@ func _pick_best_placement_minimax(options: Array) -> Dictionary:
 func _pick_best_placement_expert(options: Array) -> Dictionary:
 	var tile = turn_system.current_drawn_tile
 	var my_index = turn_system.current_player_index
-	var opp_index = (my_index + 1) % turn_system.players.size()
+
+	# Pre-score greedily and keep top 8 to limit minimax cost
+	var scored = []
+	for option in options:
+		for _r in range(option["rotations"]):
+			tile.rotate_clockwise()
+		scored.append({"option": option, "score": _greedy_evaluate_placement(option["cell"], tile, my_index)})
+		for _t in range(4 - option["rotations"]):
+			tile.rotate_clockwise()
+	scored.sort_custom(func(a, b): return a["score"] > b["score"])
+	var candidates = scored.slice(0, min(8, scored.size()))
 
 	var best_score: float = -INF
-	var best_option: Dictionary = options[0]
+	var best_option: Dictionary = candidates[0]["option"]
 
-	for option in options:
+	for entry in candidates:
+		var option = entry["option"]
 		for _r in range(option["rotations"]):
 			tile.rotate_clockwise()
 
@@ -215,11 +239,13 @@ func _pick_best_placement_expert(options: Array) -> Dictionary:
 
 		board.placed_tiles[cell] = tile
 		var opp_best: float = 0.0
-		var opp_placements = board.get_all_valid_placement(tile)
-		for opp_p in opp_placements:
-			var opp_score = _expert_evaluate_placement(opp_p["cell"], tile, opp_index)
-			if opp_score > opp_best:
-				opp_best = opp_score
+		for opp_i in range(turn_system.players.size()):
+			if opp_i == my_index:
+				continue
+			for opp_p in board.get_all_valid_placement(tile):
+				var opp_score = _expert_evaluate_placement(opp_p["cell"], tile, opp_i)
+				if opp_score > opp_best:
+					opp_best = opp_score
 		board.placed_tiles.erase(cell)
 
 		var minimax_score = my_tile_score - opp_best * 0.5
@@ -265,9 +291,6 @@ func _expert_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 		if tiles_left <= 15 and dic["open_ports"] > 2 and has_mine: #When there's less than 15 tiles penalize extending features with 2+ open ports since unlikely to close
 			var open_ratio = float(dic["open_ports"]) / float(tiles_left + 1)
 			score -= open_ratio * dic["tiles"].size() * 0.5
-
-	#Bonus for walling off near-complete opponent features
-	score += _blocking_bonus(cell, tile, player_index)
 
 	board.placed_tiles.erase(cell)
 	return score
@@ -325,38 +348,26 @@ func _expert_evaluate_meeple() -> Variant:
 
 		#Cities and roads evaluation
 		else:
+			if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
+				continue
+
 			var dic = score_system._explore_segment(board, last_placed_cell, info["feature"])
-			var my_count = _count_meeples_on_feature(dic["visited"], current_player_index)
-			var opp_count = _count_meeples_on_feature(dic["visited"], (current_player_index + 1) % turn_system.players.size())
-
-			if my_count > 0:
-				continue  #Already have a meeple on this feature
-
 			var raw: float
 			if info["feature"].begins_with("city_"):
 				raw = dic["tiles"].size() * 2.0 + dic["shield_count"] * 2.0
 			else:
 				raw = dic["tiles"].size() * 1.0
 
-			if opp_count == 0:
-				# Unclaimed 
-				temp_value = raw
-				if remaining <= 2:
-					temp_value *= (1.0 / (dic["open_ports"] + 1.0)) * 2.0
-			elif opp_count == 1:
-				# Tie by joining only worth if its a large feature
-				if raw < 6.0:
-					continue
-				temp_value = raw * 0.5
-			else:
-				continue  #Opponent has too many meeples to contest
+			temp_value = raw
+			if remaining <= 2:
+				temp_value *= (1.0 / (dic["open_ports"] + 1.0)) * 2.0
 
 		if temp_value > best_value:
 			best_value = temp_value
 			best_key = key
 
 	#Stricter threshold when low on meeples to avoid wasting them
-	var threshold = 2.0 if remaining > 2 else 4.0
+	var threshold = 1.0 if remaining > 2 else 3.0
 	if best_value >= threshold and best_key != null:
 		return last_placed_tile.to_global(Vector2(best_key.x, best_key.y) * (Board.CELL_SIZE / 4.0))
 	return null
@@ -417,37 +428,6 @@ func _greedy_evaluate_meeple() -> Variant: #Variant which allows both Vector2i a
 		return last_placed_tile.to_global(Vector2(best_key.x, best_key.y) * (Board.CELL_SIZE / 4.0))
 	return null
 
-
-#Bonus for walling off a near-complete opponent feature without extending it
-func _blocking_bonus(cell: Vector2i, tile: Tile, player_index: int) -> float:
-	var bonus: float = 0.0
-	for edge_idx in range(4):
-		var neighbor_cell = cell + score_system.neighbor_directions[edge_idx]
-		if not board.placed_tiles.has(neighbor_cell):
-			continue
-		var neighbor_tile = board.placed_tiles[neighbor_cell]
-		var opposite_edge = score_system.opposite_index[edge_idx]
-		var seg = score_system._find_segment_for_edge(neighbor_tile.tile_data, opposite_edge)
-		#Skip field
-		if seg == "" or seg.begins_with("field_"):
-			continue
-		var dic = score_system._explore_segment(board, neighbor_cell, seg)
-		if _count_meeples_on_feature(dic["visited"], player_index) > 0:
-			continue  # Skip own features
-		if _count_meeples_on_feature(dic["visited"], (player_index + 1) % turn_system.players.size()) == 0:
-			continue  # Skip unclaimed features
-		# My tile edge type vs the neighbor connecting edge type
-		var my_edge_type = tile.tile_data.edge[edge_idx]
-		var their_edge_type = neighbor_tile.tile_data.edge[opposite_edge]
-		# If edges dont match this tile walls off their open port
-		if my_edge_type != their_edge_type and dic["open_ports"] <= 2:
-			var raw: float
-			if seg.begins_with("city_"):
-				raw = dic["tiles"].size() * 2.0 + dic["shield_count"] * 2.0
-			else:
-				raw = dic["tiles"].size() * 1.0
-			bonus += raw / float(dic["open_ports"] + 1)
-	return bonus
 
 
 #Returns true if the current player has a meeple in the visited segment
@@ -512,7 +492,7 @@ func get_best_placement(tile: Tile) -> Vector2i:
 	var best = _pick_best_placement_expert(options)
 	return best["cell"]
 
-#Returns number of meeple on a feature for a specific player
+#Returns number of meeples on a feature for a specific player
 func _count_meeples_on_feature(visited: Array, player_index: int) -> int:
 	var count = 0
 	for entry in visited:
@@ -525,6 +505,17 @@ func _count_meeples_on_feature(visited: Array, player_index: int) -> int:
 			if meeple.owner_index == player_index:
 				count += 1
 	return count
+
+#Returns the highest meeple count any single opponent has on a feature
+func _max_opponent_meeple_count(visited: Array, player_index: int) -> int:
+	var max_count = 0
+	for i in range(turn_system.players.size()):
+		if i == player_index:
+			continue
+		var c = _count_meeples_on_feature(visited, i)
+		if c > max_count:
+			max_count = c
+	return max_count
 
 
 	

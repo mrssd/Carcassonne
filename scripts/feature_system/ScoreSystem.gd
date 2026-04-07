@@ -41,11 +41,11 @@ const EDGE_TO_HALF_EDGES = [[0, 1], [2, 3], [4, 5], [6, 7]]
 # Prevent double scoring from the same features
 var _scored_features : Dictionary = {}
 
-#Find which segment that edge belongs to
+#Find which segment that edge belongs to (excludes fields — their half-edges overlap with edge indices 0-3)
 func _find_segment_for_edge(tile_data : CarcassonneTileData, edge_index : int):
 	for segment_key in tile_data.internal_connections:
-		if (tile_data.internal_connections[segment_key].has(edge_index)):
-				return segment_key
+		if not segment_key.begins_with("field_") and tile_data.internal_connections[segment_key].has(edge_index):
+			return segment_key
 	return ""
 
 #Traces feature from specific segment(feature) or tile
