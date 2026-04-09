@@ -31,6 +31,8 @@ var last_tile_highlights := {}
 var _hint_highlight_node: Node2D = null
 var _hint_ghost_tile: Node2D = null
 var _meeple_hint_visible: bool = false
+var _bot_thread: Thread = null
+var _bot_type_pending: String = ""
 
 @onready var board = $"../Board"
 @onready var game_manager = $"../GameManager"
@@ -162,7 +164,13 @@ func draw_tile() -> void:
 		UI_manager.show_hint("Bot is thinking...")
 		print("Bot is thinking...")
 		await get_tree().create_timer(0.8).timeout
-		bot_controller.take_turn(get_current_player_type())
+		var options = bot_controller.generate_options()
+		if options.is_empty():
+			end_meeple_phase()
+			return
+		_bot_type_pending = get_current_player_type()
+		_bot_thread = Thread.new()
+		_bot_thread.start(bot_controller.compute_move.bind(_bot_type_pending, options))
 
 func _draw_placeable_tile() -> Dictionary:
 	var attempts := tile_deck.get_draw_pile_size()
@@ -335,6 +343,18 @@ func _update_tile_preview_visibility(valid_placements: Array) -> void:
 	if board.current_tile != null:
 		board.current_tile.visible = show_preview
 	show_possible_placements(valid_placements if show_preview else [])
+
+func _process(_delta: float) -> void:
+	if _bot_thread == null or _bot_thread.is_alive():
+		return
+	var choice: Dictionary = _bot_thread.wait_to_finish()
+	_bot_thread = null
+	_finish_bot_turn(choice)
+
+
+func _finish_bot_turn(choice: Dictionary) -> void:
+	await bot_controller.apply_move(choice, _bot_type_pending)
+
 
 func _input(event) -> void:
 	if not game_active:

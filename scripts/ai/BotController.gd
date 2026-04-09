@@ -15,39 +15,34 @@ func setup(p_turn_system: TurnSystem, p_board: Board, p_score_system: Node) -> v
 	expert_bot = ExpertBot.new()
 	expert_bot.setup(self)
 
-#Main function for bot logic
-func take_turn(bot_type: String) -> void:
+# Generates all valid placement options across all 4 rotations.
+# Must run on the main thread (rotates the live tile node).
+func generate_options() -> Array:
 	var current_drawn_tile = turn_system.current_drawn_tile
-
-	#Finds all valid placements of all 4 rotation
-	var options = []
+	var options: Array = []
 	for r in range(4):
-		var placements = board.get_all_valid_placement(current_drawn_tile)
-		for p in placements:
+		for p in board.get_all_valid_placement(current_drawn_tile):
 			options.append({"cell": p["cell"], "rotations": r})
 		current_drawn_tile.rotate_clockwise()
+	return options
 
-	if options.is_empty():
-		turn_system.end_meeple_phase()
-		return
 
-	var choice: Dictionary
-	var expert_move: Dictionary  # Stores full move (incl. meeple_pos) for expert_bot
-	if bot_type == "greedy_bot":
-		choice = _pick_best_placement(options)
+# Pure computation — safe to run on a background thread.
+func compute_move(bot_type: String, options: Array) -> Dictionary:
+	if bot_type == "expert_bot":
+		return expert_bot.pick_best_move(options)
 	elif bot_type == "smart_bot":
-		choice = _pick_best_placement_minimax(options)
-	elif bot_type == "expert_bot":
-		expert_move = expert_bot.pick_best_move(options)
-		choice = expert_move
+		return _pick_best_placement_minimax(options)
 	else:
-		choice = _pick_best_placement(options)
+		return _pick_best_placement(options)
 
-	#Rotates tile to the rotation from options
+
+# Applies a computed move to the board. Must run on the main thread.
+func apply_move(choice: Dictionary, bot_type: String) -> void:
+	var current_drawn_tile = turn_system.current_drawn_tile
 	for _i in range(choice["rotations"]):
 		current_drawn_tile.rotate_clockwise()
 
-	# Place the tile
 	board.current_tile.visible = true
 	board.current_tile.position = board.index_to_coord(choice["cell"])
 	turn_system.on_tile_placed()
@@ -55,9 +50,8 @@ func take_turn(bot_type: String) -> void:
 
 	await get_tree().create_timer(0.5).timeout
 
-	#Places the meeple
 	if bot_type == "expert_bot":
-		var meeple_pos = expert_move.get("meeple_pos")
+		var meeple_pos = choice.get("meeple_pos")
 		var placed = false
 		if meeple_pos != null and turn_system.remaining_meeples[turn_system.current_player_index] > 0:
 			var lt = turn_system.last_placed_tile
