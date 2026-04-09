@@ -6,11 +6,14 @@ const MEEPLE_SCENE: PackedScene = preload("res://scenes/meeple/Meeple.tscn")
 var board: Board
 var score_system: Node
 var turn_system: TurnSystem
+var expert_bot: ExpertBot
 
 func setup(p_turn_system: TurnSystem, p_board: Board, p_score_system: Node) -> void:
 	turn_system = p_turn_system
 	board = p_board
 	score_system = p_score_system
+	expert_bot = ExpertBot.new()
+	expert_bot.setup(self)
 
 #Main function for bot logic
 func take_turn(bot_type: String) -> void:
@@ -29,14 +32,16 @@ func take_turn(bot_type: String) -> void:
 		return
 
 	var choice: Dictionary
+	var expert_move: Dictionary  # Stores full move (incl. meeple_pos) for expert_bot
 	if bot_type == "greedy_bot":
 		choice = _pick_best_placement(options)
 	elif bot_type == "smart_bot":
 		choice = _pick_best_placement_minimax(options)
 	elif bot_type == "expert_bot":
-		choice = _pick_best_placement_expert(options)
+		expert_move = expert_bot.pick_best_move(options)
+		choice = expert_move
 	else:
-		choice = _pick_best_placement(options) # Fallback
+		choice = _pick_best_placement(options)
 
 	#Rotates tile to the rotation from options
 	for _i in range(choice["rotations"]):
@@ -52,11 +57,18 @@ func take_turn(bot_type: String) -> void:
 
 	#Places the meeple
 	if bot_type == "expert_bot":
-		var best_meeple_coords = _expert_evaluate_meeple()
-		if best_meeple_coords == null:
+		var meeple_pos = expert_move.get("meeple_pos")
+		var placed = false
+		if meeple_pos != null and turn_system.remaining_meeples[turn_system.current_player_index] > 0:
+			var lt = turn_system.last_placed_tile
+			if lt != null:
+				var seg = Meeple._resolve_segment(lt.tile_data, meeple_pos, lt.rotation_count)
+				if seg != "unknown" and not score_system.is_segment_claimed(board, turn_system.last_placed_cell, seg):
+					var world_pos = lt.to_global(Vector2(meeple_pos.x, meeple_pos.y) * (Board.CELL_SIZE / 4.0))
+					turn_system.place_meeple(world_pos, false)
+					placed = true
+		if not placed:
 			turn_system.end_meeple_phase()
-		else:
-			turn_system.place_meeple(best_meeple_coords, false)
 	elif bot_type == "greedy_bot" or bot_type == "smart_bot":
 		var best_meeple_coords = _greedy_evaluate_meeple()
 		if best_meeple_coords == null:
@@ -161,19 +173,216 @@ func _greedy_evaluate_placement(cell: Vector2i, tile: Tile, player_index: int) -
 	return score
 
 
-#Uses a depth-2 minmax algorithm to pick the best placement
+
+#Builds a FeatureDSU from the current board state
+func _build_dsu() -> FeatureDSU:
+	var dsu = FeatureDSU.new()
+	#Make a node per (cell, ceg) and initial_ports = edge.size() 
+	for cell in board.placed_tiles.keys():
+		var tile = board.placed_tiles[cell]
+		for seg in tile.tile_data.internal_connections.keys():
+			if seg.begins_with("field_"):
+				continue
+			var edges = tile.tile_data.internal_connections[seg]
+			dsu.make_node(FeatureDSU.node_key(cell, seg), edges.size(), 1 if tile.tile_data.has_shield else 0)
+	#Union right and down borders to avoid double unioning each pair
+	for cell in board.placed_tiles.keys():
+		var tile = board.placed_tiles[cell]
+		for seg in tile.tile_data.internal_connections.keys():
+			if seg.begins_with("field_"):
+				continue
+			var nk = FeatureDSU.node_key(cell, seg)
+			for edge in tile.tile_data.internal_connections[seg]:
+				if edge != 1 and edge != 2:
+					continue  # Only process right and down to avoid double-union
+				var ncell = cell + score_system.neighbor_directions[edge]
+				if not board.placed_tiles.has(ncell):
+					continue
+				var ntile = board.placed_tiles[ncell]
+				var opp_e = score_system.opposite_index[edge]
+				var nseg = score_system._find_segment_for_edge(ntile.tile_data, opp_e)
+				if nseg == "":
+					continue
+				var nnk = FeatureDSU.node_key(ncell, nseg)
+				if dsu.has_node(nnk):
+					dsu.union(nk, nnk)
+	#Register meeples on the board
+	for cell in board.placed_tiles.keys():
+		var tile = board.placed_tiles[cell]
+		for slot_id in tile.meeples.keys():
+			var seg = score_system._segment_for_slot(slot_id)
+			if seg.begins_with("field_") or seg == "monastery" or seg == "center" or seg == "unknown":
+				continue
+			var nk = FeatureDSU.node_key(cell, seg)
+			if dsu.has_node(nk):
+				dsu.add_meeple(nk, tile.meeples[slot_id].owner_index)
+	return dsu
+
+
+# Adds a tile to the DSU after it has been placed in board.placed_tiles.
+# Unions with all 4 neighbors — safe since the tile is new and can't double-union.
+func _dsu_place_tile(dsu: FeatureDSU, cell: Vector2i, tile: Tile) -> void:
+	for seg in tile.tile_data.internal_connections.keys():
+		if seg.begins_with("field_"):
+			continue
+		var edges = tile.tile_data.internal_connections[seg]
+		dsu.make_node(FeatureDSU.node_key(cell, seg), edges.size(), 1 if tile.tile_data.has_shield else 0)
+	for seg in tile.tile_data.internal_connections.keys():
+		if seg.begins_with("field_"):
+			continue
+		var nk = FeatureDSU.node_key(cell, seg)
+		for edge in tile.tile_data.internal_connections[seg]:
+			var ncell = cell + score_system.neighbor_directions[edge]
+			if not board.placed_tiles.has(ncell):
+				continue
+			var ntile = board.placed_tiles[ncell]
+			var opp_e = score_system.opposite_index[edge]
+			var nseg = score_system._find_segment_for_edge(ntile.tile_data, opp_e)
+			if nseg == "":
+				continue
+			var nnk = FeatureDSU.node_key(ncell, nseg)
+			if dsu.has_node(nnk):
+				dsu.union(nk, nnk)
+
+
+# Evaluates placing tile at cell for player_index using the DSU 
+func _dsu_score(dsu: FeatureDSU, cell: Vector2i, tile: Tile, player_index: int) -> float:
+	var score: float = 0.0
+	var seen: Dictionary = {}  #Features merging the same external root set
+	for seg in tile.tile_data.internal_connections.keys():
+		if seg.begins_with("field_"):
+			continue
+		var edges = tile.tile_data.internal_connections[seg]
+		var connected_roots: Dictionary = {}
+		var total_tc: int = 1
+		var total_op: int = 0
+		var total_sc: int = 1 if tile.tile_data.has_shield else 0
+		var player_counts: Dictionary = {}
+		for edge in edges:
+			var ncell = cell + score_system.neighbor_directions[edge]
+			if not board.placed_tiles.has(ncell):
+				total_op += 1
+				continue
+			var ntile = board.placed_tiles[ncell]
+			var opp_e = score_system.opposite_index[edge]
+			var nseg = score_system._find_segment_for_edge(ntile.tile_data, opp_e)
+			if nseg == "":
+				total_op += 1
+				continue
+			var nnk = FeatureDSU.node_key(ncell, nseg)
+			if not dsu.has_node(nnk):
+				total_op += 1
+				continue
+			var root = dsu.find(nnk)
+			if not connected_roots.has(root):
+				connected_roots[root] = true
+				total_tc += dsu.get_tile_count(nnk)
+				total_op += dsu.get_open_ports(nnk) - 1  #Their port facing us closes
+				total_sc += dsu.get_shield_count(nnk)
+				var mc = dsu.get_meeple_counts(nnk)
+				for p in mc:
+					player_counts[p] = player_counts.get(p, 0) + mc[p]
+			else:
+				total_op -= 1  #Same root via another edge one more port closes
+		total_op = maxi(0, total_op)
+		# Dedup key: sorted list of external roots (or own key if isolated)
+		var root_list = connected_roots.keys().duplicate()
+		root_list.sort()
+		if root_list.is_empty():
+			root_list.append(FeatureDSU.node_key(cell, seg))
+		var dedup = "|".join(root_list)
+		if seen.has(dedup):
+			continue
+		seen[dedup] = true
+		var mine: int = player_counts.get(player_index, 0)
+		var opp: int = 0
+		for p in player_counts:
+			if p != player_index:
+				opp = maxi(opp, player_counts[p])
+		var is_city = seg.begins_with("city_")
+		var raw: float = total_tc * (2.0 if is_city else 1.0) + (total_sc * 2.0 if is_city else 0.0)
+		if total_op == 0:
+			if mine > opp:                       score += raw * 2.0
+			elif mine == opp and mine > 0:        score += raw * 1.0
+			elif opp > mine and mine > 0:         score += raw * 0.5
+			elif opp > 0:                         score -= raw * 1.0
+		else:
+			var discounted = raw / (total_op + 1.0)
+			if mine > 0 and opp == 0:
+				score += discounted * 1.5
+			elif mine > 0 or opp > 0:
+				score += discounted * float(mine - opp) / float(mine + opp)
+			else:
+				score += discounted * 0.4
+	score += _score_monastery_adjacency(cell, player_index)
+	return score
+
+
+#Expert variant: _dsu_score base + meeple economy and late-game rules.
+func _dsu_expert_score(dsu: FeatureDSU, cell: Vector2i, tile: Tile, player_index: int) -> float:
+	var score = _dsu_score(dsu, cell, tile, player_index)
+	var remaining = turn_system.remaining_meeples[player_index]
+	var tiles_left = turn_system.tile_deck.get_draw_pile_size()
+	var seen: Dictionary = {}
+	for seg in tile.tile_data.internal_connections.keys():
+		if seg.begins_with("field_"):
+			continue
+		var edges = tile.tile_data.internal_connections[seg]
+		var connected_roots: Dictionary = {}
+		var total_op: int = 0
+		var total_tc: int = 1
+		var has_mine: bool = false
+		for edge in edges:
+			var ncell = cell + score_system.neighbor_directions[edge]
+			if not board.placed_tiles.has(ncell):
+				total_op += 1
+				continue
+			var ntile = board.placed_tiles[ncell]
+			var opp_e = score_system.opposite_index[edge]
+			var nseg = score_system._find_segment_for_edge(ntile.tile_data, opp_e)
+			if nseg == "" or not dsu.has_node(FeatureDSU.node_key(ncell, nseg)):
+				total_op += 1
+				continue
+			var nnk = FeatureDSU.node_key(ncell, nseg)
+			var root = dsu.find(nnk)
+			if not connected_roots.has(root):
+				connected_roots[root] = true
+				total_op += dsu.get_open_ports(nnk) - 1
+				total_tc += dsu.get_tile_count(nnk)
+				if dsu.get_meeple_counts(nnk).get(player_index, 0) > 0:
+					has_mine = true
+			else:
+				total_op -= 1
+		total_op = maxi(0, total_op)
+		var root_list = connected_roots.keys().duplicate()
+		root_list.sort()
+		if root_list.is_empty():
+			root_list.append(FeatureDSU.node_key(cell, seg))
+		var dedup = "|".join(root_list)
+		if seen.has(dedup):
+			continue
+		seen[dedup] = true
+		if not has_mine:
+			continue
+		if remaining <= 2 and total_op == 0:
+			score += total_tc * float(3 - remaining)
+		if tiles_left <= 15 and total_op > 2:
+			score -= (float(total_op) / float(tiles_left + 1)) * total_tc * 0.5
+	return score
+
+
+
+# Medium bot: DFS-based depth-2 minimax using _greedy_evaluate_placement.
 func _pick_best_placement_minimax(options: Array) -> Dictionary:
 	var tile = turn_system.current_drawn_tile
 	var my_index = turn_system.current_player_index
 
-	# Pre-score greedily and keep top 8 to limit minimax cost
+	# Pre-score with greedy DFS, keep top 8
 	var scored = []
 	for option in options:
-		for _r in range(option["rotations"]):
-			tile.rotate_clockwise()
+		for _r in range(option["rotations"]): tile.rotate_clockwise()
 		scored.append({"option": option, "score": _greedy_evaluate_placement(option["cell"], tile, my_index)})
-		for _t in range(4 - option["rotations"]):
-			tile.rotate_clockwise()
+		for _t in range(4 - option["rotations"]): tile.rotate_clockwise()
 	scored.sort_custom(func(a, b): return a["score"] > b["score"])
 	var candidates = scored.slice(0, min(8, scored.size()))
 
@@ -182,45 +391,42 @@ func _pick_best_placement_minimax(options: Array) -> Dictionary:
 
 	for entry in candidates:
 		var option = entry["option"]
-		for _r in range(option["rotations"]):
-			tile.rotate_clockwise()
-
+		var my_score: float = entry["score"]  # Reuse from pre-scoring
+		for _r in range(option["rotations"]): tile.rotate_clockwise()
 		var cell = option["cell"]
-		var my_tile_score = _greedy_evaluate_placement(cell, tile, my_index)
 
+		# Temporarily place tile so opponent sees the new board state
 		board.placed_tiles[cell] = tile
 		var opp_best: float = 0.0
 		for opp_i in range(turn_system.players.size()):
-			if opp_i == my_index:
-				continue
+			if opp_i == my_index: continue
 			for opp_p in board.get_all_valid_placement(tile):
-				var opp_score = _greedy_evaluate_placement(opp_p["cell"], tile, opp_i)
-				if opp_score > opp_best:
-					opp_best = opp_score
+				var s = _greedy_evaluate_placement(opp_p["cell"], tile, opp_i)
+				if s > opp_best: opp_best = s
 		board.placed_tiles.erase(cell)
 
-		var minimax_score = my_tile_score - opp_best * 0.5
+		var minimax_score = my_score - opp_best * 0.5
 		if minimax_score > best_score:
 			best_score = minimax_score
 			best_option = option
 
-		for _t in range(4 - option["rotations"]):
-			tile.rotate_clockwise()
+		for _t in range(4 - option["rotations"]): tile.rotate_clockwise()
 
 	return best_option
 
 
 #Minimax depth-2 using the expert evaluation function for expert bot
 func _pick_best_placement_expert(options: Array) -> Dictionary:
+	var dsu = _build_dsu()
 	var tile = turn_system.current_drawn_tile
 	var my_index = turn_system.current_player_index
 
-	# Pre-score greedily and keep top 8 to limit minimax cost
+	# Pre-score with DSU and keep top 8
 	var scored = []
 	for option in options:
 		for _r in range(option["rotations"]):
 			tile.rotate_clockwise()
-		scored.append({"option": option, "score": _greedy_evaluate_placement(option["cell"], tile, my_index)})
+		scored.append({"option": option, "score": _dsu_score(dsu, option["cell"], tile, my_index)})
 		for _t in range(4 - option["rotations"]):
 			tile.rotate_clockwise()
 	scored.sort_custom(func(a, b): return a["score"] > b["score"])
@@ -235,20 +441,25 @@ func _pick_best_placement_expert(options: Array) -> Dictionary:
 			tile.rotate_clockwise()
 
 		var cell = option["cell"]
-		var my_tile_score = _expert_evaluate_placement(cell, tile, my_index)
+		var my_score = _dsu_expert_score(dsu, cell, tile, my_index)
 
+		dsu.push_checkpoint()
 		board.placed_tiles[cell] = tile
+		_dsu_place_tile(dsu, cell, tile)
+
 		var opp_best: float = 0.0
 		for opp_i in range(turn_system.players.size()):
 			if opp_i == my_index:
 				continue
 			for opp_p in board.get_all_valid_placement(tile):
-				var opp_score = _expert_evaluate_placement(opp_p["cell"], tile, opp_i)
+				var opp_score = _dsu_expert_score(dsu, opp_p["cell"], tile, opp_i)
 				if opp_score > opp_best:
 					opp_best = opp_score
-		board.placed_tiles.erase(cell)
 
-		var minimax_score = my_tile_score - opp_best * 0.5
+		board.placed_tiles.erase(cell)
+		dsu.pop_checkpoint()
+
+		var minimax_score = my_score - opp_best * 0.5
 		if minimax_score > best_score:
 			best_score = minimax_score
 			best_option = option
@@ -480,17 +691,11 @@ func _feature_has_opponent_meeple(visited: Array, current_player_index: int) -> 
 				return true
 	return false
 
-#Public method that returns the best cell for a given tile
-func get_best_placement(tile: Tile) -> Vector2i:
-	var options = []
-	for p in board.get_all_valid_placement(tile):
-		options.append({"cell": p["cell"], "rotations": 0})
-
-	if options.is_empty():
-		return Vector2i.MIN
-
-	var best = _pick_best_placement_expert(options)
-	return best["cell"]
+#Returns {"cell": Vector2i, "rotations": int, meeple_pos} for best placement
+# "rotations" is relative to the tile's current rotation.
+func get_best_placement(tile: Tile) -> Dictionary:
+	# pick_best_move always returns rotations as absolute (from rotation 0)
+	return expert_bot.pick_best_move([])
 
 #Returns number of meeples on a feature for a specific player
 func _count_meeples_on_feature(visited: Array, player_index: int) -> int:

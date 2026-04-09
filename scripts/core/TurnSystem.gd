@@ -29,6 +29,7 @@ var remaining_meeples: Array = []
 var highlight_nodes := []
 var last_tile_highlights := {}
 var _hint_highlight_node: Node2D = null
+var _hint_ghost_tile: Node2D = null
 
 @onready var board = $"../Board"
 @onready var game_manager = $"../GameManager"
@@ -235,6 +236,7 @@ func on_tile_placed() -> void:
 		board.current_tile = null
 		show_possible_placements([])
 		clear_hint_highlight()
+		clear_ghost_highlight()
 		phase = TurnPhase.PLACE_MEEPLE
 		Meeple.show_placement_hints(last_placed_tile, Board.CELL_SIZE / 4.0, score_system, board, last_placed_cell)
 		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
@@ -285,9 +287,39 @@ func clear_hint_highlight() -> void:
 		_hint_highlight_node.queue_free()
 		_hint_highlight_node = null
 
+#Frees ghost tile
+func clear_ghost_highlight() -> void:
+	if _hint_ghost_tile != null and is_instance_valid(_hint_ghost_tile):
+		_hint_ghost_tile.queue_free()
+		_hint_ghost_tile = null
+
+#Spawns best tile 
+func _show_hint_ghost(cell: Vector2i, abs_rotations: int) -> void:
+	#Free if there's a previous ghost tile
+	if _hint_ghost_tile != null and is_instance_valid(_hint_ghost_tile):
+		_hint_ghost_tile.queue_free()
+		_hint_ghost_tile = null
+
+	var ghost: Tile = board.tile_scene.instantiate()
+	ghost.tile_data = current_drawn_tile.tile_data.duplicate(true)
+	#Deep copy so ghost rotations don't mutate the held tile
+	for key in ghost.tile_data.internal_connections:
+		ghost.tile_data.internal_connections[key] = ghost.tile_data.internal_connections[key].duplicate()
+	ghost.tile_data.edge = ghost.tile_data.edge.duplicate()
+	board.add_child(ghost)
+	# Advance tile_data only (no visual rotation_degrees change) back to rotation 0,
+	# then apply abs_rotations visually so ghost always shows the same orientation.
+	var to_zero = (4 - current_drawn_tile.rotation_count) % 4
+	for _i in range(to_zero):
+		ghost.tile_data.rotate_clockwise()
+	for _r in range(abs_rotations):
+		ghost.rotate_clockwise()
+	ghost.position = board.index_to_coord(cell)
+	ghost.modulate = Color(1.0, 1.0, 0.5, 0.65)
+	_hint_ghost_tile = ghost
+
 func _refresh_placement_display() -> void:
 	show_possible_placements(board.get_all_valid_placement(current_drawn_tile))
-	clear_hint_highlight()
 	hint_visible = false
 
 func _can_interact_with_current_turn() -> bool:
@@ -326,12 +358,16 @@ func _input(event) -> void:
 		elif event is InputEventKey and event.is_pressed and event.keycode == KEY_H:
 			if hint_visible:
 				clear_hint_highlight()
+				clear_ghost_highlight()
 				hint_visible = false
 				show_possible_placements(board.get_all_valid_placement(current_drawn_tile))
 			else:
-				var best_cell = bot_controller.get_best_placement(current_drawn_tile)
-				if best_cell != Vector2i.MIN:
+				var best = bot_controller.get_best_placement(current_drawn_tile)
+				if not best.is_empty():
+					var best_cell: Vector2i = best["cell"]
 					show_hint_highlight(best_cell)
+					#best["rotations"] is relative to current tile rotation
+					_show_hint_ghost(best_cell, best["rotations"])
 					hint_visible = true
 					var filtered = board.get_all_valid_placement(current_drawn_tile).filter(func(p): return p["cell"] != best_cell)
 					show_possible_placements(filtered)
