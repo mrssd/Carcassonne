@@ -273,7 +273,7 @@ func _animate_stack_expansion(expand: bool) -> void:
 		# Expand: spread cards to the right with larger spacing to show all cards
 		for i in range(player_cards.size()):
 			var card = player_cards[i]
-			var offset_x = 210 * i
+			var offset_x = 220 * i
 			tween.tween_property(card, "position:x", offset_x, 0.4)
 	else:
 		# Collapse: stack cards back together with flowing effect to the right

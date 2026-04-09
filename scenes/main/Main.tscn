@@ -11,10 +11,10 @@
 [ext_resource type="Script" uid="uid://cxgm7k2pf4qh1" path="res://scripts/core/GameManager.gd" id="8_ko0rf"]
 [ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="8_ostsq"]
 [ext_resource type="Texture2D" uid="uid://bx5dh536u7f73" path="res://assets/images/layers-stack.svg" id="8_p5fgu"]
-[ext_resource type="Shader" uid="uid://b80r6vgogen4r" path="res://scenes/main/Main.gdshader" id="9_qkm1d"]
+[ext_resource type="Shader" path="res://scenes/main/Main.gdshader" id="9_qkm1d"]
 [ext_resource type="Texture2D" uid="uid://csn683gvw184d" path="res://assets/images/industry.svg" id="10_2tpxt"]
 [ext_resource type="Texture2D" uid="uid://cfg8ne4y62ffm" path="res://assets/tiles/road4.png" id="10_p5fgu"]
-[ext_resource type="Shader" uid="uid://cnkc2aeuaapol" path="res://scenes/main/BlurBackground.gdshader" id="13_jsdfw"]
+[ext_resource type="Shader" path="res://scenes/main/BlurBackground.gdshader" id="13_jsdfw"]
 [ext_resource type="Texture2D" uid="uid://drhkbs8velujj" path="res://assets/images/x-close.svg" id="14_tck0d"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hjnkw"]
@@ -188,8 +188,8 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -340.0
-offset_top = -302.0
+offset_left = -330.0
+offset_top = -272.0
 grow_horizontal = 0
 grow_vertical = 0
 size_flags_horizontal = 0
@@ -203,6 +203,7 @@ theme_override_constants/separation = 8
 
 [node name="PanelTitle" type="Label" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 14
 text = "Current Action:"
 
 [node name="current_action_user_panel" type="Panel" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer"]
@@ -219,9 +220,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 3
+theme_override_constants/margin_top = 1
 theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 3
+theme_override_constants/margin_bottom = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer/current_action_user_panel/MarginContainer"]
 layout_mode = 2
@@ -240,7 +241,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("8_ostsq")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 15
 text = "Satyar's turn"
 
 [node name="MarginContainer" type="MarginContainer" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer"]
@@ -251,7 +252,7 @@ theme_override_constants/margin_bottom = 18
 [node name="current_action_tile" type="TextureRect" parent="UI/UIPanel/MarginContainer/UI_Layout/CurrentAction/VBoxContainer/MarginContainer"]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_2tpxt")
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(130, 130)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
