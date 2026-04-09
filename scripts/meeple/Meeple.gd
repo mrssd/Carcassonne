@@ -198,6 +198,20 @@ static func hide_placement_hints(tile: Tile) -> void:
 	if tile and tile.has_node("MeepleHints"):
 		tile.get_node("MeepleHints").queue_free()
 
+#Returns true if there is at least one unclaimed meeple position on the tile and the player has meeples remaining
+static func has_valid_placements(tile: Tile, score_system, board, cell: Vector2i, player_meeples: int) -> bool:
+	if player_meeples <= 0:
+		return false
+	if tile == null or tile.tile_data == null:
+		return false
+	if tile.tile_data.meeple_positions.is_empty():
+		return true  # fallback centre position is always available
+	for base_key in tile.tile_data.meeple_positions.keys():
+		var feature := _resolve_segment(tile.tile_data, base_key, tile.rotation_count)
+		if not score_system.is_segment_claimed(board, cell, feature):
+			return true
+	return false
+
 #Meeple hint highlight class
 class MeepleHintHighlight:
 	extends Node2D

@@ -295,12 +295,12 @@ func _on_hint_messages_toggled(pressed: bool) -> void:
 	if not pressed:
 		hint_panel.hide()
 
-## Open options menu
+#Open options menu
 func _on_in_game_options_menu_open() -> void:
 	if in_game_options_menu:
 		in_game_options_menu.visible = true
 
-## Close options menu
+#Close options menu
 func _on_in_game_options_menu_close() -> void:
 	if in_game_options_menu:
 		in_game_options_menu.visible = false

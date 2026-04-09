@@ -48,6 +48,10 @@ func apply_move(choice: Dictionary, bot_type: String) -> void:
 	turn_system.on_tile_placed()
 	Meeple.hide_placement_hints(turn_system.last_placed_tile)
 
+	#Double checking auto skip if no meeples
+	if turn_system.phase != TurnSystem.TurnPhase.PLACE_MEEPLE:
+		return
+
 	await get_tree().create_timer(0.5).timeout
 
 	if bot_type == "expert_bot":
@@ -685,14 +689,11 @@ func _feature_has_opponent_meeple(visited: Array, current_player_index: int) -> 
 				return true
 	return false
 
-#Returns {"cell": Vector2i, "rotations": int, meeple_pos} for best placement
-# "rotations" is relative to the tile's current rotation.
 func get_best_placement(tile: Tile) -> Dictionary:
-	# pick_best_move always returns rotations as absolute (from rotation 0)
 	return expert_bot.pick_best_move([])
 
 
-# Returns the recommended meeple world position for the last placed tile, or null.
+#Returns the recommended meeple world position for the last placed tile
 func get_meeple_hint() -> Variant:
 	return _expert_evaluate_meeple()
 

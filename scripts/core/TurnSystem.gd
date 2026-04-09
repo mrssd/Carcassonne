@@ -247,6 +247,11 @@ func on_tile_placed() -> void:
 		clear_hint_highlight()
 		clear_ghost_highlight()
 		phase = TurnPhase.PLACE_MEEPLE
+		var player_meeples: int = remaining_meeples[current_player_index] if current_player_index < remaining_meeples.size() else 0
+		#If no meeple then end meeple phase automatically
+		if not Meeple.has_valid_placements(last_placed_tile, score_system, board, last_placed_cell, player_meeples):
+			end_meeple_phase()
+			return
 		Meeple.show_placement_hints(last_placed_tile, Board.CELL_SIZE / 4.0, score_system, board, last_placed_cell)
 		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
 		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
