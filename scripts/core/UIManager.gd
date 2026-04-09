@@ -59,7 +59,7 @@ func _setup_connections() -> void:
 		_on_turn_changed(turn_system.get_current_player(), turn_system.current_player_index)
 	
 	if game_manager:
-		#game_manager.game_ended.connect(_on_game_ended)
+		game_manager.game_ended.connect(_on_game_ended)
 		call_deferred("_bind_deck_signal")
 
 	if score_manager:
@@ -113,9 +113,12 @@ func _update_deck_display() -> void:
 		deck_label.text = "%d / %d" % [remaining, total]
 
 func _on_game_ended(_message: String) -> void:
-	# game_over_label.text = _message
-	# game_over_label.visible = true
-	pass
+	var scores: Array = []
+	for i in range(turn_system.players.size()):
+		scores.append(score_manager.get_score(i))
+	var overlay := EndGameOverlay.new()
+	add_child(overlay)
+	overlay.setup(turn_system.players, scores, player_colors)
 
 func _update_scoreboard_display() -> void:
 	pass

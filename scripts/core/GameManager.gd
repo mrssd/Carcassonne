@@ -54,6 +54,6 @@ func _place_starting_tile() -> void:
 ## Game End
 func end_game(message: String) -> void:
 	game_ended_flag = true
+	# Short delay so end-game score animations finish before the overlay appears
+	await get_tree().create_timer(1.5).timeout
 	game_ended.emit(message)
-	await get_tree().create_timer(3.0).timeout
-	get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn")
