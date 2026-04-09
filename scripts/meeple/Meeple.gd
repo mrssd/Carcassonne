@@ -197,3 +197,33 @@ static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE
 static func hide_placement_hints(tile: Tile) -> void:
 	if tile and tile.has_node("MeepleHints"):
 		tile.get_node("MeepleHints").queue_free()
+
+#Meeple hint highlight class
+class MeepleHintHighlight:
+	extends Node2D
+	var hint_pos: Vector2 = Vector2.ZERO
+	var _time: float = 0.0
+	func _ready() -> void:
+		z_as_relative = false
+		z_index = 1001
+	func _process(delta: float) -> void:
+		_time += delta
+		queue_redraw()
+	func _draw() -> void:
+		var pulse := (sin(_time * 4.0) + 1.0) / 2.0
+		var r := lerpf(7.0, 9.0, pulse)
+		draw_circle(hint_pos, r, Color(1.0, 0.85, 0.0, lerpf(0.7, 1.0, pulse)))
+		draw_arc(hint_pos, r, 0.0, TAU, 32, Color(1.0, 0.5, 0.0, 1.0), 2.0, true)
+
+
+static func show_meeple_hint(tile: Tile, world_pos: Vector2) -> void:
+	hide_meeple_hint(tile)
+	var hint := MeepleHintHighlight.new()
+	hint.name = "MeepleHintHighlight"
+	hint.hint_pos = tile.to_local(world_pos)
+	tile.add_child(hint)
+
+
+static func hide_meeple_hint(tile: Tile) -> void:
+	if tile and tile.has_node("MeepleHintHighlight"):
+		tile.get_node("MeepleHintHighlight").queue_free()

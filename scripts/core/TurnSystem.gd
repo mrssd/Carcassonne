@@ -30,6 +30,7 @@ var highlight_nodes := []
 var last_tile_highlights := {}
 var _hint_highlight_node: Node2D = null
 var _hint_ghost_tile: Node2D = null
+var _meeple_hint_visible: bool = false
 
 @onready var board = $"../Board"
 @onready var game_manager = $"../GameManager"
@@ -263,6 +264,8 @@ func place_meeple(world_click: Vector2, animate: bool = true) -> void:
 
 func end_meeple_phase() -> void:
 	Meeple.hide_placement_hints(last_placed_tile)
+	Meeple.hide_meeple_hint(last_placed_tile)
+	_meeple_hint_visible = false
 	score_system.score_and_apply(board, last_placed_cell)
 	last_placed_tile = null
 	phase = TurnPhase.DRAW_TILE
@@ -379,6 +382,19 @@ func _input(event) -> void:
 			print("Skipping meeple placement")
 			Meeple.hide_placement_hints(last_placed_tile)
 			end_meeple_phase()
+		elif event is InputEventKey and event.pressed and event.keycode == KEY_H:
+			if _meeple_hint_visible:
+				Meeple.hide_meeple_hint(last_placed_tile)
+				_meeple_hint_visible = false
+				UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
+			else:
+				var hint_pos = bot_controller.get_meeple_hint()
+				if hint_pos == null:
+					UI_manager.show_hint("Hint: No meeple recommended — press SPACE to skip.")
+				else:
+					Meeple.show_meeple_hint(last_placed_tile, hint_pos)
+					_meeple_hint_visible = true
+					UI_manager.show_hint("Hint: Place meeple on the gold dot.")
 
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F1:
 		print("DEBUG: Force ending game")

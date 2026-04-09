@@ -697,6 +697,11 @@ func get_best_placement(tile: Tile) -> Dictionary:
 	# pick_best_move always returns rotations as absolute (from rotation 0)
 	return expert_bot.pick_best_move([])
 
+
+# Returns the recommended meeple world position for the last placed tile, or null.
+func get_meeple_hint() -> Variant:
+	return _expert_evaluate_meeple()
+
 #Returns number of meeples on a feature for a specific player
 func _count_meeples_on_feature(visited: Array, player_index: int) -> int:
 	var count = 0
