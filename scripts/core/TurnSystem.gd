@@ -21,7 +21,7 @@ var hint_visible: bool = false # Boolean of hint of best tile
 
 const MEEPLE_SCENE: PackedScene = preload("res://scenes/meeple/Meeple.tscn")
 const HIGHLIGHT_SCENE = preload("res://scenes/highlight/Highlight.tscn")
-const LAST_PLACED_HIGHLIGHT_SCRIPT = preload("res://scenes/highlight/lastplacedhighlight.gd")
+const LAST_PLACED_HIGHLIGHT_SCRIPT = preload("res://scripts/ui/lastplacedhighlight.gd")
 const HINT_HIGHLIGHT_SCENE = preload("res://scenes/highlight/HintHighlight.tscn")
 
 var meeples_per_player: int = 7
