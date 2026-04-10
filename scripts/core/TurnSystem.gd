@@ -247,6 +247,7 @@ func on_tile_placed() -> void:
 		clear_hint_highlight()
 		clear_ghost_highlight()
 		phase = TurnPhase.PLACE_MEEPLE
+		phase_changed.emit(phase)
 		var player_meeples: int = remaining_meeples[current_player_index] if current_player_index < remaining_meeples.size() else 0
 		#If no meeple then end meeple phase automatically
 		if not Meeple.has_valid_placements(last_placed_tile, score_system, board, last_placed_cell, player_meeples):
@@ -401,6 +402,16 @@ func _input(event) -> void:
 					show_possible_placements(filtered)
 	elif phase == TurnPhase.PLACE_MEEPLE:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			# Check if clicking on UI buttons - if so, skip this input
+			var tile_options_panel = get_tree().root.find_child("TileOptions", true, false) as PanelContainer
+			if tile_options_panel and tile_options_panel.visible:
+				var mouse_pos = event.position
+				var panel_rect = tile_options_panel.get_global_rect()
+				if panel_rect.has_point(mouse_pos):
+					UI_manager.show_hint("Skipping meeple placement. Turn ending...")
+					Meeple.hide_placement_hints(last_placed_tile)
+					end_meeple_phase()
+					return
 			place_meeple(board.get_global_mouse_position())
 		elif event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
 			UI_manager.show_hint("Skipping meeple placement. Turn ending...")

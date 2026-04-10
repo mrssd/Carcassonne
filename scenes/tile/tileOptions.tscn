@@ -1,0 +1,76 @@
+[gd_scene load_steps=7 format=3 uid="uid://bpl0bcaacab57"]
+
+[ext_resource type="FontFile" uid="uid://desgckb87qtdk" path="res://assets/fonts/Capriola-Regular.ttf" id="1_hdmvl"]
+[ext_resource type="Texture2D" uid="uid://tikvhfbkn7fh" path="res://assets/images/undo-return-left-arrow-black.svg" id="2_s43el"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4wpsl"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mg6ph"]
+content_margin_left = 25.0
+content_margin_top = 3.0
+content_margin_right = 25.0
+content_margin_bottom = 3.0
+bg_color = Color(0, 0, 0, 0.6745098)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9688621, 0.7757754, 0, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ho77t"]
+bg_color = Color(0.14406255, 0.14406255, 0.14406249, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v0ul2"]
+bg_color = Color(0, 0, 0, 0.6745098)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="TileOption" type="PanelContainer"]
+z_index = 20
+offset_right = 120.0
+offset_bottom = 40.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_4wpsl")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 10
+
+[node name="skip_meeple_phase" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 30)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_fonts/font = ExtResource("1_hdmvl")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_mg6ph")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ho77t")
+text = "SKIP"
+
+[node name="undo_tile_placement" type="Button" parent="HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_v0ul2")
+icon = ExtResource("2_s43el")
+icon_alignment = 1
+expand_icon = true

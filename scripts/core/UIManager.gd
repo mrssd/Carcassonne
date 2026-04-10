@@ -4,6 +4,7 @@ class_name UIManager
 @onready var turn_system: TurnSystem = $"../../TurnSystem"
 @onready var game_manager = $"../../GameManager"
 @onready var score_manager = $"../../ScoreManager"
+@onready var board: Board = $"../../Board"
 @onready var deck_label: Label = %tile_remaining
 @onready var current_action_user_display_name: Label = %current_action_user_display_name
 @onready var current_action_user_status_mark: Panel = %current_action_user_status_mark
@@ -16,6 +17,10 @@ class_name UIManager
 @onready var options_menu_close: Button = %options_menu_close
 @onready var highlight_placement_toggle: CheckButton = %highlight_placement
 @onready var hint_messages_toggle: CheckButton = %hint_messages
+@onready var tile_options_panel: PanelContainer = %TileOptions
+
+var skip_meeple_button: Button
+var undo_tile_button: Button
 
 var highlight_placements_enabled: bool = true
 var hint_messages_enabled: bool = true
@@ -47,14 +52,26 @@ func _ready() -> void:
 	# Use call_deferred to ensure GameManager has initialized its deck
 	call_deferred("_setup_connections")
 
+func _process(_delta: float) -> void:
+	# Continuously update tile options position to follow the tile as camera moves
+	if tile_options_panel and tile_options_panel.visible and turn_system and turn_system.last_placed_tile:
+		_update_tile_options_position()
+
 func _setup_connections() -> void:
 	# Initialize player stack
 	call_deferred("_setup_player_stack")
+	
+	# Find the button references from TileOptions since they're in a separate instanced scene
+	if not skip_meeple_button:
+		skip_meeple_button = get_tree().root.find_child("skip_meeple_phase", true, false)
+	if not undo_tile_button:
+		undo_tile_button = get_tree().root.find_child("undo_tile_placement", true, false)
 	
 	if turn_system:
 		turn_system.turn_changed.connect(_on_turn_changed)
 		turn_system.meeple_changed.connect(_on_meeple_changed)
 		turn_system.tile_drawn.connect(_on_tile_drawn)
+		turn_system.phase_changed.connect(_on_phase_changed)
 		# Set initial turn display
 		_on_turn_changed(turn_system.get_current_player(), turn_system.current_player_index)
 	
@@ -79,6 +96,18 @@ func _setup_connections() -> void:
 		highlight_placement_toggle.toggled.connect(_on_highlight_placement_toggled)
 	if hint_messages_toggle:
 		hint_messages_toggle.toggled.connect(_on_hint_messages_toggled)
+	
+	# Connect tile options buttons
+	if skip_meeple_button:
+		print("Connected skip_meeple_button")
+		skip_meeple_button.pressed.connect(_on_skip_meeple_pressed)
+	else:
+		print("ERROR: skip_meeple_button not found!")
+	if undo_tile_button:
+		print("Connected undo_tile_button")
+		undo_tile_button.pressed.connect(_on_undo_tile_pressed)
+	else:
+		print("ERROR: undo_tile_button not found!")
 
 func _on_tile_drawn(tile: Tile) -> void:
 	if current_action_tile_texture and tile and tile.tile_data and tile.tile_data.tile_texture:
@@ -304,3 +333,58 @@ func _on_in_game_options_menu_open() -> void:
 func _on_in_game_options_menu_close() -> void:
 	if in_game_options_menu:
 		in_game_options_menu.visible = false
+
+## Handle phase changes - show/hide tile options panel
+func _on_phase_changed(phase: int) -> void:
+	if tile_options_panel == null:
+		return
+	
+	# Only show tile options during PLACE_MEEPLE phase
+	if phase == TurnSystem.TurnPhase.PLACE_MEEPLE:
+		# Position the buttons below the placed tile first
+		_update_tile_options_position()
+		# Then make visible
+		tile_options_panel.visible = true
+	else:
+		tile_options_panel.visible = false
+
+## Update tile options position based on last placed tile
+func _update_tile_options_position() -> void:
+	if tile_options_panel == null or turn_system == null or board == null:
+		return
+	
+	if turn_system.last_placed_tile == null:
+		return
+	
+	# Get the camera from the board
+	var camera = board.get_node("Camera2D") as Camera2D
+	if not camera:
+		return
+	
+	# Position below the placed tile with some offset
+	var tile_world_pos: Vector2 = turn_system.last_placed_tile.global_position
+	var offset_y: float = board.CELL_SIZE / 2.0 + 5.0 # Below tile + padding
+	
+	# Convert world position to screen position using camera
+	# Account for camera position and zoom
+	var viewport = get_viewport()
+	var viewport_size = viewport.get_visible_rect().size
+	var camera_zoom = camera.zoom
+	
+	# Vector from camera center to tile
+	var tile_offset = tile_world_pos - camera.global_position
+	
+	# Apply camera zoom and convert to screen coordinates
+	var screen_pos = viewport_size / 2.0 + (tile_offset * camera_zoom)
+	
+	tile_options_panel.position = Vector2(screen_pos.x - 70, screen_pos.y + offset_y)
+
+## Handle skip meeple button press
+func _on_skip_meeple_pressed() -> void:
+	print("Skip button pressed!")
+	if turn_system:
+		turn_system.end_meeple_phase()
+
+## Handle undo tile button press
+func _on_undo_tile_pressed() -> void:
+	pass
