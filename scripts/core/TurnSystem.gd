@@ -32,12 +32,23 @@ var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
 var last_placed_tile: Tile = null
 var last_placed_cell: Vector2i = Vector2i.ZERO
+var setup_complete: bool = false
+var game_started_once: bool = false
 
 func _ready() -> void:
-	score_system.meeple_returned.connect(_on_meeple_returned)
+	if score_system != null and not score_system.meeple_returned.is_connected(_on_meeple_returned):
+		score_system.meeple_returned.connect(_on_meeple_returned)
+	setup_complete = true
+	print("TurnSystem: ready. board=%s ui=%s score=%s game_manager=%s" % [board != null, UI_manager != null, score_system != null, game_manager != null])
 
 
 func start_game() -> void:
+	if game_started_once:
+		print("TurnSystem: ignoring duplicate start_game call")
+		return
+	if not is_runtime_ready():
+		push_warning("TurnSystem.start_game called before dependencies were ready")
+		return
 	# Initialize players and meeples, wire score manager and deck, then start the first turn.
 	players = NetworkManager.get_match_player_names(GameManager.player_count)
 
@@ -59,9 +70,23 @@ func start_game() -> void:
 		tile_deck = game_manager.tile_deck
 	else:
 		push_error("TurnSystem.start_game: tile_deck not available on GameManager")
+		return
 
 	game_active = true
+	game_started_once = true
+	current_player_index = 0
+	phase = TurnPhase.DRAW_TILE
+	print("TurnSystem: start_game players=%s lan=%s local_index=%d" % [players, NetworkManager.is_lan_match, NetworkManager.get_local_player_index()])
 	start_turn()
+
+func is_runtime_ready() -> bool:
+	if not setup_complete:
+		return false
+	if board == null or game_manager == null or score_system == null or UI_manager == null:
+		return false
+	if UI_manager.has_method("is_setup_complete") and not UI_manager.is_setup_complete():
+		return false
+	return true
 
 func _on_meeple_returned(player_index: int) -> void:
 	if player_index >= 0 and player_index < remaining_meeples.size():

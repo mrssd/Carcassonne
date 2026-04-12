@@ -19,6 +19,7 @@ var player_colors = [
 	Color.YELLOW,
 	Color.ORANGE,
 ]
+var setup_complete: bool = false
 
 func _ready() -> void:
 	# Use call_deferred to ensure GameManager has initialized its deck
@@ -42,6 +43,10 @@ func _setup_connections() -> void:
 		_on_score_changed()
 
 	NetworkManager.action_failed.connect(_on_network_action_failed)
+	setup_complete = true
+
+func is_setup_complete() -> bool:
+	return setup_complete
 
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	turn_label.text = "Turn: %s" % player_name

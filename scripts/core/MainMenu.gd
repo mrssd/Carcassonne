@@ -15,6 +15,18 @@ var selected_server: Dictionary = {}
 
 func _ready() -> void:
 	var vbox = $VBoxContainer
+	vbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	vbox.custom_minimum_size = Vector2(0, 0)
+
+	var start_button := $VBoxContainer/start
+	var options_button := $VBoxContainer/options
+	var exit_button := $VBoxContainer/exit
+	start_button.custom_minimum_size = Vector2(0, 56)
+	options_button.custom_minimum_size = Vector2(0, 56)
+	exit_button.custom_minimum_size = Vector2(0, 56)
+	start_button.add_theme_font_size_override("font_size", 28)
+	options_button.add_theme_font_size_override("font_size", 28)
+	exit_button.add_theme_font_size_override("font_size", 28)
 
 	var row = HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -74,49 +86,67 @@ func _on_exit_pressed() -> void:
 # Builds the LAN section of the menu with host/join controls.
 func _build_network_panel(vbox: VBoxContainer) -> void:
 	var panel := PanelContainer.new()
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.custom_minimum_size = Vector2(0, 260)
+
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.custom_minimum_size = Vector2(0, 260)
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(scroll)
+
 	var panel_box := VBoxContainer.new()
 	panel_box.add_theme_constant_override("separation", 8)
-	panel.add_child(panel_box)
+	panel_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(panel_box)
 
 	var title := Label.new()
 	title.text = "LAN Multiplayer"
 	title.add_theme_color_override("font_color", Color.WHITE)
-	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_font_size_override("font_size", 22)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	panel_box.add_child(title)
 
 	username_input = LineEdit.new()
 	username_input.placeholder_text = "Username"
 	username_input.text = OS.get_environment("USER")
+	username_input.custom_minimum_size = Vector2(0, 36)
 	panel_box.add_child(username_input)
 
 	var row_ip := HBoxContainer.new()
+	row_ip.add_theme_constant_override("separation", 8)
 	ip_input = LineEdit.new()
 	ip_input.placeholder_text = "Host IP (e.g. 192.168.1.5)"
 	ip_input.text = ""
 	ip_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ip_input.custom_minimum_size = Vector2(0, 36)
 	row_ip.add_child(ip_input)
 
 	port_input = LineEdit.new()
 	port_input.placeholder_text = str(NetworkManager.DEFAULT_PORT)
 	port_input.text = str(NetworkManager.DEFAULT_PORT)
-	port_input.custom_minimum_size = Vector2(120, 0)
+	port_input.custom_minimum_size = Vector2(88, 36)
 	row_ip.add_child(port_input)
 	panel_box.add_child(row_ip)
 
 	var row_buttons := HBoxContainer.new()
+	row_buttons.add_theme_constant_override("separation", 8)
 	var host_button := Button.new()
 	host_button.text = "Host LAN"
+	host_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	host_button.pressed.connect(_on_host_pressed)
 	row_buttons.add_child(host_button)
 
 	var join_button := Button.new()
 	join_button.text = "Join LAN"
+	join_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	join_button.pressed.connect(_on_join_pressed)
 	row_buttons.add_child(join_button)
 
 	host_start_button = Button.new()
 	host_start_button.text = "Start Match"
+	host_start_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	host_start_button.visible = false
 	host_start_button.pressed.connect(_on_host_start_pressed)
 	row_buttons.add_child(host_start_button)
@@ -126,18 +156,21 @@ func _build_network_panel(vbox: VBoxContainer) -> void:
 	var discovery_title := Label.new()
 	discovery_title.text = "Auto LAN Discovery (Testing)"
 	discovery_title.add_theme_color_override("font_color", Color.CYAN)
-	discovery_title.add_theme_font_size_override("font_size", 20)
+	discovery_title.add_theme_font_size_override("font_size", 17)
 	discovery_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	panel_box.add_child(discovery_title)
 
 	var discovery_row := HBoxContainer.new()
+	discovery_row.add_theme_constant_override("separation", 8)
 	discovery_button = Button.new()
 	discovery_button.text = "Scan for Servers"
+	discovery_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	discovery_button.pressed.connect(_on_discovery_scan_pressed)
 	discovery_row.add_child(discovery_button)
 
 	var connect_discovered_btn := Button.new()
 	connect_discovered_btn.text = "Connect to Selected"
+	connect_discovered_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	connect_discovered_btn.pressed.connect(_on_connect_discovered_pressed)
 	discovery_row.add_child(connect_discovered_btn)
 	panel_box.add_child(discovery_row)
@@ -162,6 +195,7 @@ func _build_network_panel(vbox: VBoxContainer) -> void:
 
 	players_label = Label.new()
 	players_label.add_theme_color_override("font_color", Color.WHITE)
+	players_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	panel_box.add_child(players_label)
 
 	vbox.add_child(panel)

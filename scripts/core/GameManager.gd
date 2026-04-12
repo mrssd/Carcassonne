@@ -12,10 +12,11 @@ static var player_count: int = 2
 
 var tile_deck: TileDeck
 var game_ended_flag: bool = false
+var match_started: bool = false
 
 func _ready() -> void:
 	_initialize_deck()
-	call_deferred("start_game")
+	call_deferred("_complete_scene_setup")
 		
 ## Initialize deck
 # Loads the tile deck resource used for the current match.
@@ -25,9 +26,34 @@ func _initialize_deck() -> void:
 	else:
 		tile_deck = TileDeck.load_deck_from_resource("res://resources/tile_deck.tres")
 
-## Game
-# Starts the local game state for the current scene.
-func start_game():
+func _complete_scene_setup() -> void:
+	var ready := await _wait_for_scene_dependencies("scene setup")
+	if not ready:
+		push_error("GameManager: scene dependencies did not become ready")
+		return
+	print("GameManager: scene dependencies ready. lan=%s host=%s" % [NetworkManager.is_lan_match, NetworkManager.is_host()])
+	if NetworkManager.is_lan_match:
+		NetworkManager.notify_game_scene_ready()
+	else:
+		begin_network_match()
+
+func begin_network_match() -> void:
+	if match_started:
+		return
+	call_deferred("_begin_match_when_ready")
+
+func has_started_match() -> bool:
+	return match_started
+
+func _begin_match_when_ready() -> void:
+	if match_started:
+		return
+	var ready := await _wait_for_scene_dependencies("match start")
+	if not ready:
+		push_error("GameManager: could not start match because dependencies are missing")
+		return
+	match_started = true
+	print("GameManager: begin match. lan=%s host=%s" % [NetworkManager.is_lan_match, NetworkManager.is_host()])
 	if tile_deck == null:
 		_initialize_deck()
 	# Only the host places the starting tile in a LAN match to keep boards in sync.
@@ -36,6 +62,26 @@ func start_game():
 	# Delegate player / turn initialization to TurnSystem
 	if turn_system:
 		turn_system.start_game()
+
+func _wait_for_scene_dependencies(context: String, max_frames: int = 120) -> bool:
+	for _i in range(max_frames):
+		if _are_scene_dependencies_ready():
+			return true
+		await get_tree().process_frame
+	print("GameManager: waiting for scene dependencies timed out during %s" % context)
+	return _are_scene_dependencies_ready()
+
+func _are_scene_dependencies_ready() -> bool:
+	if board == null or turn_system == null or score_manager == null:
+		return false
+	var ui_manager := get_node_or_null("../UI/UIPanel")
+	if ui_manager == null:
+		return false
+	if turn_system.has_method("is_runtime_ready") and not turn_system.is_runtime_ready():
+		return false
+	if ui_manager.has_method("is_setup_complete") and not ui_manager.is_setup_complete():
+		return false
+	return true
 
 ## First tile
 # Places the mandatory starting tile at the center of the board.
@@ -77,5 +123,7 @@ func receive_starting_tile(tile_name: String) -> void:
 func end_game(message: String) -> void:
 	game_ended_flag = true
 	game_ended.emit(message)
+	if NetworkManager.is_lan_match:
+		NetworkManager.finish_local_match()
 	await get_tree().create_timer(3.0).timeout
 	get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn")
