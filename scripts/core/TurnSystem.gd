@@ -39,6 +39,7 @@ var _bot_type_pending: String = ""
 @onready var score_system = $"../ScoreSystem"
 @onready var UI_manager = $"../UI/UIPanel"
 @onready var score_bubble: ScoreBubble = $"../ScoreBubble"
+@onready var ui_sounds = get_node_or_null("/root/UISounds")
 
 var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
@@ -239,6 +240,8 @@ func on_tile_placed() -> void:
 
 	if board.can_place(cell, board.current_tile):
 		board.place_tile(cell, board.current_tile)
+		if ui_sounds and ui_sounds.has_method("play_successful_placement_sound"):
+			ui_sounds.play_successful_placement_sound()
 		last_placed_tile = board.placed_tiles[cell]
 		last_placed_cell = cell
 		_show_last_placed_tile_highlight(cell, current_player_index)
@@ -257,6 +260,8 @@ func on_tile_placed() -> void:
 		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
 		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	else:
+		if ui_sounds and ui_sounds.has_method("play_invalid_placement_sound"):
+			ui_sounds.play_invalid_placement_sound()
 		UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
 		print("Cannot place tile here – invalid placement.")
 
@@ -265,16 +270,23 @@ func place_meeple(world_click: Vector2, animate: bool = true) -> void:
 	var info = temp.get_placement_feature(last_placed_tile, world_click)
 	temp.free()
 	if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
+		if ui_sounds and ui_sounds.has_method("play_invalid_placement_sound"):
+			ui_sounds.play_invalid_placement_sound()
 		UI_manager.show_hint("That feature is already claimed")
 		print(info["feature"], "is already claimed.")
 		return
 	var placed = Meeple.try_place_on_board(last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE, animate)
 	if placed:
+		if ui_sounds and ui_sounds.has_method("play_successful_placement_sound"):
+			ui_sounds.play_successful_placement_sound()
 		meeple_changed.emit(current_player_index)
 		print("Meeple placed on ", info["feature"])
 		UI_manager.show_hint("Meeple placed! Turn ending...")
 		Meeple.hide_placement_hints(last_placed_tile)
 		end_meeple_phase()
+	else:
+		if ui_sounds and ui_sounds.has_method("play_invalid_placement_sound"):
+			ui_sounds.play_invalid_placement_sound()
 
 func end_meeple_phase() -> void:
 	Meeple.hide_placement_hints(last_placed_tile)
@@ -376,13 +388,19 @@ func _input(event) -> void:
 				on_tile_placed()
 			elif event.button_index == MOUSE_BUTTON_RIGHT:
 				board.current_tile.rotate_clockwise()
+				if ui_sounds and ui_sounds.has_method("play_rotate_sound"):
+					ui_sounds.play_rotate_sound()
 				_refresh_placement_display()
 		elif event is InputEventKey and event.pressed:
 			if event.keycode == KEY_Q:
 				board.current_tile.rotate_counter_clockwise()
+				if ui_sounds and ui_sounds.has_method("play_rotate_sound"):
+					ui_sounds.play_rotate_sound()
 				_refresh_placement_display()
 			elif event.keycode == KEY_E:
 				board.current_tile.rotate_clockwise()
+				if ui_sounds and ui_sounds.has_method("play_rotate_sound"):
+					ui_sounds.play_rotate_sound()
 				_refresh_placement_display()
 		elif event is InputEventKey and event.is_pressed and event.keycode == KEY_H:
 			if hint_visible:

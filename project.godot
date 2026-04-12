@@ -15,6 +15,12 @@ run/main_scene="uid://cn67kc23kbn2c"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+MusicManager="*res://scripts/core/MusicManager.gd"
+UIButtonSfx="*res://scripts/ui/UIButtonSfx.gd"
+UISounds="*res://scripts/ui/UISounds.gd"
+
 [display]
 
 window/size/viewport_width=1280

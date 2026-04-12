@@ -4,6 +4,7 @@ extends Control
 func setup(players: Array, scores: Array, colors: Array) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	UISounds.play_game_over_sound()
 
 	#Dark backdrop
 	var backdrop := ColorRect.new()
@@ -127,5 +128,8 @@ func setup(players: Array, scores: Array, colors: Array) -> void:
 	#Main Menu button
 	var btn := Button.new()
 	btn.text = "Main Menu"
-	btn.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn"))
+	btn.pressed.connect(func():
+		MusicManager.play_menu_music()
+		get_tree().change_scene_to_file("res://scenes/menu/mainMenu.tscn")
+	)
 	vbox.add_child(btn)

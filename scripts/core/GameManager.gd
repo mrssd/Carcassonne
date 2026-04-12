@@ -15,6 +15,7 @@ var tile_deck: TileDeck
 var game_ended_flag: bool = false
 
 func _ready() -> void:
+	MusicManager.play_gameplay_music()
 	_initialize_deck()
 	call_deferred("start_game")
 	
@@ -54,6 +55,7 @@ func _place_starting_tile() -> void:
 ## Game End
 func end_game(message: String) -> void:
 	game_ended_flag = true
+	MusicManager.stop_music()
 	# Short delay so end-game score animations finish before the overlay appears
 	await get_tree().create_timer(1.5).timeout
 	game_ended.emit(message)
