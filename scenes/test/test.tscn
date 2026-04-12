@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://dxqhumvm1kmiw"]
+
+[ext_resource type="Script" uid="uid://cnup2nbj45r4s" path="res://addons/gut/test.gd" id="1_m7npr"]
+[ext_resource type="Script" uid="uid://duvvxvj18c04d" path="res://addons/gut/gut.gd" id="2_da6vm"]
+
+[node name="GutTest" type="Node"]
+script = ExtResource("1_m7npr")
+metadata/_custom_type_script = "uid://cnup2nbj45r4s"
+
+[node name="GutMain" type="Node" parent="."]
+script = ExtResource("2_da6vm")
+metadata/_custom_type_script = "uid://duvvxvj18c04d"

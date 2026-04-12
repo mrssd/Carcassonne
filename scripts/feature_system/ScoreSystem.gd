@@ -351,8 +351,6 @@ func is_segment_claimed(board, cell: Vector2i, segment_key: String) -> bool:
 
 # Returns which segment key a meeple slot belongs to on a tile, by mapping the slot's grid position to the nearest edge.
 func _segment_for_slot(slot_id: String) -> String:
-	# slot_id format: "x_y_segment_key" e.g. "0_-1_road_0"
-	# split into at most 3 parts on the first two underscores
 	return slot_id.split("_", true, 2)[2]
 
 # Collects meeple counts per player, only counting meeples whose position maps to a segment that is part of the feature in explore_result.

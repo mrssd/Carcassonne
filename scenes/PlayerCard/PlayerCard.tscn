@@ -94,3 +94,5 @@ custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 texture = ExtResource("4_4foc5")
 expand_mode = 1
+
+[node name="Node" type="Node" parent="."]

@@ -298,7 +298,7 @@ func _execute_move(dsu: FeatureDSU, move: Dictionary, tile: Tile, player_index: 
 		_search_meeple_delta[meeple_placed] = _search_meeple_delta.get(meeple_placed, 0) + 1
 
 
-# Undo the last executed move.
+#Undo the last executed move.
 func _undo_move(dsu: FeatureDSU, cell: Vector2i) -> void:
 	board.placed_tiles.erase(cell)
 	dsu.pop_checkpoint()
