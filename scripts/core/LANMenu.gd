@@ -1,6 +1,7 @@
 extends Node
 
 func _ready() -> void:
+	MusicManager.play_menu_music()
 	%back_menu.move_to_front()
 
 func _on_back_pressed() -> void:
