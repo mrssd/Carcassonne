@@ -257,7 +257,7 @@ func on_tile_placed() -> void:
 			end_meeple_phase()
 			return
 		Meeple.show_placement_hints(last_placed_tile, Board.CELL_SIZE / 4.0, score_system, board, last_placed_cell)
-		UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
+		UI_manager.show_hint("Click a meeple position or press H for hint.")
 		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	else:
 		if ui_sounds and ui_sounds.has_method("play_invalid_placement_sound"):
@@ -420,15 +420,17 @@ func _input(event) -> void:
 					show_possible_placements(filtered)
 	elif phase == TurnPhase.PLACE_MEEPLE:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			# Check if clicking on UI buttons - if so, skip this input
-			var tile_options_panel = get_tree().root.find_child("TileOptions", true, false) as PanelContainer
+			var tile_options_panel = get_tree().root.find_child("TileOptions", true, false)
 			if tile_options_panel and tile_options_panel.visible:
-				var mouse_pos = event.position
-				var panel_rect = tile_options_panel.get_global_rect()
-				if panel_rect.has_point(mouse_pos):
-					UI_manager.show_hint("Skipping meeple placement. Turn ending...")
-					Meeple.hide_placement_hints(last_placed_tile)
-					end_meeple_phase()
+				var skip_btn = tile_options_panel.find_child("skip_meeple_phase")
+				var undo_btn = tile_options_panel.find_child("undo_tile_placement")
+				if skip_btn and skip_btn.get_global_rect().has_point(event.position):
+					UI_manager._on_skip_meeple_pressed()
+					return
+				if undo_btn and undo_btn.get_global_rect().has_point(event.position):
+					UI_manager._on_undo_tile_pressed()
+					return
+				if tile_options_panel.get_global_rect().has_point(event.position):
 					return
 			place_meeple(board.get_global_mouse_position())
 		elif event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:

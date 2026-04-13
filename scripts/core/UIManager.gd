@@ -339,8 +339,8 @@ func _on_phase_changed(phase: int) -> void:
 	if tile_options_panel == null:
 		return
 	
-	# Only show tile options during PLACE_MEEPLE phase
-	if phase == TurnSystem.TurnPhase.PLACE_MEEPLE:
+	# Only show tile options during PLACE_MEEPLE phase, and only for human players
+	if phase == TurnSystem.TurnPhase.PLACE_MEEPLE and not turn_system.is_current_player_bot():
 		# Position the buttons below the placed tile first
 		_update_tile_options_position()
 		# Then make visible
@@ -348,43 +348,62 @@ func _on_phase_changed(phase: int) -> void:
 	else:
 		tile_options_panel.visible = false
 
-## Update tile options position based on last placed tile
+## Update tile options position below the last placed tile
 func _update_tile_options_position() -> void:
 	if tile_options_panel == null or turn_system == null or board == null:
 		return
-	
 	if turn_system.last_placed_tile == null:
 		return
-	
-	# Get the camera from the board
+
 	var camera = board.get_node("Camera2D") as Camera2D
 	if not camera:
 		return
-	
-	# Position below the placed tile with some offset
-	var tile_world_pos: Vector2 = turn_system.last_placed_tile.global_position
-	var offset_y: float = board.CELL_SIZE / 2.0 + 5.0 # Below tile + padding
-	
-	# Convert world position to screen position using camera
-	# Account for camera position and zoom
-	var viewport = get_viewport()
-	var viewport_size = viewport.get_visible_rect().size
+
+	var viewport_size = get_viewport().get_visible_rect().size
 	var camera_zoom = camera.zoom
-	
-	# Vector from camera center to tile
+	var tile_world_pos: Vector2 = turn_system.last_placed_tile.global_position
 	var tile_offset = tile_world_pos - camera.global_position
-	
-	# Apply camera zoom and convert to screen coordinates
 	var screen_pos = viewport_size / 2.0 + (tile_offset * camera_zoom)
-	
-	tile_options_panel.position = Vector2(screen_pos.x - 70, screen_pos.y + offset_y)
+
+	# Offset below the tile, scaled with zoom so it stays flush with the tile edge
+	var offset_y: float = (board.CELL_SIZE / 2.0 + 5.0) * camera_zoom.y
+	var panel_size = tile_options_panel.size
+	tile_options_panel.position = Vector2(screen_pos.x - panel_size.x / 2.0, screen_pos.y + offset_y)
 
 ## Handle skip meeple button press
 func _on_skip_meeple_pressed() -> void:
-	print("Skip button pressed!")
 	if turn_system:
 		turn_system.end_meeple_phase()
 
 ## Handle undo tile button press
 func _on_undo_tile_pressed() -> void:
-	pass
+	if turn_system == null or board == null:
+		return
+	if turn_system.phase != TurnSystem.TurnPhase.PLACE_MEEPLE:
+		return
+	if turn_system.last_placed_tile == null:
+		return
+
+	# Remove tile from board and return it to player's hand
+	var cell = turn_system.last_placed_cell
+	board.placed_tiles.erase(cell)
+	board.current_tile = turn_system.last_placed_tile
+	board.current_tile.visible = true
+
+	# Clear the last-placed highlight
+	if turn_system.last_tile_highlights.has(turn_system.current_player_index):
+		var h = turn_system.last_tile_highlights[turn_system.current_player_index]
+		if is_instance_valid(h):
+			h.queue_free()
+		turn_system.last_tile_highlights.erase(turn_system.current_player_index)
+
+	# Hide meeple placement hints before clearing the tile reference
+	Meeple.hide_placement_hints(turn_system.last_placed_tile)
+	Meeple.hide_meeple_hint(turn_system.last_placed_tile)
+
+	# Reset turn state and go back to placement phase
+	turn_system.last_placed_tile = null
+	turn_system.last_placed_cell = Vector2i.ZERO
+	turn_system.phase = TurnSystem.TurnPhase.PLACE_TILE
+	turn_system.phase_changed.emit(TurnSystem.TurnPhase.PLACE_TILE)
+	turn_system.show_possible_placements(board.get_all_valid_placement(board.current_tile))
