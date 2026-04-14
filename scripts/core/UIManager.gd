@@ -192,6 +192,9 @@ func _setup_player_stack() -> void:
 		# Position card with stack flow effect to the right
 		card.set_stack_position(i)
 		
+		# Set initial z-index: higher values appear on top
+		card.z_index = turn_system.players.size() - i
+		
 		# Update initial player info
 		_update_player_card(i)
 		
@@ -257,14 +260,24 @@ func _reorder_player_cards(current_player_index: int) -> void:
 		new_order.append((current_player_index + i) % turn_system.players.size())
 	
 	# Rearrange children based on new order
+	# Find each card by its player_index property (not array position)
 	for display_position in range(new_order.size()):
-		var original_index = new_order[display_position]
-		stack_control.move_child(player_cards[original_index], display_position)
+		var target_player_index = new_order[display_position]
 		
-		# Update position with new stacking order to show flow to the right
-		var card = player_cards[original_index] as PlayerCardUI
-		if card:
-			card.set_stack_position(display_position)
+		# Find the card with this player_index
+		var target_card: PlayerCardUI = null
+		for card in player_cards:
+			if card and card.get_player_index() == target_player_index:
+				target_card = card
+				break
+		
+		if target_card:
+			# Move this card to the correct display position
+			stack_control.move_child(target_card, display_position)
+			target_card.set_stack_position(display_position)
+			# Set z-index: current player (position 0) on top, others below
+			# Higher z-index appears on top, so reverse the position
+			target_card.z_index = turn_system.players.size() - display_position
 
 ## Handle player meeple changes
 func _on_meeple_changed(player_index: int) -> void:
@@ -295,11 +308,21 @@ func _animate_stack_expansion(expand: bool) -> void:
 	if player_cards.is_empty():
 		return
 	
+	# Kill any existing tween to prevent animation conflicts that cause z-order chaos
+	if has_meta("stack_tween"):
+		var existing_tween = get_meta("stack_tween")
+		if existing_tween:
+			existing_tween.kill()
+		remove_meta("stack_tween")
+	
 	# Create tween for smooth animation
 	var tween = create_tween()
 	tween.set_trans(Tween.TransitionType.TRANS_QUAD)
 	tween.set_ease(Tween.EaseType.EASE_OUT)
 	tween.set_parallel(true) # Run all animations in parallel
+	
+	# Store tween reference to kill it later if needed
+	set_meta("stack_tween", tween)
 	
 	if expand:
 		# Expand: spread cards to the right with larger spacing to show all cards
@@ -307,12 +330,17 @@ func _animate_stack_expansion(expand: bool) -> void:
 			var card = player_cards[i]
 			var offset_x = 220 * i
 			tween.tween_property(card, "position:x", offset_x, 0.4)
+			# Update z-index during expansion to maintain visual order
+			# Higher z-index = more on top; current player at position 0 should be topmost
+			tween.tween_callback(func(): card.z_index = player_cards.size() - i)
 	else:
 		# Collapse: stack cards back together with flowing effect to the right
 		for i in range(player_cards.size()):
 			var card = player_cards[i]
 			var offset_x = 20 * i # Compact stacking with flow to right
 			tween.tween_property(card, "position:x", offset_x, 0.4)
+			# Maintain z-index so current player stays on top
+			tween.tween_callback(func(): card.z_index = player_cards.size() - i)
 
 func _on_highlight_placement_toggled(pressed: bool) -> void:
 	highlight_placements_enabled = pressed

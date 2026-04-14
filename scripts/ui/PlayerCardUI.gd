@@ -25,12 +25,7 @@ func update_player_info(player_name: String, avatar: Texture2D, meeples: int, sc
 # Set whether this card is for the current turn player
 func set_current_turn(active: bool) -> void:
 	is_current_turn = active
-	# Only change position/z-index, not size
-	if is_current_turn:
-		z_index = 10 # Bring current player card to front
-	else:
-		z_index = 0
-
+	
 # Set card x position for stack flow effect
 func set_stack_position(stack_index: int) -> void:
 	# Each card shifts more to the right - creates flowing effect
