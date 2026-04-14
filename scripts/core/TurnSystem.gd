@@ -516,6 +516,7 @@ func show_drawn_tile_by_name(tile_name: String) -> void:
 	phase = TurnPhase.PLACE_TILE
 	_update_tile_preview_visibility(board.get_all_valid_placement(tile_instance))
 	phase_changed.emit(phase)
+	tile_drawn.emit(tile_instance)
 	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
 

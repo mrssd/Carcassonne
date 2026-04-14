@@ -184,10 +184,18 @@ func _on_network_action_failed(message: String) -> void:
 func _setup_player_stack() -> void:
 	if not player_stack_container or not turn_system or not score_manager:
 		return
-	
+
+	# Clear any previously created cards and stack_control
+	for card in player_cards:
+		if is_instance_valid(card):
+			card.queue_free()
+	player_cards.clear()
+	for child in player_stack_container.get_children():
+		child.queue_free()
+
 	# Ensure mouse filter allows detection
 	player_stack_container.mouse_filter = Control.MOUSE_FILTER_STOP
-	
+
 	# Create a Control node to manage the stack layout
 	var stack_control = Control.new()
 	stack_control.mouse_filter = Control.MOUSE_FILTER_STOP # Changed to STOP so it captures mouse events
@@ -245,7 +253,11 @@ func _update_player_card(player_index: int) -> void:
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	current_action_user_display_name.text = "%s's turn" % player_name
 	_update_player_status_mark(player_index)
-	
+
+	# Rebuild stack if player count changed (e.g. start_game ran after initial setup)
+	if turn_system and player_cards.size() != turn_system.players.size():
+		_setup_player_stack()
+
 	# Collapse stack before reorganizing
 	if is_stack_expanded:
 		_animate_stack_expansion(false)
@@ -411,12 +423,16 @@ func _update_tile_options_position() -> void:
 
 ## Handle skip meeple button press
 func _on_skip_meeple_pressed() -> void:
-	if turn_system:
+	if turn_system == null:
+		return
+	if not NetworkManager.submit_skip_meeple():
 		turn_system.end_meeple_phase()
 
 ## Handle undo tile button press
 func _on_undo_tile_pressed() -> void:
 	if turn_system == null or board == null:
+		return
+	if NetworkManager.is_lan_match:
 		return
 	if turn_system.phase != TurnSystem.TurnPhase.PLACE_MEEPLE:
 		return
