@@ -177,7 +177,6 @@ func _on_network_action_failed(message: String) -> void:
 	show_hint(message)
 
 
-
 # ===== PLAYER STACK MANAGEMENT =====
 
 ## Initialize player cards stack
@@ -444,6 +443,7 @@ func _on_undo_tile_pressed() -> void:
 	board.placed_tiles.erase(cell)
 	board.current_tile = turn_system.last_placed_tile
 	board.current_tile.visible = true
+	turn_system.current_drawn_tile = turn_system.last_placed_tile
 
 	# Clear the last-placed highlight
 	if turn_system.last_tile_highlights.has(turn_system.current_player_index):
