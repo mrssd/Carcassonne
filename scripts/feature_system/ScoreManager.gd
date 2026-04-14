@@ -37,4 +37,3 @@ func get_all_scores_text() -> String:
         if turn_system:
             result += "%s: %d\n" % [turn_system.players[i], scores[i]]
     return result
-

@@ -6,10 +6,29 @@ signal deck_changed
 @export var tiles: Array[TileDeckEntry] = []
 var _draw_pile: Array[CarcassonneTileData] = []
 var _discard_pile: Array[CarcassonneTileData] = []
+static var _tile_cache: Dictionary = {}
 
 static func load_deck_from_resource(path: String) -> TileDeck:
 	var deck: TileDeck = load(path)
 	return deck.load_deck_from_array(deck.tiles)
+
+# Recreates tile data by name so snapshots can rebuild board tiles deterministically.
+static func create_tile_data_by_name(tile_name: String, path: String = "res://resources/tile_deck.tres") -> CarcassonneTileData:
+	var cache_key := "%s::%s" % [path, tile_name]
+	if not _tile_cache.has(cache_key):
+		var deck: TileDeck = load(path)
+		if deck == null:
+			return null
+		for entry in deck.tiles:
+			if entry.carcassone_tile_data != null and entry.carcassone_tile_data.name == tile_name:
+				_tile_cache[cache_key] = entry.carcassone_tile_data
+				break
+	if not _tile_cache.has(cache_key):
+		return null
+	var tile_data: CarcassonneTileData = (_tile_cache[cache_key] as CarcassonneTileData).duplicate(true)
+	tile_data.apply_segment_data()
+	tile_data.invert_Y_meeple_positions()
+	return tile_data
 
 
 func load_deck_from_array(tile_resources: Array[TileDeckEntry]) -> TileDeck:

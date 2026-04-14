@@ -45,21 +45,32 @@ var tile_deck: TileDeck
 var current_drawn_tile: Tile = null
 var last_placed_tile: Tile = null
 var last_placed_cell: Vector2i = Vector2i.ZERO
+var setup_complete: bool = false
+var game_started_once: bool = false
 
 var bot_controller: BotController
 
 func _ready() -> void:
-	score_system.meeple_returned.connect(_on_meeple_returned)
-	score_system.meeple_scored.connect(_on_meeple_scored)
+	if score_system != null and not score_system.meeple_returned.is_connected(_on_meeple_returned):
+		score_system.meeple_returned.connect(_on_meeple_returned)
+	if score_system != null:
+		score_system.meeple_scored.connect(_on_meeple_scored)
 	bot_controller = BotController.new()
 	add_child(bot_controller)
-	bot_controller.setup(self , board, score_system)
+	bot_controller.setup(self, board, score_system)
+	setup_complete = true
+	print("TurnSystem: ready. board=%s ui=%s score=%s game_manager=%s" % [board != null, UI_manager != null, score_system != null, game_manager != null])
 
 
 func start_game() -> void:
-	players.clear()
-	for i in range(GameManager.player_count):
-		players.append("Player %d" % (i + 1))
+	if game_started_once:
+		print("TurnSystem: ignoring duplicate start_game call")
+		return
+	if not is_runtime_ready():
+		push_warning("TurnSystem.start_game called before dependencies were ready")
+		return
+	# Initialize players and meeples, wire score manager and deck, then start the first turn.
+	players = NetworkManager.get_match_player_names(GameManager.player_count)
 
 	#initalize player types
 	player_types.clear()
@@ -87,9 +98,23 @@ func start_game() -> void:
 		tile_deck = game_manager.tile_deck
 	else:
 		push_error("TurnSystem.start_game: tile_deck not available on GameManager")
+		return
 
 	game_active = true
+	game_started_once = true
+	current_player_index = 0
+	phase = TurnPhase.DRAW_TILE
+	print("TurnSystem: start_game players=%s lan=%s local_index=%d" % [players, NetworkManager.is_lan_match, NetworkManager.get_local_player_index()])
 	start_turn()
+
+func is_runtime_ready() -> bool:
+	if not setup_complete:
+		return false
+	if board == null or game_manager == null or score_system == null or UI_manager == null:
+		return false
+	if UI_manager.has_method("is_setup_complete") and not UI_manager.is_setup_complete():
+		return false
+	return true
 
 func _on_meeple_returned(player_index: int) -> void:
 	if player_index >= 0 and player_index < remaining_meeples.size():
@@ -123,6 +148,9 @@ func start_turn() -> void:
 	print("Turn started:", get_current_player())
 	turn_changed.emit(get_current_player(), current_player_index)
 	phase = TurnPhase.DRAW_TILE
+	if NetworkManager.should_defer_draw_to_host():
+		phase_changed.emit(phase)
+		return
 	draw_tile()
 
 func draw_tile() -> void:
@@ -131,17 +159,19 @@ func draw_tile() -> void:
 		return
 
 	board.freeze_tile = false
+	if board == null or board.tile_scene == null:
+		push_error("TurnSystem: board or board.tile_scene is not available.")
+		return
+
 	var draw_result := _draw_placeable_tile()
-	
 	if draw_result.is_empty():
 		if UI_manager:
 			UI_manager.show_hint("Game Over! No placeable tiles remain.")
 		print("No placeable tiles remain. Game over!")
 		game_active = false
 		score_system.score_end_game(board)
-		# FIXME: NetworkManager not implemented
-		#if not NetworkManager.on_game_over("No placeable tiles remain! Game Over!"):
-		game_manager.end_game("No placeable tiles remain! Game Over!")
+		if not NetworkManager.on_game_over("No placeable tiles remain! Game Over!"):
+			game_manager.end_game("No placeable tiles remain! Game Over!")
 		return
 
 	board.current_tile = draw_result["tile"]
@@ -153,8 +183,8 @@ func draw_tile() -> void:
 	tile_drawn.emit(current_drawn_tile)
 	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.\nPress H for a hint (best placement).")
-	# FIXME: NetworkManager not implemented
-	#NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
+	NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
+	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
 
@@ -198,7 +228,8 @@ func _draw_placeable_tile() -> Dictionary:
 
 	return {}
 
-#FDisplays possible placements for current tile
+
+# Refreshes the highlighted cells that show legal tile placements.
 func show_possible_placements(valid_placements):
 		#refresh the highlighted nodes
 		for node in highlight_nodes:
@@ -227,6 +258,7 @@ func _show_last_placed_tile_highlight(cell: Vector2i, player_index: int) -> void
 	highlight.position = board.index_to_coord(cell)
 	last_tile_highlights[player_index] = highlight
 
+# Handles local tile placement input or forwards it to the host.
 func on_tile_placed() -> void:
 	if not game_active:
 		return
@@ -238,44 +270,32 @@ func on_tile_placed() -> void:
 	var world_pos: Vector2 = board.current_tile.position
 	var cell: Vector2i = board.coord_to_index(world_pos)
 
-	if board.can_place(cell, board.current_tile):
-		board.place_tile(cell, board.current_tile)
+	if NetworkManager.submit_tile_placement(cell, board.current_tile.rotation_count):
+		return
+	if _apply_current_tile_placement(cell):
 		if ui_sounds and ui_sounds.has_method("play_successful_placement_sound"):
 			ui_sounds.play_successful_placement_sound()
-		last_placed_tile = board.placed_tiles[cell]
-		last_placed_cell = cell
-		_show_last_placed_tile_highlight(cell, current_player_index)
-		board.current_tile = null
-		show_possible_placements([])
-		clear_hint_highlight()
-		clear_ghost_highlight()
-		phase = TurnPhase.PLACE_MEEPLE
-		phase_changed.emit(phase)
-		var player_meeples: int = remaining_meeples[current_player_index] if current_player_index < remaining_meeples.size() else 0
-		#If no meeple then end meeple phase automatically
-		if not Meeple.has_valid_placements(last_placed_tile, score_system, board, last_placed_cell, player_meeples):
-			end_meeple_phase()
-			return
-		Meeple.show_placement_hints(last_placed_tile, Board.CELL_SIZE / 4.0, score_system, board, last_placed_cell)
-		UI_manager.show_hint("Click a meeple position or press H for hint.")
-		print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
 	else:
 		if ui_sounds and ui_sounds.has_method("play_invalid_placement_sound"):
 			ui_sounds.play_invalid_placement_sound()
-		UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
-		print("Cannot place tile here – invalid placement.")
 
-func place_meeple(world_click: Vector2, animate: bool = true) -> void:
-	var temp: Meeple = MEEPLE_SCENE.instantiate() as Meeple
-	var info = temp.get_placement_feature(last_placed_tile, world_click)
-	temp.free()
-	if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
-		if ui_sounds and ui_sounds.has_method("play_invalid_placement_sound"):
-			ui_sounds.play_invalid_placement_sound()
-		UI_manager.show_hint("That feature is already claimed")
-		print(info["feature"], "is already claimed.")
+func place_meeple(world_click: Vector2) -> void:
+	var info: Dictionary = _get_closest_available_meeple_slot(world_click)
+	if info.is_empty():
+		if UI_manager:
+			UI_manager.show_hint("That feature is already claimed.\nTry another spot or press SPACE to skip.")
 		return
-	var placed = Meeple.try_place_on_board(last_placed_tile, world_click, current_player_index, remaining_meeples, MEEPLE_SCENE, animate)
+	if last_placed_tile != null and not last_placed_tile.can_place_meeple(info["slot_id"]):
+		if UI_manager:
+			UI_manager.show_hint("That meeple slot is already occupied.\nTry another spot or press SPACE to skip.")
+		return
+	if score_system.is_segment_claimed(board, last_placed_cell, info["feature"]):
+		UI_manager.show_hint("That feature is already claimed.\nTry another spot or press SPACE to skip.")
+		print("That feature is already claimed.")
+		return
+	if NetworkManager.submit_meeple_placement(info["slot_id"], info["feature"]):
+		return
+	var placed = Meeple.try_place_on_tile_slot(last_placed_tile, info["slot_id"], info["feature"], current_player_index, remaining_meeples, MEEPLE_SCENE)
 	if placed:
 		if ui_sounds and ui_sounds.has_method("play_successful_placement_sound"):
 			ui_sounds.play_successful_placement_sound()
@@ -288,14 +308,17 @@ func place_meeple(world_click: Vector2, animate: bool = true) -> void:
 		if ui_sounds and ui_sounds.has_method("play_invalid_placement_sound"):
 			ui_sounds.play_invalid_placement_sound()
 
-func end_meeple_phase() -> void:
+# Finalizes scoring and advances the turn after meeple placement/skip.
+func end_meeple_phase(advance_turn: bool = true) -> void:
 	Meeple.hide_placement_hints(last_placed_tile)
 	Meeple.hide_meeple_hint(last_placed_tile)
 	_meeple_hint_visible = false
 	score_system.score_and_apply(board, last_placed_cell)
 	last_placed_tile = null
 	phase = TurnPhase.DRAW_TILE
-	end_turn()
+	phase_changed.emit(phase)
+	if advance_turn:
+		end_turn()
 
 func end_turn() -> void:
 	print("Turn ended:", get_current_player())
@@ -351,17 +374,6 @@ func _refresh_placement_display() -> void:
 	show_possible_placements(board.get_all_valid_placement(current_drawn_tile))
 	hint_visible = false
 
-func _can_interact_with_current_turn() -> bool:
-	# FIXME: NetworkManager not implemented - allowing local input
-	return true
-	#return not NetworkManager.should_block_local_input(current_player_index)
-
-func _update_tile_preview_visibility(valid_placements: Array) -> void:
-	var show_preview := _can_interact_with_current_turn()
-	if board.current_tile != null:
-		board.current_tile.visible = show_preview
-	show_possible_placements(valid_placements if show_preview else [])
-
 func _process(_delta: float) -> void:
 	if _bot_thread == null or _bot_thread.is_alive():
 		return
@@ -377,7 +389,7 @@ func _finish_bot_turn(choice: Dictionary) -> void:
 func _input(event) -> void:
 	if not game_active:
 		return
-	if is_current_player_bot():
+	if NetworkManager.should_block_local_input(current_player_index) or is_current_player_bot():
 		return
 
 	if phase == TurnPhase.PLACE_TILE:
@@ -436,8 +448,9 @@ func _input(event) -> void:
 		elif event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
 			UI_manager.show_hint("Skipping meeple placement. Turn ending...")
 			print("Skipping meeple placement")
-			Meeple.hide_placement_hints(last_placed_tile)
-			end_meeple_phase()
+			if not NetworkManager.submit_skip_meeple():
+				Meeple.hide_placement_hints(last_placed_tile)
+				end_meeple_phase()
 		elif event is InputEventKey and event.pressed and event.keycode == KEY_H:
 			if _meeple_hint_visible:
 				Meeple.hide_meeple_hint(last_placed_tile)
@@ -460,3 +473,185 @@ func _input(event) -> void:
 			board.current_tile = null
 		score_system.score_end_game(board)
 		game_manager.end_game("Debug: Game force ended!")
+
+func validate_tile_placement(cell: Vector2i, rotation_count: int) -> bool:
+	if not game_active or phase != TurnPhase.PLACE_TILE or board.current_tile == null:
+		return false
+
+	var original_rotation: int = board.current_tile.rotation_count
+	_set_current_tile_rotation(rotation_count)
+	var valid: bool = board.can_place(cell, board.current_tile)
+	_set_current_tile_rotation(original_rotation)
+	return valid
+
+func validate_meeple_placement(slot_id: String, feature: String) -> bool:
+	if not game_active or phase != TurnPhase.PLACE_MEEPLE or last_placed_tile == null:
+		return false
+	if current_player_index < 0 or current_player_index >= remaining_meeples.size():
+		return false
+	if remaining_meeples[current_player_index] <= 0:
+		return false
+	if not last_placed_tile.can_place_meeple(slot_id):
+		return false
+	if _get_feature_for_slot(last_placed_tile, slot_id) != feature:
+		return false
+	return not score_system.is_segment_claimed(board, last_placed_cell, feature)
+
+func can_skip_meeple_phase() -> bool:
+	return game_active and phase == TurnPhase.PLACE_MEEPLE
+
+func show_drawn_tile_by_name(tile_name: String) -> void:
+	if board.current_tile != null:
+		board.current_tile.queue_free()
+		board.current_tile = null
+
+	var tile_data: CarcassonneTileData = TileDeck.create_tile_data_by_name(tile_name)
+	if tile_data == null:
+		return
+
+	var tile_instance: Tile = board.tile_scene.instantiate()
+	tile_instance.tile_data = tile_data
+	board.add_child(tile_instance)
+	board.current_tile = tile_instance
+	current_drawn_tile = tile_instance
+	phase = TurnPhase.PLACE_TILE
+	_update_tile_preview_visibility(board.get_all_valid_placement(tile_instance))
+	phase_changed.emit(phase)
+	if UI_manager and _can_interact_with_current_turn():
+		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.")
+
+func sync_current_player_index(player_index: int) -> void:
+	if player_index < 0 or player_index >= players.size():
+		return
+	if current_player_index == player_index:
+		return
+	current_player_index = player_index
+	turn_changed.emit(get_current_player(), current_player_index)
+
+func commit_tile_placement(cell: Vector2i, rotation_count: int) -> bool:
+	if not game_active or phase != TurnPhase.PLACE_TILE or board.current_tile == null:
+		return false
+
+	while board.current_tile.rotation_count != rotation_count:
+		board.current_tile.rotate_clockwise()
+
+	return _apply_current_tile_placement(cell)
+
+func commit_meeple_placement(slot_id: String, feature: String) -> bool:
+	if not game_active or phase != TurnPhase.PLACE_MEEPLE or last_placed_tile == null:
+		return false
+	if score_system.is_segment_claimed(board, last_placed_cell, feature):
+		return false
+	var placed = Meeple.try_place_on_tile_slot(last_placed_tile, slot_id, feature, current_player_index, remaining_meeples, MEEPLE_SCENE)
+	if not placed:
+		return false
+	meeple_changed.emit(current_player_index)
+	Meeple.hide_placement_hints(last_placed_tile)
+	end_meeple_phase(not (NetworkManager.is_lan_match and not NetworkManager.is_host()))
+	return true
+
+func commit_skip_meeple() -> bool:
+	if not game_active or phase != TurnPhase.PLACE_MEEPLE:
+		return false
+	Meeple.hide_placement_hints(last_placed_tile)
+	end_meeple_phase(not (NetworkManager.is_lan_match and not NetworkManager.is_host()))
+	return true
+
+# Commits the current floating tile to the board and enters meeple phase.
+func _apply_current_tile_placement(cell: Vector2i) -> bool:
+	if not board.can_place(cell, board.current_tile):
+		if UI_manager:
+			UI_manager.show_hint("Cannot place tile here – invalid placement.\nTry another highlighted cell.")
+		print("Cannot place tile here – invalid placement.")
+		return false
+	board.place_tile(cell, board.current_tile)
+	last_placed_tile = board.placed_tiles[cell]
+	last_placed_cell = cell
+	_show_last_placed_tile_highlight(cell, current_player_index)
+	board.current_tile = null
+	current_drawn_tile = null
+	show_possible_placements([])
+	clear_hint_highlight()
+	clear_ghost_highlight()
+	_enter_meeple_phase()
+	print("Tile placed. Left-click on this tile to place meeple, or press space to skip.")
+	return true
+
+func _set_current_tile_rotation(target_rotation: int) -> void:
+	if board.current_tile == null:
+		return
+	var normalized_target := posmod(target_rotation, 4)
+	while board.current_tile.rotation_count != normalized_target:
+		board.current_tile.rotate_clockwise()
+
+func _can_interact_with_current_turn() -> bool:
+	return not NetworkManager.should_block_local_input(current_player_index)
+
+func _update_tile_preview_visibility(valid_placements: Array) -> void:
+	var show_preview := _can_interact_with_current_turn()
+	if board.current_tile != null:
+		board.current_tile.visible = show_preview
+	show_possible_placements(valid_placements if show_preview else [])
+
+func _enter_meeple_phase() -> void:
+	phase = TurnPhase.PLACE_MEEPLE
+	phase_changed.emit(phase)
+	if last_placed_tile == null:
+		return
+	var available_slots := _get_available_meeple_slots(last_placed_tile)
+	last_placed_tile.set_meta("allowed_meeple_slots", available_slots)
+	if _can_interact_with_current_turn():
+		Meeple.show_placement_hints(last_placed_tile, 24.0)
+		if UI_manager:
+			UI_manager.show_hint("Click a meeple position or press SPACE to skip.")
+
+func _get_available_meeple_slots(tile: Tile) -> Array[Dictionary]:
+	var slots: Array[Dictionary] = []
+	if tile == null:
+		return slots
+	if tile.tile_data != null and tile.tile_data.meeple_positions.size() > 0:
+		for base_key in tile.tile_data.meeple_positions.keys():
+			var slot := _build_meeple_slot(tile, base_key)
+			if not tile.can_place_meeple(slot["slot_id"]):
+				continue
+			if score_system.is_segment_claimed(board, last_placed_cell, slot["feature"]):
+				continue
+			slots.append(slot)
+	else:
+		var center_slot: Dictionary = {
+			"offset": Vector2.ZERO,
+			"feature": "center",
+			"slot_id": "0_0_center"
+		}
+		if tile.can_place_meeple(center_slot["slot_id"]) and not score_system.is_segment_claimed(board, last_placed_cell, center_slot["feature"]):
+			slots.append(center_slot)
+	return slots
+
+func _build_meeple_slot(tile: Tile, base_key: Vector2i) -> Dictionary:
+	var feature := Meeple._resolve_segment(tile.tile_data, base_key, tile.rotation_count)
+	return {
+		"offset": Vector2(base_key.x, base_key.y) * 24.0,
+		"feature": feature,
+		"slot_id": "%d_%d_%s" % [base_key.x, base_key.y, feature]
+	}
+
+func _get_feature_for_slot(tile: Tile, slot_id: String) -> String:
+	if tile == null:
+		return "unknown"
+	var parts: PackedStringArray = slot_id.split("_", false, 2)
+	if parts.size() < 2:
+		return "unknown"
+	return Meeple._resolve_segment(tile.tile_data, Vector2i(int(parts[0]), int(parts[1])), tile.rotation_count)
+
+func _get_closest_available_meeple_slot(world_click: Vector2) -> Dictionary:
+	if last_placed_tile == null:
+		return {}
+	var best_slot: Dictionary = {}
+	var best_dist: float = INF
+	for slot in _get_available_meeple_slots(last_placed_tile):
+		var world_candidate: Vector2 = last_placed_tile.to_global(slot["offset"])
+		var dist: float = world_click.distance_to(world_candidate)
+		if dist < best_dist:
+			best_dist = dist
+			best_slot = slot
+	return best_slot

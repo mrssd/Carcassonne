@@ -146,6 +146,35 @@ static func try_place_on_board(allowed_tile: Tile, world_click: Vector2, player_
 	print("Meeple placed for Player %d, remaining: %d" % [player_index, remaining_meeples[player_index]])
 	return true
 
+# Converts a serialized slot id like "0_-1_road_0" back into local tile space.
+static func create_slot_offset(slot_id: String, unit_scale: float = 24.0) -> Vector2:
+	var parts: PackedStringArray = slot_id.split("_", false, 2)
+	if parts.size() < 2:
+		return Vector2.ZERO
+	return Vector2(int(parts[0]), int(parts[1])) * unit_scale
+
+# Places a meeple directly onto a known slot, mainly for snapshots/network sync.
+static func try_place_on_tile_slot(tile: Tile, slot_id: String, feature: String, player_index: int, remaining_meeples: Array, meeple_scene: PackedScene) -> bool:
+	if tile == null:
+		return false
+	if player_index < 0 or player_index >= remaining_meeples.size():
+		return false
+	if remaining_meeples[player_index] <= 0:
+		print("No meeples remaining for Player %d" % [player_index])
+		return false
+	if not tile.can_place_meeple(slot_id):
+		return false
+
+	var meeple: Meeple = meeple_scene.instantiate() as Meeple
+	if meeple == null:
+		return false
+
+	meeple.set_player(player_index)
+	meeple.place_on_tile(tile, create_slot_offset(slot_id), feature)
+	tile.add_meeple(slot_id, meeple)
+	remaining_meeples[player_index] -= 1
+	return true
+
 
 #White circle 
 class MeepleHints:
@@ -176,9 +205,14 @@ static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE
 	var hints := MeepleHints.new()
 	hints.name = "MeepleHints"
 
-	# Build positions using the SAME logic as get_placement_feature()
 	var positions: Array[Vector2] = []
-	if tile.tile_data and tile.tile_data.meeple_positions.size() > 0:
+	var allowed_slots = []
+	if tile.has_meta("allowed_meeple_slots"):
+		allowed_slots = tile.get_meta("allowed_meeple_slots")
+	if not allowed_slots.is_empty():
+		for slot in allowed_slots:
+			positions.append(slot["offset"])
+	elif tile.tile_data and tile.tile_data.meeple_positions.size() > 0:
 		for base_key in tile.tile_data.meeple_positions.keys():
 			if score_system != null and board != null:
 				var feature = _resolve_segment(tile.tile_data, base_key, tile.rotation_count)
@@ -195,8 +229,11 @@ static func show_placement_hints(tile: Tile, unit_scale: float = Board.CELL_SIZE
 	hints.queue_redraw()
 
 static func hide_placement_hints(tile: Tile) -> void:
-	if tile and tile.has_node("MeepleHints"):
-		tile.get_node("MeepleHints").queue_free()
+	if tile:
+		if tile.has_meta("allowed_meeple_slots"):
+			tile.remove_meta("allowed_meeple_slots")
+		if tile.has_node("MeepleHints"):
+			tile.get_node("MeepleHints").queue_free()
 
 #Returns true if there is at least one unclaimed meeple position on the tile and the player has meeples remaining
 static func has_valid_placements(tile: Tile, score_system, board, cell: Vector2i, player_meeples: int) -> bool:

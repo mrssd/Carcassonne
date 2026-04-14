@@ -38,6 +38,9 @@ func _process(_dt):
 
 func place_tile(cell: Vector2i, tile: Tile): # NEED TO MATCH IN TILE SCRIPT
 	var final_pos := index_to_coord(cell)
+	tile.position = final_pos
+	tile.visible = true
+	tile.modulate = Color(1, 1, 1, 1)
 	placed_tiles[cell] = tile
 	_clear_hover_transparency()
 	#Plays animation when placing tile if its a bot

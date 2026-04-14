@@ -55,6 +55,7 @@ var player_avatar_textures: Array[Texture2D] = [
 	preload("res://assets/images/Avatars/Player4Avatar.png"),
 	preload("res://assets/images/Avatars/Player5Avatar.png"),
 ]
+var setup_complete: bool = false
 
 func _ready() -> void:
 	# Use call_deferred to ensure GameManager has initialized its deck
@@ -92,9 +93,8 @@ func _setup_connections() -> void:
 		# Set initial score display
 		_on_score_changed()
 
-	# FIXME: NetworkManager not implemented
-	#NetworkManager.action_failed.connect(_on_network_action_failed)
-	
+	NetworkManager.action_failed.connect(_on_network_action_failed)
+
 	# Connect options menu buttons
 	if options_menu_trigger:
 		options_menu_trigger.pressed.connect(_on_in_game_options_menu_open)
@@ -104,7 +104,7 @@ func _setup_connections() -> void:
 		highlight_placement_toggle.toggled.connect(_on_highlight_placement_toggled)
 	if hint_messages_toggle:
 		hint_messages_toggle.toggled.connect(_on_hint_messages_toggled)
-	
+
 	# Connect tile options buttons
 	if skip_meeple_button:
 		print("Connected skip_meeple_button")
@@ -116,6 +116,10 @@ func _setup_connections() -> void:
 		undo_tile_button.pressed.connect(_on_undo_tile_pressed)
 	else:
 		print("ERROR: undo_tile_button not found!")
+	setup_complete = true
+
+func is_setup_complete() -> bool:
+	return setup_complete
 
 func _on_tile_drawn(tile: Tile) -> void:
 	if current_action_tile_texture and tile and tile.tile_data and tile.tile_data.tile_texture:
@@ -171,6 +175,7 @@ func hide_hint() -> void:
 
 func _on_network_action_failed(message: String) -> void:
 	show_hint(message)
+
 
 
 # ===== PLAYER STACK MANAGEMENT =====

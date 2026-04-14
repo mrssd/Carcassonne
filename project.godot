@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 MusicManager="*res://scripts/core/MusicManager.gd"
 UIButtonSfx="*res://scripts/ui/UIButtonSfx.gd"
 UISounds="*res://scripts/ui/UISounds.gd"
+NetworkManager="*res://scripts/network/NetworkManager.gd"
 
 [display]
 
