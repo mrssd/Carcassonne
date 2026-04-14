@@ -86,10 +86,15 @@ func _on_host_lan_pressed() -> void:
 	
 	_append_log("Hosting started on port %d for %d players" % [port, selected_player_count])
 	
-	# Get local IP address
+	# Get local IPv4 address
 	var local_ip = IP.get_local_addresses()
-	if local_ip.size() > 0:
-		_append_log("Your IP: %s" % local_ip[0])
+	var ipv4_address = ""
+	for ip in local_ip:
+		if not ip.contains(":"): # IPv4 addresses don't contain colons
+			ipv4_address = ip
+			break
+	if not ipv4_address.is_empty():
+		_append_log("Your IP: %s" % ipv4_address)
 	
 	_update_ui_for_hosting()
 
