@@ -35,8 +35,8 @@ var player_colors = [
 	Color.BLUE,
 	Color.RED,
 	Color.GREEN,
-	Color.YELLOW,
 	Color.ORANGE,
+	Color.YELLOW,
 ]
 
 # Glow/shadow colors for each player
@@ -46,6 +46,14 @@ var player_glow_colors = [
 	Color("#00c70012"), # Green glow
 	Color("#c7c70012"), # Yellow glow
 	Color("#c7640012"), # Orange glow
+]
+
+var player_avatar_textures: Array[Texture2D] = [
+	preload("res://assets/images/Avatars/Player1Avatar.png"),
+	preload("res://assets/images/Avatars/Player2Avatar.png"),
+	preload("res://assets/images/Avatars/Player3Avatar.png"),
+	preload("res://assets/images/Avatars/Player4Avatar.png"),
+	preload("res://assets/images/Avatars/Player5Avatar.png"),
 ]
 
 func _ready() -> void:
@@ -222,12 +230,13 @@ func _update_player_card(player_index: int) -> void:
 	var score = score_manager.get_score(player_index)
 	var meeples = turn_system.remaining_meeples[player_index] if player_index < turn_system.remaining_meeples.size() else 0
 	
-	# TODO: Load player avatar from assets (currently using default from PlayerCard.tscn)
+
 	var avatar: Texture2D = null
+	if player_index < player_avatar_textures.size():
+		avatar = player_avatar_textures[player_index]
 	
 	card.update_player_info(player_name, avatar, meeples, score)
 
-## Handle turn change - reorganize card stack
 func _on_turn_changed(player_name: String, player_index: int) -> void:
 	current_action_user_display_name.text = "%s's turn" % player_name
 	_update_player_status_mark(player_index)
@@ -245,7 +254,7 @@ func _on_turn_changed(player_name: String, player_index: int) -> void:
 	# Reorder cards so current player is on top/left
 	_reorder_player_cards(player_index)
 
-## Reorder cards so current turn player is at the top/leftmost position
+
 func _reorder_player_cards(current_player_index: int) -> void:
 	if not player_stack_container or player_cards.is_empty():
 		return
@@ -259,8 +268,7 @@ func _reorder_player_cards(current_player_index: int) -> void:
 	for i in range(turn_system.players.size()):
 		new_order.append((current_player_index + i) % turn_system.players.size())
 	
-	# Rearrange children based on new order
-	# Find each card by its player_index property (not array position)
+	
 	for display_position in range(new_order.size()):
 		var target_player_index = new_order[display_position]
 		
@@ -275,8 +283,6 @@ func _reorder_player_cards(current_player_index: int) -> void:
 			# Move this card to the correct display position
 			stack_control.move_child(target_card, display_position)
 			target_card.set_stack_position(display_position)
-			# Set z-index: current player (position 0) on top, others below
-			# Higher z-index appears on top, so reverse the position
 			target_card.z_index = turn_system.players.size() - display_position
 
 ## Handle player meeple changes
@@ -367,7 +373,7 @@ func _on_phase_changed(phase: int) -> void:
 	if tile_options_panel == null:
 		return
 	
-	# Only show tile options during PLACE_MEEPLE phase, and only for human players
+
 	if phase == TurnSystem.TurnPhase.PLACE_MEEPLE and not turn_system.is_current_player_bot():
 		# Position the buttons below the placed tile first
 		_update_tile_options_position()
