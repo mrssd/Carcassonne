@@ -184,7 +184,6 @@ func draw_tile() -> void:
 	if UI_manager and _can_interact_with_current_turn():
 		UI_manager.show_hint("Place the tile on a highlighted cell.\nRight-click or Q / E to rotate.\nPress H for a hint (best placement).")
 	NetworkManager.on_tile_drawn(current_drawn_tile.tile_data.name)
-	tile_deck.print_draw_pile()
 	print("Tile drawn for", get_current_player())
 	print("Place tile")
 

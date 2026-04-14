@@ -63,7 +63,7 @@ func apply_move(choice: Dictionary, bot_type: String) -> void:
 				var seg = Meeple._resolve_segment(lt.tile_data, meeple_pos, lt.rotation_count)
 				if seg != "unknown" and not score_system.is_segment_claimed(board, turn_system.last_placed_cell, seg):
 					var world_pos = lt.to_global(Vector2(meeple_pos.x, meeple_pos.y) * (Board.CELL_SIZE / 4.0))
-					turn_system.place_meeple(world_pos, false)
+					turn_system.place_meeple(world_pos)
 					placed = true
 		if not placed:
 			turn_system.end_meeple_phase()
@@ -72,7 +72,7 @@ func apply_move(choice: Dictionary, bot_type: String) -> void:
 		if best_meeple_coords == null:
 			turn_system.end_meeple_phase()
 		else:
-			turn_system.place_meeple(best_meeple_coords, false)
+			turn_system.place_meeple(best_meeple_coords)
 	else:
 		turn_system.end_meeple_phase()
 
